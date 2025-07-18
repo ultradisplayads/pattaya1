@@ -226,10 +226,10 @@ export function ForumActivityWidget() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
-                    <h4 className="font-medium text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                    <h4 className="font-medium text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
                       {post.isPinned && "📌 "}
                       {post.title}
-                      {post.isHot && <TrendingUp className="inline w-3 h-3 ml-1 text-red-500" />}
+                      {post.isHot && <TrendingUp className="inline w-3 h-3 ml-1 text-red-500 flex-shrink-0" />}
                     </h4>
                   </div>
 
@@ -237,7 +237,7 @@ export function ForumActivityWidget() {
                     <Badge variant="secondary" className={`text-xs ${getCategoryColor(post.category)}`}>
                       {post.category}
                     </Badge>
-                    <span className="text-xs text-gray-500">by {post.author.name}</span>
+                    <span className="text-xs text-gray-500 truncate">by {post.author.name}</span>
                     <Badge variant="outline" className="text-xs">
                       {post.author.reputation}
                     </Badge>
@@ -246,21 +246,21 @@ export function ForumActivityWidget() {
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <div className="flex items-center space-x-3">
                       <div className="flex items-center">
-                        <MessageCircle className="w-3 h-3 mr-1" />
+                        <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
                         <span>{post.replies}</span>
                       </div>
                       <div className="flex items-center">
-                        <Eye className="w-3 h-3 mr-1" />
+                        <Eye className="w-3 h-3 mr-1 flex-shrink-0" />
                         <span>{formatNumber(post.views)}</span>
                       </div>
                       <div className="flex items-center">
-                        <ThumbsUp className="w-3 h-3 mr-1" />
+                        <ThumbsUp className="w-3 h-3 mr-1 flex-shrink-0" />
                         <span>{post.likes}</span>
                       </div>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center flex-shrink-0">
                       <Clock className="w-3 h-3 mr-1" />
-                      <span>{post.lastActivity}</span>
+                      <span className="truncate">{post.lastActivity}</span>
                     </div>
                   </div>
                 </div>

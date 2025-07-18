@@ -1,11 +1,26 @@
-export function LoadingSpinner() {
+import { cn } from "@/lib/utils"
+
+interface LoadingSpinnerProps {
+  size?: "sm" | "md" | "lg"
+  className?: string
+}
+
+export function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
+  const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-6 h-6",
+    lg: "w-8 h-8",
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-blue-800 mb-2">Loading Pattaya1</h2>
-        <p className="text-blue-600">Preparing your city dashboard...</p>
-      </div>
-    </div>
+    <div
+      className={cn(
+        "animate-spin rounded-full border-2 border-gray-300 border-t-blue-600",
+        sizeClasses[size],
+        className,
+      )}
+    />
   )
 }
+
+export default LoadingSpinner

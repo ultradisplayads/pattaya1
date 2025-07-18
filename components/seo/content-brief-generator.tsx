@@ -7,167 +7,194 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Brain, Search, Lightbulb, Target, TrendingUp, Users, Globe, ImageIcon, Video, HelpCircle } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+import { Brain, FileText, Lightbulb, Copy, Download, RefreshCw } from "lucide-react"
 
 interface ContentBrief {
-  keyword: string
-  searchVolume: number
-  difficulty: number
-  intent: string
+  id: string
+  title: string
+  targetKeyword: string
+  wordCount: number
+  targetAudience: string
+  contentType: string
+  outline: string[]
   lsiKeywords: string[]
-  questions: string[]
-  headings: string[]
-  competitors: {
+  competitorAnalysis: {
     url: string
     title: string
     wordCount: number
-    rank: number
+    headings: number
   }[]
-  recommendations: {
-    wordCount: number
-    readingLevel: string
-    tone: string
-    images: number
-    videos: number
-  }
-  schema: string[]
+  peopleAlsoAsk: string[]
+  metaTitle: string
+  metaDescription: string
+  status: "draft" | "in-progress" | "completed"
 }
 
 export function ContentBriefGenerator() {
   const [targetKeyword, setTargetKeyword] = useState("")
-  const [contentType, setContentType] = useState("article")
+  const [contentType, setContentType] = useState("blog-post")
+  const [targetAudience, setTargetAudience] = useState("tourists")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [brief, setBrief] = useState<ContentBrief | null>(null)
+  const [generatedBrief, setGeneratedBrief] = useState<ContentBrief | null>(null)
   const [generatedContent, setGeneratedContent] = useState("")
 
-  const generateBrief = async () => {
+  const handleGenerateBrief = async () => {
     if (!targetKeyword.trim()) return
 
     setIsGenerating(true)
+    try {
+      // Simulate AI API call
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    // Simulate API call - replace with actual AI service
-    setTimeout(() => {
       const mockBrief: ContentBrief = {
-        keyword: targetKeyword,
-        searchVolume: 8100,
-        difficulty: 65,
-        intent: "informational",
+        id: "1",
+        title: `Complete Guide to ${targetKeyword}`,
+        targetKeyword,
+        wordCount: 2500,
+        targetAudience,
+        contentType,
+        outline: [
+          "Introduction to " + targetKeyword,
+          "Why " + targetKeyword + " is Important",
+          "Top 10 " + targetKeyword + " Options",
+          "How to Choose the Best " + targetKeyword,
+          "Expert Tips and Recommendations",
+          "Frequently Asked Questions",
+          "Conclusion and Next Steps",
+        ],
         lsiKeywords: [
-          "best pattaya restaurants",
-          "pattaya dining guide",
-          "top restaurants pattaya",
-          "pattaya food scene",
-          "restaurant recommendations pattaya",
-          "fine dining pattaya",
-          "street food pattaya",
-          "seafood restaurants pattaya",
+          targetKeyword + " guide",
+          "best " + targetKeyword,
+          targetKeyword + " tips",
+          targetKeyword + " recommendations",
+          "top " + targetKeyword,
+          targetKeyword + " reviews",
+          targetKeyword + " comparison",
+          "how to " + targetKeyword,
         ],
-        questions: [
-          "What are the best restaurants in Pattaya?",
-          "Where to eat in Pattaya for tourists?",
-          "What is the best Thai food in Pattaya?",
-          "Are there good vegetarian restaurants in Pattaya?",
-          "What are the most expensive restaurants in Pattaya?",
-          "Where can I find authentic Thai cuisine in Pattaya?",
-          "What restaurants have the best view in Pattaya?",
-          "Are there 24-hour restaurants in Pattaya?",
-        ],
-        headings: [
-          "Best Pattaya Restaurants 2024: Complete Dining Guide",
-          "Top Fine Dining Restaurants in Pattaya",
-          "Best Street Food Spots in Pattaya",
-          "Authentic Thai Restaurants",
-          "International Cuisine Options",
-          "Beachfront Dining Experiences",
-          "Budget-Friendly Restaurant Options",
-          "Vegetarian and Vegan Restaurants",
-          "Late Night Dining in Pattaya",
-          "Restaurant Booking Tips",
-        ],
-        competitors: [
+        competitorAnalysis: [
           {
-            url: "tripadvisor.com/restaurants-pattaya",
-            title: "THE 10 BEST Restaurants in Pattaya",
-            wordCount: 2500,
-            rank: 1,
+            url: "competitor1.com",
+            title: "Best " + targetKeyword + " Guide 2024",
+            wordCount: 3200,
+            headings: 12,
           },
           {
-            url: "timeout.com/pattaya/restaurants",
-            title: "Best restaurants in Pattaya",
-            wordCount: 1800,
-            rank: 2,
+            url: "competitor2.com",
+            title: "Ultimate " + targetKeyword + " Resource",
+            wordCount: 2800,
+            headings: 15,
           },
           {
-            url: "lonelyplanet.com/pattaya/restaurants",
-            title: "Where to eat in Pattaya",
-            wordCount: 2200,
-            rank: 4,
+            url: "competitor3.com",
+            title: targetKeyword + " Complete Guide",
+            wordCount: 2100,
+            headings: 8,
           },
         ],
-        recommendations: {
-          wordCount: 2800,
-          readingLevel: "Grade 8-10",
-          tone: "Informative and engaging",
-          images: 15,
-          videos: 2,
-        },
-        schema: ["Article", "Restaurant", "Review", "FAQPage"],
+        peopleAlsoAsk: [
+          "What is the best " + targetKeyword + "?",
+          "How much does " + targetKeyword + " cost?",
+          "Where can I find " + targetKeyword + "?",
+          "When is the best time for " + targetKeyword + "?",
+          "Why should I choose " + targetKeyword + "?",
+        ],
+        metaTitle: `Best ${targetKeyword} Guide 2024 - Complete Resource`,
+        metaDescription: `Discover everything you need to know about ${targetKeyword}. Our comprehensive guide covers tips, recommendations, and expert advice.`,
+        status: "draft",
       }
-      setBrief(mockBrief)
+
+      setGeneratedBrief(mockBrief)
+    } catch (error) {
+      console.error("Failed to generate brief:", error)
+    } finally {
       setIsGenerating(false)
-    }, 2000)
+    }
   }
 
-  const generateContent = async (section: string) => {
+  const handleGenerateContent = async () => {
+    if (!generatedBrief) return
+
     setIsGenerating(true)
+    try {
+      // Simulate AI content generation
+      await new Promise((resolve) => setTimeout(resolve, 3000))
 
-    // Simulate AI content generation
-    setTimeout(() => {
-      const mockContent = `# ${section}
+      const mockContent = `# ${generatedBrief.title}
 
-Pattaya's culinary scene offers an incredible diversity of dining experiences, from world-class fine dining establishments to authentic street food vendors. Whether you're seeking traditional Thai flavors or international cuisine, this vibrant coastal city has something to satisfy every palate and budget.
+## Introduction
 
-## What Makes Pattaya's Restaurant Scene Special
+Welcome to the ultimate guide on ${generatedBrief.targetKeyword}. Whether you're a first-time visitor or a seasoned traveler, this comprehensive resource will help you make the most of your experience.
 
-The city's unique position as both a tourist destination and local community creates a dynamic food culture where traditional Thai cooking meets international influences. Local chefs have perfected the art of balancing authentic flavors with presentations that appeal to global tastes.
+## Why ${generatedBrief.targetKeyword} is Important
 
-### Key Features:
-- Fresh seafood caught daily from the Gulf of Thailand
-- Traditional family recipes passed down through generations  
-- International chefs bringing global techniques to local ingredients
-- Diverse price points from street food to luxury dining
+${generatedBrief.targetKeyword} plays a crucial role in enhancing your travel experience. Here's why it matters:
 
-This combination creates an unparalleled dining landscape that continues to evolve and surprise visitors year after year.`
+- **Enhanced Experience**: Understanding ${generatedBrief.targetKeyword} helps you make informed decisions
+- **Cost Savings**: Proper planning can save you money and time
+- **Safety**: Knowledge of ${generatedBrief.targetKeyword} ensures a safer experience
+- **Cultural Appreciation**: Deeper understanding leads to better cultural immersion
+
+## Top 10 ${generatedBrief.targetKeyword} Options
+
+Based on extensive research and user reviews, here are the top options:
+
+1. **Option 1**: Premium choice with excellent reviews
+2. **Option 2**: Budget-friendly alternative
+3. **Option 3**: Best for families
+4. **Option 4**: Luxury experience
+5. **Option 5**: Adventure seekers' favorite
+
+[Content continues...]
+
+## Expert Tips and Recommendations
+
+Our team of experts has compiled these essential tips:
+
+- **Tip 1**: Plan ahead for better deals
+- **Tip 2**: Consider seasonal variations
+- **Tip 3**: Read recent reviews
+- **Tip 4**: Compare multiple options
+- **Tip 5**: Book with reputable providers
+
+## Conclusion
+
+${generatedBrief.targetKeyword} offers incredible opportunities for memorable experiences. By following this guide, you'll be well-prepared to make the most of your adventure.
+
+*This content was generated using AI and should be reviewed and edited before publication.*`
 
       setGeneratedContent(mockContent)
+    } catch (error) {
+      console.error("Failed to generate content:", error)
+    } finally {
       setIsGenerating(false)
-    }, 1500)
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    // You could add a toast notification here
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold">Content Brief Generator</h2>
-        <p className="text-gray-600">Generate AI-powered content briefs and writing assistance</p>
-      </div>
-
-      {/* Input Section */}
+      {/* Content Brief Generator */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Brain className="w-5 h-5 mr-2" />
-            Generate Content Brief
+            AI Content Brief Generator
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="keyword">Target Keyword</Label>
+            <div>
+              <Label htmlFor="targetKeyword">Target Keyword</Label>
               <Input
-                id="keyword"
+                id="targetKeyword"
                 placeholder="e.g., pattaya restaurants"
                 value={targetKeyword}
                 onChange={(e) => setTargetKeyword(e.target.value)}
@@ -180,300 +207,222 @@ This combination creates an unparalleled dining landscape that continues to evol
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="article">Article</SelectItem>
-                  <SelectItem value="guide">Guide</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
+                  <SelectItem value="blog-post">Blog Post</SelectItem>
+                  <SelectItem value="guide">Complete Guide</SelectItem>
                   <SelectItem value="listicle">Listicle</SelectItem>
-                  <SelectItem value="landing-page">Landing Page</SelectItem>
+                  <SelectItem value="review">Review</SelectItem>
+                  <SelectItem value="comparison">Comparison</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="targetAudience">Target Audience</Label>
+              <Select value={targetAudience} onValueChange={setTargetAudience}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tourists">Tourists</SelectItem>
+                  <SelectItem value="locals">Locals</SelectItem>
+                  <SelectItem value="business-travelers">Business Travelers</SelectItem>
+                  <SelectItem value="families">Families</SelectItem>
+                  <SelectItem value="backpackers">Backpackers</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <Button onClick={generateBrief} disabled={isGenerating || !targetKeyword.trim()} className="mt-4">
-            <Brain className="w-4 h-4 mr-2" />
-            {isGenerating ? "Generating Brief..." : "Generate Content Brief"}
+          <Button onClick={handleGenerateBrief} disabled={isGenerating || !targetKeyword.trim()}>
+            {isGenerating ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
+            Generate Content Brief
           </Button>
         </CardContent>
       </Card>
 
-      {/* Content Brief Results */}
-      {brief && (
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="keywords">Keywords</TabsTrigger>
-            <TabsTrigger value="questions">Questions</TabsTrigger>
-            <TabsTrigger value="structure">Structure</TabsTrigger>
-            <TabsTrigger value="competitors">Competitors</TabsTrigger>
-            <TabsTrigger value="writer">AI Writer</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Search Volume</p>
-                      <p className="text-2xl font-bold">{brief.searchVolume.toLocaleString()}</p>
-                    </div>
-                    <Search className="h-8 w-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Difficulty</p>
-                      <p className="text-2xl font-bold">{brief.difficulty}/100</p>
-                    </div>
-                    <Target className="h-8 w-8 text-orange-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Search Intent</p>
-                      <p className="text-2xl font-bold capitalize">{brief.intent}</p>
-                    </div>
-                    <Users className="h-8 w-8 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Generated Brief */}
+      {generatedBrief && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                Content Brief: {generatedBrief.title}
+              </CardTitle>
+              <div className="flex space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(JSON.stringify(generatedBrief, null, 2))}
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Brief
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="overview" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="outline">Outline</TabsTrigger>
+                <TabsTrigger value="keywords">Keywords</TabsTrigger>
+                <TabsTrigger value="competitors">Competitors</TabsTrigger>
+                <TabsTrigger value="seo">SEO</TabsTrigger>
+              </TabsList>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Recommendations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-2">Content Specifications</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Target Word Count:</span>
-                        <Badge>{brief.recommendations.wordCount} words</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Reading Level:</span>
-                        <Badge variant="outline">{brief.recommendations.readingLevel}</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Tone:</span>
-                        <Badge variant="outline">{brief.recommendations.tone}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Media Requirements</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="flex items-center">
-                          <ImageIcon className="w-4 h-4 mr-1" />
-                          Images:
-                        </span>
-                        <Badge>{brief.recommendations.images}</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="flex items-center">
-                          <Video className="w-4 h-4 mr-1" />
-                          Videos:
-                        </span>
-                        <Badge>{brief.recommendations.videos}</Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Schema Types:</span>
-                        <div className="flex space-x-1">
-                          {brief.schema.map((schema, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {schema}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="keywords" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>LSI Keywords & Related Terms</CardTitle>
-              </CardHeader>
-              <CardContent>
+              <TabsContent value="overview" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-semibold mb-3">Primary LSI Keywords</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {brief.lsiKeywords.slice(0, 4).map((keyword, index) => (
-                        <Badge key={index} className="bg-blue-100 text-blue-800">
-                          {keyword}
-                        </Badge>
-                      ))}
+                    <h4 className="font-semibold mb-2">Content Details</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Target Keyword:</span>
+                        <Badge variant="outline">{generatedBrief.targetKeyword}</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Word Count:</span>
+                        <span>{generatedBrief.wordCount.toLocaleString()} words</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Content Type:</span>
+                        <span className="capitalize">{generatedBrief.contentType.replace("-", " ")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Target Audience:</span>
+                        <span className="capitalize">{generatedBrief.targetAudience}</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-3">Secondary Keywords</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {brief.lsiKeywords.slice(4).map((keyword, index) => (
-                        <Badge key={index} variant="outline">
-                          {keyword}
-                        </Badge>
+                    <h4 className="font-semibold mb-2">People Also Ask</h4>
+                    <div className="space-y-1">
+                      {generatedBrief.peopleAlsoAsk.map((question, index) => (
+                        <div key={index} className="text-sm text-gray-600 flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>{question}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <h4 className="font-semibold mb-3">Keyword Usage Tips</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                    <li>Use primary keyword in title, first paragraph, and conclusion</li>
-                    <li>Distribute LSI keywords naturally throughout the content</li>
-                    <li>Include keywords in headings (H2, H3) where relevant</li>
-                    <li>Maintain keyword density between 1-2% for primary keyword</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </TabsContent>
 
-          <TabsContent value="questions" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <HelpCircle className="w-5 h-5 mr-2" />
-                  People Also Ask Questions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {brief.questions.map((question, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium">{question}</h4>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Consider creating a dedicated section or FAQ entry for this question
-                          </p>
+              <TabsContent value="outline" className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-3">Content Outline</h4>
+                  <div className="space-y-2">
+                    {generatedBrief.outline.map((section, index) => (
+                      <div key={index} className="flex items-center p-3 border rounded-lg">
+                        <span className="font-mono text-sm text-gray-500 mr-3">H{index === 0 ? "1" : "2"}</span>
+                        <span>{section}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="keywords" className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-3">LSI Keywords & Related Terms</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {generatedBrief.lsiKeywords.map((keyword, index) => (
+                      <Badge key={index} variant="secondary">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="competitors" className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-3">Competitor Analysis</h4>
+                  <div className="space-y-3">
+                    {generatedBrief.competitorAnalysis.map((competitor, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="font-medium">{competitor.title}</h5>
+                          <Badge variant="outline">{competitor.url}</Badge>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => generateContent(question)}>
-                          <Brain className="w-4 h-4 mr-1" />
-                          Generate Answer
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="structure" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Suggested Content Structure</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {brief.headings.map((heading, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Badge variant="outline">{index === 0 ? "H1" : index < 3 ? "H2" : "H3"}</Badge>
-                        <span className="font-medium">{heading}</span>
-                      </div>
-                      <Button size="sm" variant="outline" onClick={() => generateContent(heading)}>
-                        <Brain className="w-4 h-4 mr-1" />
-                        Write Section
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="competitors" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Competitor Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {brief.competitors.map((competitor, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Badge className="bg-blue-100 text-blue-800">Rank #{competitor.rank}</Badge>
-                            <span className="font-medium">{competitor.title}</span>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">{competitor.url}</p>
-                          <div className="flex items-center space-x-4 text-sm">
-                            <span>Word Count: {competitor.wordCount.toLocaleString()}</span>
-                          </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                          <div>Word Count: {competitor.wordCount.toLocaleString()}</div>
+                          <div>Headings: {competitor.headings}</div>
                         </div>
-                        <Button size="sm" variant="outline">
-                          <Globe className="w-4 h-4 mr-1" />
-                          Analyze
-                        </Button>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </TabsContent>
 
-          <TabsContent value="writer" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Brain className="w-5 h-5 mr-2" />
-                  AI Content Writer
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              <TabsContent value="seo" className="space-y-4">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="contentPrompt">Content Prompt</Label>
-                    <Textarea id="contentPrompt" placeholder="Describe what you want to write about..." rows={3} />
+                    <Label htmlFor="metaTitle">Meta Title</Label>
+                    <Input id="metaTitle" value={generatedBrief.metaTitle} readOnly />
+                    <div className="text-xs text-gray-500 mt-1">{generatedBrief.metaTitle.length}/60 characters</div>
                   </div>
+                  <div>
+                    <Label htmlFor="metaDescription">Meta Description</Label>
+                    <Textarea id="metaDescription" value={generatedBrief.metaDescription} readOnly rows={3} />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {generatedBrief.metaDescription.length}/160 characters
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* AI Content Writer */}
+      {generatedBrief && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Lightbulb className="w-5 h-5 mr-2" />
+              AI Content Writer
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-gray-600">Generate full content based on your brief</p>
+              <Button onClick={handleGenerateContent} disabled={isGenerating}>
+                {isGenerating ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Brain className="w-4 h-4 mr-2" />
+                )}
+                Generate Content
+              </Button>
+            </div>
+
+            {generatedContent && (
+              <div className="space-y-4">
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold">Generated Content</h4>
                   <div className="flex space-x-2">
-                    <Button onClick={() => generateContent("Custom Content")} disabled={isGenerating}>
-                      <Brain className="w-4 h-4 mr-2" />
-                      {isGenerating ? "Generating..." : "Generate Content"}
+                    <Button variant="outline" size="sm" onClick={() => copyToClipboard(generatedContent)}>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Content
                     </Button>
-                    <Button variant="outline">
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      Rewrite
-                    </Button>
-                    <Button variant="outline">
-                      <TrendingUp className="w-4 h-4 mr-2" />
-                      Optimize
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
                     </Button>
                   </div>
-                  {generatedContent && (
-                    <div className="mt-4">
-                      <Label>Generated Content</Label>
-                      <Textarea
-                        value={generatedContent}
-                        onChange={(e) => setGeneratedContent(e.target.value)}
-                        rows={15}
-                        className="mt-2"
-                      />
-                    </div>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                <div className="border rounded-lg p-4 bg-gray-50 max-h-96 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm">{generatedContent}</pre>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   )

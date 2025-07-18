@@ -6,653 +6,605 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Edit, Search, Plus, Trash2, Brain, ImageIcon, Smartphone, Monitor, ArrowUpDown } from "lucide-react"
+import {
+  Brain,
+  Save,
+  RefreshCw,
+  Eye,
+  Search,
+  ImageIcon,
+  Code,
+  CheckCircle,
+  AlertTriangle,
+  Lightbulb,
+} from "lucide-react"
 
-interface SEOPage {
+interface PageSEO {
   id: string
-  type: "page" | "widget" | "block"
-  title: string
   url: string
-  metaTitle: string
+  title: string
   metaDescription: string
-  seoScore: number
-  indexed: boolean
-  lastModified: string
-  keywords: string[]
-  headings: { tag: string; text: string }[]
-  schema: any[]
-  openGraph: {
-    title: string
-    description: string
-    image: string
-  }
-  twitterCard: {
-    title: string
-    description: string
-    image: string
-  }
+  metaKeywords: string
   canonicalUrl: string
-  robots: string
+  ogTitle: string
+  ogDescription: string
+  ogImage: string
+  twitterTitle: string
+  twitterDescription: string
+  twitterImage: string
+  schema: string
+  robotsMeta: string
+  hreflang: Array<{
+    lang: string
+    url: string
+  }>
+  seoScore: number
+  issues: Array<{
+    type: "error" | "warning" | "info"
+    message: string
+    suggestion: string
+  }>
+  lastUpdated: string
 }
 
 export function PageSEOEditor() {
-  const [pages, setPages] = useState<SEOPage[]>([])
-  const [selectedPage, setSelectedPage] = useState<SEOPage | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterType, setFilterType] = useState("all")
-  const [sortBy, setSortBy] = useState("seoScore")
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop")
+  const [selectedPage, setSelectedPage] = useState<string>("")
+  const [pageSEO, setPageSEO] = useState<PageSEO | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  const [previewMode, setPreviewMode] = useState<"google" | "facebook" | "twitter">("google")
 
-  // Sample data - replace with API calls
+  const pages = [
+    { value: "/", label: "Homepage" },
+    { value: "/dining/restaurants", label: "Restaurants" },
+    { value: "/nightlife/bars", label: "Nightlife" },
+    { value: "/weather", label: "Weather" },
+    { value: "/events", label: "Events" },
+    { value: "/hotels", label: "Hotels" },
+  ]
+
   useEffect(() => {
-    const samplePages: SEOPage[] = [
-      {
-        id: "1",
-        type: "page",
-        title: "Pattaya Restaurants Guide",
-        url: "/dining/restaurants",
-        metaTitle: "Best Pattaya Restaurants 2024 - Complete Dining Guide",
-        metaDescription:
-          "Discover the best restaurants in Pattaya with our comprehensive guide. From street food to fine dining, find your perfect meal.",
-        seoScore: 85,
-        indexed: true,
-        lastModified: "2024-01-15",
-        keywords: ["pattaya restaurants", "best dining pattaya", "pattaya food guide"],
-        headings: [
-          { tag: "h1", text: "Best Pattaya Restaurants 2024" },
-          { tag: "h2", text: "Top Fine Dining Restaurants" },
-          { tag: "h2", text: "Best Street Food Spots" },
-        ],
-        schema: [{ type: "Restaurant", json: {} }],
-        openGraph: {
-          title: "Best Pattaya Restaurants 2024 - Complete Dining Guide",
-          description: "Discover the best restaurants in Pattaya with our comprehensive guide.",
-          image: "/images/pattaya-restaurants-og.jpg",
-        },
-        twitterCard: {
-          title: "Best Pattaya Restaurants 2024",
-          description: "Discover the best restaurants in Pattaya with our comprehensive guide.",
-          image: "/images/pattaya-restaurants-twitter.jpg",
-        },
-        canonicalUrl: "https://pattaya1.com/dining/restaurants",
-        robots: "index, follow",
-      },
-      {
-        id: "2",
-        type: "widget",
-        title: "Weather Widget",
-        url: "/widgets/weather",
-        metaTitle: "Pattaya Weather Today - Live Updates",
-        metaDescription:
-          "Get real-time weather updates for Pattaya. Current temperature, forecast, and weather conditions.",
-        seoScore: 72,
-        indexed: true,
-        lastModified: "2024-01-14",
-        keywords: ["pattaya weather", "weather today pattaya", "pattaya forecast"],
-        headings: [
-          { tag: "h2", text: "Current Weather in Pattaya" },
-          { tag: "h3", text: "7-Day Forecast" },
-        ],
-        schema: [{ type: "WeatherForecast", json: {} }],
-        openGraph: {
-          title: "Pattaya Weather Today - Live Updates",
-          description: "Get real-time weather updates for Pattaya.",
-          image: "/images/pattaya-weather-og.jpg",
-        },
-        twitterCard: {
-          title: "Pattaya Weather Today",
-          description: "Get real-time weather updates for Pattaya.",
-          image: "/images/pattaya-weather-twitter.jpg",
-        },
-        canonicalUrl: "https://pattaya1.com/weather",
-        robots: "index, follow",
-      },
-    ]
-    setPages(samplePages)
-  }, [])
-
-  const filteredPages = pages.filter((page) => {
-    const matchesSearch =
-      page.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      page.url.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesType = filterType === "all" || page.type === filterType
-    return matchesSearch && matchesType
-  })
-
-  const sortedPages = [...filteredPages].sort((a, b) => {
-    switch (sortBy) {
-      case "seoScore":
-        return b.seoScore - a.seoScore
-      case "title":
-        return a.title.localeCompare(b.title)
-      case "lastModified":
-        return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
-      default:
-        return 0
-    }
-  })
-
-  const handleEditPage = (page: SEOPage) => {
-    setSelectedPage({ ...page })
-    setIsEditing(true)
-  }
-
-  const handleSavePage = async () => {
     if (selectedPage) {
-      // API call to save page
-      const updatedPages = pages.map((p) => (p.id === selectedPage.id ? selectedPage : p))
-      setPages(updatedPages)
-      setIsEditing(false)
-      setSelectedPage(null)
+      fetchPageSEO(selectedPage)
+    }
+  }, [selectedPage])
+
+  const fetchPageSEO = async (url: string) => {
+    setIsLoading(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      const mockPageSEO: PageSEO = {
+        id: "1",
+        url,
+        title: url === "/" ? "Pattaya1 - Your Complete Guide to Pattaya" : `${url.split("/").pop()} - Pattaya1`,
+        metaDescription: `Discover the best ${url.split("/").pop()} in Pattaya. Complete guide with reviews, recommendations, and insider tips.`,
+        metaKeywords: `pattaya, ${url.split("/").pop()}, thailand, travel, guide`,
+        canonicalUrl: `https://pattaya1.com${url}`,
+        ogTitle: `${url.split("/").pop()} in Pattaya - Complete Guide`,
+        ogDescription: `Everything you need to know about ${url.split("/").pop()} in Pattaya. Expert recommendations and reviews.`,
+        ogImage: "https://pattaya1.com/og-image.jpg",
+        twitterTitle: `${url.split("/").pop()} in Pattaya`,
+        twitterDescription: `Discover the best ${url.split("/").pop()} in Pattaya with our complete guide.`,
+        twitterImage: "https://pattaya1.com/twitter-image.jpg",
+        schema: JSON.stringify(
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: `${url.split("/").pop()} - Pattaya1`,
+            description: `Complete guide to ${url.split("/").pop()} in Pattaya`,
+          },
+          null,
+          2,
+        ),
+        robotsMeta: "index, follow",
+        hreflang: [
+          { lang: "en", url: `https://pattaya1.com${url}` },
+          { lang: "th", url: `https://pattaya1.com/th${url}` },
+        ],
+        seoScore: Math.floor(Math.random() * 30) + 70,
+        issues: [
+          {
+            type: "warning",
+            message: "Meta description is too short",
+            suggestion: "Expand to 150-160 characters for better SERP display",
+          },
+          {
+            type: "info",
+            message: "Consider adding FAQ schema",
+            suggestion: "FAQ schema can help capture featured snippets",
+          },
+        ],
+        lastUpdated: "2024-01-15T10:30:00Z",
+      }
+
+      setPageSEO(mockPageSEO)
+    } catch (error) {
+      console.error("Failed to fetch page SEO:", error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleAIOptimize = async (pageId: string) => {
-    // AI optimization logic
-    console.log("AI optimizing page:", pageId)
+  const handleSave = async () => {
+    if (!pageSEO) return
+
+    setIsSaving(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log("Saving page SEO:", pageSEO)
+    } catch (error) {
+      console.error("Failed to save page SEO:", error)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const getSEOScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-100"
-    if (score >= 60) return "text-yellow-600 bg-yellow-100"
-    return "text-red-600 bg-red-100"
+  const handleAIOptimize = async () => {
+    if (!pageSEO) return
+
+    setIsOptimizing(true)
+    try {
+      // Simulate AI optimization
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      setPageSEO((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          title: `Best ${prev.url.split("/").pop()} in Pattaya 2024 - Complete Guide`,
+          metaDescription: `Discover the top ${prev.url.split("/").pop()} in Pattaya with our comprehensive 2024 guide. Expert reviews, insider tips, and everything you need for an amazing experience.`,
+          seoScore: Math.min(prev.seoScore + 15, 100),
+          issues: prev.issues.filter((issue) => issue.type !== "warning"),
+        }
+      })
+    } catch (error) {
+      console.error("Failed to optimize with AI:", error)
+    } finally {
+      setIsOptimizing(false)
+    }
+  }
+
+  const updateField = (field: keyof PageSEO, value: string) => {
+    if (!pageSEO) return
+    setPageSEO({ ...pageSEO, [field]: value })
+  }
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600"
+    if (score >= 60) return "text-yellow-600"
+    return "text-red-600"
+  }
+
+  const getIssueIcon = (type: string) => {
+    switch (type) {
+      case "error":
+        return <AlertTriangle className="w-4 h-4 text-red-500" />
+      case "warning":
+        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+      case "info":
+        return <Lightbulb className="w-4 h-4 text-blue-500" />
+      default:
+        return null
+    }
+  }
+
+  if (!selectedPage) {
+    return (
+      <Card>
+        <CardContent className="p-6 text-center">
+          <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Select a Page to Edit</h3>
+          <p className="text-gray-600 mb-4">Choose a page from the dropdown to start editing its SEO settings</p>
+          <Select value={selectedPage} onValueChange={setSelectedPage}>
+            <SelectTrigger className="w-64 mx-auto">
+              <SelectValue placeholder="Select a page" />
+            </SelectTrigger>
+            <SelectContent>
+              {pages.map((page) => (
+                <SelectItem key={page.value} value={page.value}>
+                  {page.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (isLoading || !pageSEO) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-12 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Filters and Search */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search pages, widgets, or blocks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      {/* Page Selector & Actions */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center space-x-4">
+          <Select value={selectedPage} onValueChange={setSelectedPage}>
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Select a page" />
+            </SelectTrigger>
+            <SelectContent>
+              {pages.map((page) => (
+                <SelectItem key={page.value} value={page.value}>
+                  {page.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">SEO Score:</span>
+            <span className={`text-2xl font-bold ${getScoreColor(pageSEO.seoScore)}`}>{pageSEO.seoScore}/100</span>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={handleAIOptimize} disabled={isOptimizing}>
+            {isOptimizing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Brain className="w-4 h-4 mr-2" />}
+            AI Optimize
+          </Button>
+          <Button onClick={handleSave} disabled={isSaving}>
+            {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Save Changes
+          </Button>
+        </div>
+      </div>
+
+      {/* SEO Score & Issues */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className={`text-4xl font-bold mb-2 ${getScoreColor(pageSEO.seoScore)}`}>{pageSEO.seoScore}/100</div>
+              <p className="text-gray-600 mb-4">SEO Health Score</p>
+              <Progress value={pageSEO.seoScore} className="mb-4" />
+              <div className="text-sm text-gray-500">
+                Last updated: {new Date(pageSEO.lastUpdated).toLocaleDateString()}
               </div>
             </div>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="page">Pages</SelectItem>
-                <SelectItem value="widget">Widgets</SelectItem>
-                <SelectItem value="block">Blocks</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="seoScore">SEO Score</SelectItem>
-                <SelectItem value="title">Title</SelectItem>
-                <SelectItem value="lastModified">Last Modified</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Pages Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pages & Widgets SEO Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>URL</TableHead>
-                <TableHead>SEO Score</TableHead>
-                <TableHead>Indexed</TableHead>
-                <TableHead>Keywords</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedPages.map((page) => (
-                <TableRow key={page.id}>
-                  <TableCell className="font-medium">{page.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{page.type}</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">{page.url}</TableCell>
-                  <TableCell>
-                    <Badge className={getSEOScoreColor(page.seoScore)}>
-                      {page.seoScore}/100
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {page.indexed ? (
-                      <Badge className="bg-green-100 text-green-800">Indexed</Badge>
-                    ) : (
-                      <Badge className="bg-red-100 text-red-800">Not Indexed</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {page.keywords.slice(0, 2).map((keyword, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {page.keywords.length > 2 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{page.keywords.length - 2}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEditPage(page)}>
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleAIOptimize(page.id)}>
-                        <Brain className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* SEO Editor Modal */}
-      <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit SEO Settings: {selectedPage?.title}</DialogTitle>
-            <DialogDescription>
-              Optimize your page for search engines with AI-powered suggestions
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedPage && (
-            <Tabs defaultValue="basic" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="basic">Basic SEO</TabsTrigger>
-                <TabsTrigger value="headings">Headings</TabsTrigger>
-                <TabsTrigger value="social">Social Media</TabsTrigger>
-                <TabsTrigger value="schema">Schema</TabsTrigger>
-                <TabsTrigger value="preview">Preview</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="basic" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="metaTitle">Meta Title</Label>
-                    <Input
-                      id="metaTitle"
-                      value={selectedPage.metaTitle}
-                      onChange={(e) =>
-                        setSelectedPage({ ...selectedPage, metaTitle: e.target.value })
-                      }
-                    />
-                    <div className="text-xs text-gray-500 mt-1">
-                      {selectedPage.metaTitle.length}/60 characters
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="canonicalUrl">Canonical URL</Label>
-                    <Input
-                      id="canonicalUrl"
-                      value={selectedPage.canonicalUrl}
-                      onChange={(e) =>
-                        setSelectedPage({ ...selectedPage, canonicalUrl: e.target.value })
-                      }
-                    />
-                  </div>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <AlertTriangle className="w-5 h-5 mr-2" />
+              SEO Issues & Suggestions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {pageSEO.issues.length === 0 ? (
+                <div className="flex items-center text-green-600">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  <span>No SEO issues found!</span>
                 </div>
+              ) : (
+                pageSEO.issues.map((issue, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 border rounded-lg">
+                    {getIssueIcon(issue.type)}
+                    <div className="flex-1">
+                      <p className="font-medium">{issue.message}</p>
+                      <p className="text-sm text-gray-600 mt-1">{issue.suggestion}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
+      {/* SEO Editor Tabs */}
+      <Tabs defaultValue="basic" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="basic">Basic SEO</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
+          <TabsTrigger value="technical">Technical</TabsTrigger>
+          <TabsTrigger value="schema">Schema</TabsTrigger>
+          <TabsTrigger value="preview">Preview</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="basic" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic SEO Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title">Page Title</Label>
+                <Input
+                  id="title"
+                  value={pageSEO.title}
+                  onChange={(e) => updateField("title", e.target.value)}
+                  placeholder="Enter page title"
+                />
+                <div className="text-xs text-gray-500 mt-1">{pageSEO.title.length}/60 characters</div>
+              </div>
+
+              <div>
+                <Label htmlFor="metaDescription">Meta Description</Label>
+                <Textarea
+                  id="metaDescription"
+                  value={pageSEO.metaDescription}
+                  onChange={(e) => updateField("metaDescription", e.target.value)}
+                  placeholder="Enter meta description"
+                  rows={3}
+                />
+                <div className="text-xs text-gray-500 mt-1">{pageSEO.metaDescription.length}/160 characters</div>
+              </div>
+
+              <div>
+                <Label htmlFor="metaKeywords">Meta Keywords</Label>
+                <Input
+                  id="metaKeywords"
+                  value={pageSEO.metaKeywords}
+                  onChange={(e) => updateField("metaKeywords", e.target.value)}
+                  placeholder="keyword1, keyword2, keyword3"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="canonicalUrl">Canonical URL</Label>
+                <Input
+                  id="canonicalUrl"
+                  value={pageSEO.canonicalUrl}
+                  onChange={(e) => updateField("canonicalUrl", e.target.value)}
+                  placeholder="https://example.com/page"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="social" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Open Graph (Facebook)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="metaDescription">Meta Description</Label>
+                  <Label htmlFor="ogTitle">OG Title</Label>
+                  <Input
+                    id="ogTitle"
+                    value={pageSEO.ogTitle}
+                    onChange={(e) => updateField("ogTitle", e.target.value)}
+                    placeholder="Facebook title"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ogDescription">OG Description</Label>
                   <Textarea
-                    id="metaDescription"
-                    value={selectedPage.metaDescription}
-                    onChange={(e) =>
-                      setSelectedPage({ ...selectedPage, metaDescription: e.target.value })
-                    }
+                    id="ogDescription"
+                    value={pageSEO.ogDescription}
+                    onChange={(e) => updateField("ogDescription", e.target.value)}
+                    placeholder="Facebook description"
                     rows={3}
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    {selectedPage.metaDescription.length}/160 characters
-                  </div>
                 </div>
+                <div>
+                  <Label htmlFor="ogImage">OG Image URL</Label>
+                  <Input
+                    id="ogImage"
+                    value={pageSEO.ogImage}
+                    onChange={(e) => updateField("ogImage", e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="robots">Robots</Label>
-                    <Select
-                      value={selectedPage.robots}
-                      onValueChange={(value) =>
-                        setSelectedPage({ ...selectedPage, robots: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="index, follow">Index, Follow</SelectItem>
-                        <SelectItem value="noindex, follow">No Index, Follow</SelectItem>
-                        <SelectItem value="index, nofollow">Index, No Follow</SelectItem>
-                        <SelectItem value="noindex, nofollow">No Index, No Follow</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="keywords">Target Keywords</Label>
-                    <Input
-                      id="keywords"
-                      value={selectedPage.keywords.join(", ")}
-                      onChange={(e) =>
-                        setSelectedPage({
-                          ...selectedPage,
-                          keywords: e.target.value.split(", ").filter(Boolean),
-                        })
-                      }
-                      placeholder="keyword1, keyword2, keyword3"
-                    />
-                  </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Twitter Cards</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="twitterTitle">Twitter Title</Label>
+                  <Input
+                    id="twitterTitle"
+                    value={pageSEO.twitterTitle}
+                    onChange={(e) => updateField("twitterTitle", e.target.value)}
+                    placeholder="Twitter title"
+                  />
                 </div>
-              </TabsContent>
+                <div>
+                  <Label htmlFor="twitterDescription">Twitter Description</Label>
+                  <Textarea
+                    id="twitterDescription"
+                    value={pageSEO.twitterDescription}
+                    onChange={(e) => updateField("twitterDescription", e.target.value)}
+                    placeholder="Twitter description"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="twitterImage">Twitter Image URL</Label>
+                  <Input
+                    id="twitterImage"
+                    value={pageSEO.twitterImage}
+                    onChange={(e) => updateField("twitterImage", e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-              <TabsContent value="headings" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Heading Structure</h3>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Heading
-                  </Button>
-                </div>
+        <TabsContent value="technical" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Technical SEO</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="robotsMeta">Robots Meta Tag</Label>
+                <Select value={pageSEO.robotsMeta} onValueChange={(value) => updateField("robotsMeta", value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="index, follow">Index, Follow</SelectItem>
+                    <SelectItem value="noindex, follow">No Index, Follow</SelectItem>
+                    <SelectItem value="index, nofollow">Index, No Follow</SelectItem>
+                    <SelectItem value="noindex, nofollow">No Index, No Follow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Hreflang Tags</Label>
                 <div className="space-y-2">
-                  {selectedPage.headings.map((heading, index) => (
-                    <div key={index} className="flex items-center space-x-2 p-3 border rounded">
-                      <Select
-                        value={heading.tag}
-                        onValueChange={(value) => {
-                          const newHeadings = [...selectedPage.headings]
-                          newHeadings[index].tag = value
-                          setSelectedPage({ ...selectedPage, headings: newHeadings })
-                        }}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="h1">H1</SelectItem>
-                          <SelectItem value="h2">H2</SelectItem>
-                          <SelectItem value="h3">H3</SelectItem>
-                          <SelectItem value="h4">H4</SelectItem>
-                          <SelectItem value="h5">H5</SelectItem>
-                          <SelectItem value="h6">H6</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  {pageSEO.hreflang.map((hreflang, index) => (
+                    <div key={index} className="flex space-x-2">
                       <Input
-                        value={heading.text}
+                        value={hreflang.lang}
                         onChange={(e) => {
-                          const newHeadings = [...selectedPage.headings]
-                          newHeadings[index].text = e.target.value
-                          setSelectedPage({ ...selectedPage, headings: newHeadings })
+                          const newHreflang = [...pageSEO.hreflang]
+                          newHreflang[index].lang = e.target.value
+                          updateField("hreflang", newHreflang as any)
                         }}
+                        placeholder="Language code"
+                        className="w-32"
+                      />
+                      <Input
+                        value={hreflang.url}
+                        onChange={(e) => {
+                          const newHreflang = [...pageSEO.hreflang]
+                          newHreflang[index].url = e.target.value
+                          updateField("hreflang", newHreflang as any)
+                        }}
+                        placeholder="URL"
                         className="flex-1"
                       />
-                      <Button size="sm" variant="outline">
-                        <ArrowUpDown className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
                     </div>
                   ))}
                 </div>
-              </TabsContent>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <TabsContent value="social" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Open Graph (Facebook)</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="ogTitle">OG Title</Label>
-                        <Input
-                          id="ogTitle"
-                          value={selectedPage.openGraph.title}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              openGraph: { ...selectedPage.openGraph, title: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ogDescription">OG Description</Label>
-                        <Textarea
-                          id="ogDescription"
-                          value={selectedPage.openGraph.description}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              openGraph: { ...selectedPage.openGraph, description: e.target.value },
-                            })
-                          }
-                          rows={2}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ogImage">OG Image URL</Label>
-                        <Input
-                          id="ogImage"
-                          value={selectedPage.openGraph.image}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              openGraph: { ...selectedPage.openGraph, image: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
+        <TabsContent value="schema" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Code className="w-5 h-5 mr-2" />
+                Schema Markup (JSON-LD)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <Label htmlFor="schema">Schema JSON</Label>
+                <Textarea
+                  id="schema"
+                  value={pageSEO.schema}
+                  onChange={(e) => updateField("schema", e.target.value)}
+                  placeholder="Enter JSON-LD schema markup"
+                  rows={12}
+                  className="font-mono text-sm"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Twitter Card</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="twitterTitle">Twitter Title</Label>
-                        <Input
-                          id="twitterTitle"
-                          value={selectedPage.twitterCard.title}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              twitterCard: { ...selectedPage.twitterCard, title: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="twitterDescription">Twitter Description</Label>
-                        <Textarea
-                          id="twitterDescription"
-                          value={selectedPage.twitterCard.description}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              twitterCard: { ...selectedPage.twitterCard, description: e.target.value },
-                            })
-                          }
-                          rows={2}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="twitterImage">Twitter Image URL</Label>
-                        <Input
-                          id="twitterImage"
-                          value={selectedPage.twitterCard.image}
-                          onChange={(e) =>
-                            setSelectedPage({
-                              ...selectedPage,
-                              twitterCard: { ...selectedPage.twitterCard, image: e.target.value },
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="schema" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Schema Markup</h3>
-                  <Button size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Schema
-                  </Button>
-                </div>
-                <div className="space-y-3">
-                  {selectedPage.schema.map((schema, index) => (
-                    <div key={index} className="border rounded p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <Badge>{schema.type}</Badge>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <Textarea
-                        value={JSON.stringify(schema.json, null, 2)}
-                        onChange={(e) => {
-                          try {
-                            const newSchema = [...selectedPage.schema]
-                            newSchema[index].json = JSON.parse(e.target.value)
-                            setSelectedPage({ ...selectedPage, schema: newSchema })
-                          } catch (error) {
-                            // Handle JSON parse error
-                          }
-                        }}
-                        rows={6}
-                        className="font-mono text-sm"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="preview" className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">SERP & Social Preview</h3>
-                  <div className="flex space-x-2">
-                    <Button
-                      size="sm"
-                      variant={previewDevice === "desktop" ? "default" : "outline"}
-                      onClick={() => setPreviewDevice("desktop")}
-                    >
-                      <Monitor className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={previewDevice === "mobile" ? "default" : "outline"}
-                      onClick={() => setPreviewDevice("mobile")}
-                    >
-                      <Smartphone className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Google SERP Preview */}
-                  <div>
-                    <h4 className="font-medium mb-2">Google Search Result</h4>
-                    <div className="border rounded p-4 bg-white">
-                      <div className="text-blue-600 text-lg hover:underline cursor-pointer">
-                        {selectedPage.metaTitle}
-                      </div>
-                      <div className="text-green-600 text-sm">{selectedPage.canonicalUrl}</div>
-                      <div className="text-gray-600 text-sm mt-1">{selectedPage.metaDescription}</div>
-                    </div>
-                  </div>
-
-                  {/* Facebook Preview */}
-                  <div>
-                    <h4 className="font-medium mb-2">Facebook Share Preview</h4>
-                    <div className="border rounded overflow-hidden bg-white max-w-md">
-                      <div className="h-32 bg-gray-200 flex items-center justify-center">
-                        {selectedPage.openGraph.image ? (
-                          <img
-                            src={selectedPage.openGraph.image || "/placeholder.svg"}
-                            alt="OG Preview"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <div className="font-medium text-sm">{selectedPage.openGraph.title}</div>
-                        <div className="text-gray-600 text-xs mt-1">{selectedPage.openGraph.description}</div>
-                        <div className="text-gray-500 text-xs mt-1">{selectedPage.canonicalUrl}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Twitter Preview */}
-                  <div>
-                    <h4 className="font-medium mb-2">Twitter Card Preview</h4>
-                    <div className="border rounded overflow-hidden bg-white max-w-md">
-                      <div className="h-32 bg-gray-200 flex items-center justify-center">
-                        {selectedPage.twitterCard.image ? (
-                          <img
-                            src={selectedPage.twitterCard.image || "/placeholder.svg"}
-                            alt="Twitter Preview"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="p-3">
-                        <div className="font-medium text-sm">{selectedPage.twitterCard.title}</div>
-                        <div className="text-gray-600 text-xs mt-1">{selectedPage.twitterCard.description}</div>
-                        <div className="text-gray-500 text-xs mt-1">{selectedPage.canonicalUrl}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-\
-            <div className="flex justify-end space-x-2 mt-6">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
+        <TabsContent value="preview" className="space-y-6">
+          <div className="flex justify-center mb-6">
+            <div className="flex space-x-2">
+              <Button
+                variant={previewMode === "google" ? "default" : "outline"}
+                onClick={() => setPreviewMode("google")}
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Google
               </Button>
-              <Button onClick={() => handleAIOptimize(selectedPage.id)} variant="outline">
-                <Brain className="w-4 h-4 mr-2" />
-                AI Optimize
+              <Button
+                variant={previewMode === "facebook" ? "default" : "outline"}
+                onClick={() => setPreviewMode("facebook")}
+              >
+                Facebook
               </Button>
-              <Button onClick={handleSavePage}>Save Changes</Button>
+              <Button
+                variant={previewMode === "twitter" ? "default" : "outline"}
+                onClick={() => setPreviewMode("twitter")}
+              >
+                Twitter
+              </Button>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Eye className="w-5 h-5 mr-2" />
+                {previewMode === "google" && "Google Search Preview"}
+                {previewMode === "facebook" && "Facebook Share Preview"}
+                {previewMode === "twitter" && "Twitter Card Preview"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {previewMode === "google" && (
+                <div className="border rounded-lg p-4 bg-white">
+                  <div className="text-blue-600 text-lg hover:underline cursor-pointer">{pageSEO.title}</div>
+                  <div className="text-green-700 text-sm mt-1">{pageSEO.canonicalUrl}</div>
+                  <div className="text-gray-600 text-sm mt-2">{pageSEO.metaDescription}</div>
+                </div>
+              )}
+
+              {previewMode === "facebook" && (
+                <div className="border rounded-lg overflow-hidden bg-white max-w-md">
+                  <div className="aspect-video bg-gray-200 flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <div className="p-4">
+                    <div className="font-semibold text-gray-900 mb-1">{pageSEO.ogTitle}</div>
+                    <div className="text-gray-600 text-sm mb-2">{pageSEO.ogDescription}</div>
+                    <div className="text-gray-500 text-xs uppercase">{new URL(pageSEO.canonicalUrl).hostname}</div>
+                  </div>
+                </div>
+              )}
+
+              {previewMode === "twitter" && (
+                <div className="border rounded-lg overflow-hidden bg-white max-w-md">
+                  <div className="aspect-video bg-gray-200 flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                  <div className="p-4">
+                    <div className="font-semibold text-gray-900 mb-1">{pageSEO.twitterTitle}</div>
+                    <div className="text-gray-600 text-sm mb-2">{pageSEO.twitterDescription}</div>
+                    <div className="text-gray-500 text-xs">{new URL(pageSEO.canonicalUrl).hostname}</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
+
+export default PageSEOEditor

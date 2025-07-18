@@ -24,6 +24,7 @@ import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
+import { ScrollingMarquee } from "./scrolling-marquee"
 
 interface Widget {
   id: string
@@ -314,6 +315,9 @@ export function ModularHomepage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Scrolling Marquee */}
+      <ScrollingMarquee />
+
       {/* Admin Controls */}
       <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">

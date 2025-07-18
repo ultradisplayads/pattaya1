@@ -1,26 +1,13 @@
-interface CacheEntry<T> {
+interface CacheItem<T> {
   data: T
   timestamp: number
   ttl: number
 }
 
-// --- Default time-to-live (shared by many widgets/routes)
-export const CACHE_TTL = 60 * 5 // seconds
-
-/**
- * Utility to create a unique cache key.
- * Pass any identifying parts (e.g. route, params, query).
- *
- * createCacheKey('weather', 'pattaya', 'today') ➜ "weather:pattaya:today"
- */
-export function createCacheKey(...parts: Array<string | number>): string {
-  return parts.join(":")
-}
-
 class Cache {
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheItem<any>>()
 
-  set<T>(key: string, data: T, ttlSeconds: number): void {
+  set<T>(key: string, data: T, ttlSeconds = 300): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -29,29 +16,16 @@ class Cache {
   }
 
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key)
-    if (!entry) return null
+    const item = this.cache.get(key)
+    if (!item) return null
 
     const now = Date.now()
-    if (now - entry.timestamp > entry.ttl) {
+    if (now - item.timestamp > item.ttl) {
       this.cache.delete(key)
       return null
     }
 
-    return entry.data as T
-  }
-
-  has(key: string): boolean {
-    const entry = this.cache.get(key)
-    if (!entry) return false
-
-    const now = Date.now()
-    if (now - entry.timestamp > entry.ttl) {
-      this.cache.delete(key)
-      return false
-    }
-
-    return true
+    return item.data as T
   }
 
   delete(key: string): boolean {
@@ -62,23 +36,34 @@ class Cache {
     this.cache.clear()
   }
 
+  has(key: string): boolean {
+    const item = this.cache.get(key)
+    if (!item) return false
+
+    const now = Date.now()
+    if (now - item.timestamp > item.ttl) {
+      this.cache.delete(key)
+      return false
+    }
+
+    return true
+  }
+
   size(): number {
     return this.cache.size
   }
 
-  cleanup(): void {
-    const now = Date.now()
-    for (const [key, entry] of this.cache.entries()) {
-      if (now - entry.timestamp > entry.ttl) {
-        this.cache.delete(key)
-      }
-    }
+  keys(): string[] {
+    return Array.from(this.cache.keys())
   }
 
-  getStats(): { size: number; keys: string[] } {
-    return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys()),
+  // Clean up expired items
+  cleanup(): void {
+    const now = Date.now()
+    for (const [key, item] of this.cache.entries()) {
+      if (now - item.timestamp > item.ttl) {
+        this.cache.delete(key)
+      }
     }
   }
 }
@@ -86,9 +71,13 @@ class Cache {
 export const cache = new Cache()
 
 // Auto cleanup every 5 minutes
-setInterval(
-  () => {
-    cache.cleanup()
-  },
-  5 * 60 * 1000,
-)
+if (typeof window === "undefined") {
+  setInterval(
+    () => {
+      cache.cleanup()
+    },
+    5 * 60 * 1000,
+  )
+}
+
+export default cache

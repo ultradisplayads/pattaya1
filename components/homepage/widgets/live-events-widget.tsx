@@ -129,20 +129,20 @@ export function LiveEventsWidget() {
 
         {/* Event Details */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold line-clamp-2">{event.title}</h3>
+          <h3 className="text-sm font-semibold line-clamp-2 leading-tight">{event.title}</h3>
 
           <div className="space-y-1 text-xs text-gray-600">
             <div className="flex items-center space-x-1">
-              <MapPin className="w-3 h-3" />
-              <span>{event.location}</span>
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{event.location}</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3" />
-              <span>{event.time}</span>
+              <Clock className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{event.time}</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Users className="w-3 h-3" />
-              <span>{event.attendees.toLocaleString()} attending</span>
+              <Users className="w-3 h-3 flex-shrink-0" />
+              <span className="truncate">{event.attendees.toLocaleString()} attending</span>
             </div>
           </div>
         </div>

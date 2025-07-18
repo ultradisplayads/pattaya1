@@ -1,268 +1,206 @@
-import { NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 
 interface GrouponDeal {
   id: string
   title: string
   description: string
-  merchant: {
-    name: string
-    websiteUrl: string
-    address?: string
-  }
-  dealUrl: string
-  price: {
-    formattedAmount: string
-    amount: number
-    currency: string
-  }
-  value: {
-    formattedAmount: string
-    amount: number
-    currency: string
-  }
-  discount: {
-    percent: number
-    formattedAmount: string
-  }
-  images: {
-    small: string
-    medium: string
-    large: string
-  }[]
+  originalPrice: number
+  discountedPrice: number
+  discountPercentage: number
   category: string
-  expiresAt: string
-  soldQuantity: number
-  isLimitedQuantity: boolean
-  location: {
-    city: string
-    country: string
-    lat?: number
-    lng?: number
+  vendor: {
+    name: string
+    rating: number
+    reviewCount: number
   }
+  image: string
+  location: string
+  validUntil: string
+  soldCount: number
+  maxQuantity: number
+  highlights: string[]
   tags: string[]
-  rating?: number
-  reviewCount?: number
+  isFlashDeal: boolean
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const location = searchParams.get("location") || "pattaya"
-    const category = searchParams.get("category") || "all"
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
+    const category = searchParams.get("category")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
 
-    // Mock Groupon-style deals for Pattaya
+    // Mock Groupon-style deals data
     const mockDeals: GrouponDeal[] = [
       {
-        id: "deal-1",
-        title: "50% Off Traditional Thai Massage at Luxury Spa",
+        id: "groupon-1",
+        title: "Luxury Spa Day Package - 4 Hours of Bliss",
         description:
-          "Relax and rejuvenate with an authentic Thai massage experience. Includes aromatherapy oils and herbal compress treatment.",
-        merchant: {
-          name: "Royal Thai Spa & Wellness",
-          websiteUrl: "https://royalthaispa-pattaya.com",
-          address: "123 Beach Road, Central Pattaya",
+          "Indulge in a complete spa experience with massage, facial, body wrap, and access to all facilities.",
+        originalPrice: 4500,
+        discountedPrice: 1999,
+        discountPercentage: 56,
+        category: "spa",
+        vendor: {
+          name: "Royal Spa Pattaya",
+          rating: 4.7,
+          reviewCount: 1834,
         },
-        dealUrl: "#",
-        price: {
-          formattedAmount: "฿500",
-          amount: 500,
-          currency: "THB",
-        },
-        value: {
-          formattedAmount: "฿1,000",
-          amount: 1000,
-          currency: "THB",
-        },
-        discount: {
-          percent: 50,
-          formattedAmount: "฿500",
-        },
-        images: [
-          {
-            small: "/placeholder.svg?height=100&width=150&text=Thai+Massage",
-            medium: "/placeholder.svg?height=200&width=300&text=Thai+Massage",
-            large: "/placeholder.svg?height=400&width=600&text=Thai+Massage",
-          },
-        ],
-        category: "Health & Beauty",
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        soldQuantity: 234,
-        isLimitedQuantity: true,
-        location: {
-          city: "Pattaya",
-          country: "Thailand",
-          lat: 12.9236,
-          lng: 100.8825,
-        },
-        tags: ["spa", "massage", "wellness", "relaxation"],
-        rating: 4.8,
-        reviewCount: 156,
+        image: "/placeholder.svg?height=300&width=400",
+        location: "Central Pattaya",
+        validUntil: "2024-02-15T23:59:59Z",
+        soldCount: 234,
+        maxQuantity: 500,
+        highlights: ["4-Hour Package", "Full Body Massage", "Facial Treatment", "Body Wrap"],
+        tags: ["luxury", "spa", "relaxation", "wellness"],
+        isFlashDeal: true,
       },
       {
-        id: "deal-2",
-        title: "Buy 1 Get 1 Free Seafood Buffet Dinner",
+        id: "groupon-2",
+        title: "Premium Seafood Buffet for 2 People",
         description:
-          "All-you-can-eat seafood buffet featuring fresh lobster, crab, prawns, and local Thai specialties with ocean views.",
-        merchant: {
-          name: "Ocean View Restaurant",
-          websiteUrl: "https://oceanview-pattaya.com",
-          address: "456 Jomtien Beach Road, Jomtien",
+          "All-you-can-eat seafood buffet featuring fresh lobster, crab, prawns, sushi, and international cuisine.",
+        originalPrice: 3600,
+        discountedPrice: 1799,
+        discountPercentage: 50,
+        category: "restaurant",
+        vendor: {
+          name: "Ocean Pearl Restaurant",
+          rating: 4.5,
+          reviewCount: 2156,
         },
-        dealUrl: "#",
-        price: {
-          formattedAmount: "฿899",
-          amount: 899,
-          currency: "THB",
-        },
-        value: {
-          formattedAmount: "฿1,798",
-          amount: 1798,
-          currency: "THB",
-        },
-        discount: {
-          percent: 50,
-          formattedAmount: "฿899",
-        },
-        images: [
-          {
-            small: "/placeholder.svg?height=100&width=150&text=Seafood+Buffet",
-            medium: "/placeholder.svg?height=200&width=300&text=Seafood+Buffet",
-            large: "/placeholder.svg?height=400&width=600&text=Seafood+Buffet",
-          },
-        ],
-        category: "Food & Drink",
-        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        soldQuantity: 89,
-        isLimitedQuantity: false,
-        location: {
-          city: "Pattaya",
-          country: "Thailand",
-          lat: 12.8642,
-          lng: 100.9056,
-        },
-        tags: ["seafood", "buffet", "dining", "ocean view"],
-        rating: 4.6,
-        reviewCount: 203,
+        image: "/placeholder.svg?height=300&width=400",
+        location: "Pattaya Beach Road",
+        validUntil: "2024-02-20T23:59:59Z",
+        soldCount: 456,
+        maxQuantity: 800,
+        highlights: ["For 2 People", "Fresh Seafood", "International Buffet", "Ocean View"],
+        tags: ["seafood", "buffet", "couples", "dining"],
+        isFlashDeal: false,
       },
       {
-        id: "deal-3",
-        title: "30% Off Coral Island Day Trip with Lunch",
+        id: "groupon-3",
+        title: "Island Hopping Tour with Lunch & Snorkeling",
         description:
-          "Full day excursion to Coral Island including speedboat transfer, snorkeling equipment, and Thai lunch buffet.",
-        merchant: {
-          name: "Pattaya Adventure Tours",
-          websiteUrl: "https://pattaya-adventures.com",
-          address: "789 Bali Hai Pier, South Pattaya",
+          "Full-day island hopping adventure visiting 3 beautiful islands with snorkeling, lunch, and transfers.",
+        originalPrice: 2800,
+        discountedPrice: 1399,
+        discountPercentage: 50,
+        category: "tour",
+        vendor: {
+          name: "Pattaya Island Tours",
+          rating: 4.6,
+          reviewCount: 987,
         },
-        dealUrl: "#",
-        price: {
-          formattedAmount: "฿1,050",
-          amount: 1050,
-          currency: "THB",
-        },
-        value: {
-          formattedAmount: "฿1,500",
-          amount: 1500,
-          currency: "THB",
-        },
-        discount: {
-          percent: 30,
-          formattedAmount: "฿450",
-        },
-        images: [
-          {
-            small: "/placeholder.svg?height=100&width=150&text=Coral+Island",
-            medium: "/placeholder.svg?height=200&width=300&text=Coral+Island",
-            large: "/placeholder.svg?height=400&width=600&text=Coral+Island",
-          },
-        ],
-        category: "Travel & Tourism",
-        expiresAt: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
-        soldQuantity: 145,
-        isLimitedQuantity: true,
-        location: {
-          city: "Pattaya",
-          country: "Thailand",
-          lat: 12.9236,
-          lng: 100.8825,
-        },
-        tags: ["island", "snorkeling", "tour", "adventure"],
-        rating: 4.7,
-        reviewCount: 98,
+        image: "/placeholder.svg?height=300&width=400",
+        location: "Bali Hai Pier",
+        validUntil: "2024-02-25T23:59:59Z",
+        soldCount: 123,
+        maxQuantity: 300,
+        highlights: ["3 Islands", "Snorkeling Gear", "Lunch Included", "Hotel Transfer"],
+        tags: ["adventure", "islands", "snorkeling", "tour"],
+        isFlashDeal: false,
       },
       {
-        id: "deal-4",
-        title: "40% Off Premium Golf Package at Championship Course",
-        description:
-          "18-hole round of golf at award-winning championship course including cart, caddy, and clubhouse lunch.",
-        merchant: {
-          name: "Pattaya Country Club & Resort",
-          websiteUrl: "https://pattayacountryclub.com",
-          address: "321 Golf Course Road, East Pattaya",
+        id: "groupon-4",
+        title: "Deluxe Hotel Room - 2 Nights with Breakfast",
+        description: "Stay in a deluxe room at a 4-star hotel with daily breakfast, pool access, and city views.",
+        originalPrice: 6000,
+        discountedPrice: 2999,
+        discountPercentage: 50,
+        category: "hotel",
+        vendor: {
+          name: "Grand Plaza Hotel",
+          rating: 4.4,
+          reviewCount: 1567,
         },
-        dealUrl: "#",
-        price: {
-          formattedAmount: "฿1,800",
-          amount: 1800,
-          currency: "THB",
+        image: "/placeholder.svg?height=300&width=400",
+        location: "Central Pattaya",
+        validUntil: "2024-03-01T23:59:59Z",
+        soldCount: 89,
+        maxQuantity: 200,
+        highlights: ["2 Nights", "Daily Breakfast", "Pool Access", "City View"],
+        tags: ["hotel", "accommodation", "breakfast", "pool"],
+        isFlashDeal: false,
+      },
+      {
+        id: "groupon-5",
+        title: "Thai Cooking Class with Market Tour",
+        description: "Learn authentic Thai cooking with a professional chef, including market tour and recipe book.",
+        originalPrice: 2200,
+        discountedPrice: 1099,
+        discountPercentage: 50,
+        category: "activity",
+        vendor: {
+          name: "Thai Culinary School",
+          rating: 4.8,
+          reviewCount: 743,
         },
-        value: {
-          formattedAmount: "฿3,000",
-          amount: 3000,
-          currency: "THB",
-        },
-        discount: {
-          percent: 40,
-          formattedAmount: "฿1,200",
-        },
-        images: [
-          {
-            small: "/placeholder.svg?height=100&width=150&text=Golf+Course",
-            medium: "/placeholder.svg?height=200&width=300&text=Golf+Course",
-            large: "/placeholder.svg?height=400&width=600&text=Golf+Course",
-          },
-        ],
-        category: "Sports & Recreation",
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        soldQuantity: 67,
-        isLimitedQuantity: false,
-        location: {
-          city: "Pattaya",
-          country: "Thailand",
-          lat: 12.95,
-          lng: 100.9167,
-        },
-        tags: ["golf", "sports", "luxury", "resort"],
-        rating: 4.9,
-        reviewCount: 124,
+        image: "/placeholder.svg?height=300&width=400",
+        location: "Naklua Market",
+        validUntil: "2024-02-28T23:59:59Z",
+        soldCount: 167,
+        maxQuantity: 250,
+        highlights: ["Market Tour", "5 Dishes", "Recipe Book", "Certificate"],
+        tags: ["cooking", "cultural", "authentic", "learning"],
+        isFlashDeal: true,
       },
     ]
 
     // Filter by category if specified
-    const filteredDeals =
-      category === "all"
-        ? mockDeals
-        : mockDeals.filter((deal) => deal.category.toLowerCase().includes(category.toLowerCase()))
+    let filteredDeals = mockDeals
+    if (category && category !== "all") {
+      filteredDeals = mockDeals.filter((deal) => deal.category === category)
+    }
+
+    // Limit results
+    const limitedDeals = filteredDeals.slice(0, limit)
 
     return NextResponse.json({
       success: true,
-      deals: filteredDeals.slice(0, limit),
-      totalDeals: filteredDeals.length,
-      location,
-      category,
-      lastUpdated: new Date().toISOString(),
+      deals: limitedDeals,
+      total: filteredDeals.length,
+      categories: ["spa", "restaurant", "tour", "hotel", "activity"],
     })
   } catch (error) {
-    console.error("Error fetching Groupon deals:", error)
-
+    console.error("Groupon API error:", error)
     return NextResponse.json(
       {
         success: false,
-        deals: [],
         error: "Failed to fetch deals",
+        deals: [],
+        total: 0,
       },
       { status: 500 },
     )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { dealId, quantity = 1, userEmail } = body
+
+    if (!dealId || !userEmail) {
+      return NextResponse.json({ success: false, error: "Deal ID and user email are required" }, { status: 400 })
+    }
+
+    // Mock purchase processing
+    const purchaseId = `purchase_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Simulate processing delay
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    return NextResponse.json({
+      success: true,
+      purchaseId,
+      message: "Deal purchased successfully",
+      dealId,
+      quantity,
+      userEmail,
+      confirmationCode: `CONF${Date.now()}`,
+    })
+  } catch (error) {
+    console.error("Purchase error:", error)
+    return NextResponse.json({ success: false, error: "Failed to process purchase" }, { status: 500 })
   }
 }

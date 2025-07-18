@@ -3,155 +3,230 @@ import { type NextRequest, NextResponse } from "next/server"
 interface Advertisement {
   id: string
   title: string
-  content: string
+  description: string
+  image: string
   url: string
-  imageUrl?: string
-  sponsor: string
-  widgetType: string
-  isActive: boolean
+  type: "banner" | "card" | "native" | "video"
+  category: string
   priority: number
+  isActive: boolean
+  impressions: number
+  clicks: number
+  ctr: number
+  budget: number
+  spent: number
   startDate: string
   endDate: string
-  targetAudience?: string[]
-  clickCount: number
-  impressionCount: number
+  targetAudience: {
+    location: string[]
+    interests: string[]
+    ageRange: string
+  }
 }
-
-// Mock advertisement data - in production, this would come from a database
-const advertisements: Advertisement[] = [
-  {
-    id: "ad1",
-    title: "Visit Pattaya Beach Resort",
-    content: "Luxury beachfront accommodation with stunning ocean views. Book now and save 20%!",
-    url: "https://pattayabeachresort.com",
-    imageUrl: "/placeholder.svg?height=40&width=60&text=Resort",
-    sponsor: "Pattaya Beach Resort",
-    widgetType: "breaking-news",
-    isActive: true,
-    priority: 1,
-    startDate: "2024-01-01T00:00:00Z",
-    endDate: "2024-12-31T23:59:59Z",
-    targetAudience: ["tourists", "travelers"],
-    clickCount: 245,
-    impressionCount: 12500,
-  },
-  {
-    id: "ad2",
-    title: "Best Thai Restaurant in Pattaya",
-    content: "Authentic Thai cuisine in the heart of Pattaya. Try our signature dishes!",
-    url: "https://thaigardenrestaurant.com",
-    imageUrl: "/placeholder.svg?height=40&width=60&text=Food",
-    sponsor: "Thai Garden Restaurant",
-    widgetType: "breaking-news",
-    isActive: true,
-    priority: 2,
-    startDate: "2024-01-01T00:00:00Z",
-    endDate: "2024-12-31T23:59:59Z",
-    targetAudience: ["food-lovers", "tourists"],
-    clickCount: 189,
-    impressionCount: 8900,
-  },
-  {
-    id: "ad3",
-    title: "Pattaya Nightlife Tours",
-    content: "Experience the best of Pattaya's nightlife with our guided tours",
-    url: "https://pattayanightlifetours.com",
-    imageUrl: "/placeholder.svg?height=40&width=60&text=Night",
-    sponsor: "Pattaya Night Tours",
-    widgetType: "breaking-news",
-    isActive: true,
-    priority: 3,
-    startDate: "2024-01-01T00:00:00Z",
-    endDate: "2024-12-31T23:59:59Z",
-    targetAudience: ["nightlife", "entertainment"],
-    clickCount: 156,
-    impressionCount: 7200,
-  },
-  {
-    id: "ad4",
-    title: "Scuba Diving Adventures",
-    content: "Explore the underwater world around Pattaya with certified instructors",
-    url: "https://pattayascubadiving.com",
-    imageUrl: "/placeholder.svg?height=40&width=60&text=Dive",
-    sponsor: "Pattaya Scuba Center",
-    widgetType: "breaking-news",
-    isActive: true,
-    priority: 4,
-    startDate: "2024-01-01T00:00:00Z",
-    endDate: "2024-12-31T23:59:59Z",
-    targetAudience: ["adventure", "water-sports"],
-    clickCount: 98,
-    impressionCount: 4500,
-  },
-]
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const widgetType = searchParams.get("widget")
-    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const type = searchParams.get("type")
+    const category = searchParams.get("category")
+    const position = searchParams.get("position")
+    const limit = Number.parseInt(searchParams.get("limit") || "5")
 
-    // Filter advertisements by widget type if specified
-    let filteredAds = advertisements.filter((ad) => ad.isActive)
+    // Mock advertisement data
+    const mockAds: Advertisement[] = [
+      {
+        id: "ad-1",
+        title: "Luxury Beach Resort - Special Offer",
+        description: "Book now and save 40% on your dream vacation at our 5-star beachfront resort.",
+        image: "/placeholder.svg?height=300&width=600",
+        url: "https://example-resort.com/special-offer",
+        type: "banner",
+        category: "hotels",
+        priority: 10,
+        isActive: true,
+        impressions: 15420,
+        clicks: 234,
+        ctr: 1.52,
+        budget: 50000,
+        spent: 12500,
+        startDate: "2024-01-01T00:00:00Z",
+        endDate: "2024-02-29T23:59:59Z",
+        targetAudience: {
+          location: ["Thailand", "Southeast Asia"],
+          interests: ["travel", "luxury", "beaches"],
+          ageRange: "25-55",
+        },
+      },
+      {
+        id: "ad-2",
+        title: "Best Thai Restaurant in Pattaya",
+        description: "Authentic Thai cuisine with fresh ingredients. Try our signature dishes today!",
+        image: "/placeholder.svg?height=200&width=300",
+        url: "https://example-restaurant.com",
+        type: "card",
+        category: "restaurants",
+        priority: 8,
+        isActive: true,
+        impressions: 8930,
+        clicks: 156,
+        ctr: 1.75,
+        budget: 25000,
+        spent: 8750,
+        startDate: "2024-01-15T00:00:00Z",
+        endDate: "2024-03-15T23:59:59Z",
+        targetAudience: {
+          location: ["Pattaya", "Bangkok"],
+          interests: ["food", "dining", "thai cuisine"],
+          ageRange: "20-65",
+        },
+      },
+      {
+        id: "ad-3",
+        title: "Adventure Tours & Activities",
+        description: "Discover Pattaya's best adventures! Island hopping, water sports, and cultural tours.",
+        image: "/placeholder.svg?height=250&width=400",
+        url: "https://example-tours.com",
+        type: "native",
+        category: "activities",
+        priority: 7,
+        isActive: true,
+        impressions: 12340,
+        clicks: 198,
+        ctr: 1.6,
+        budget: 35000,
+        spent: 15400,
+        startDate: "2024-01-10T00:00:00Z",
+        endDate: "2024-04-10T23:59:59Z",
+        targetAudience: {
+          location: ["Global"],
+          interests: ["adventure", "tours", "activities"],
+          ageRange: "18-50",
+        },
+      },
+      {
+        id: "ad-4",
+        title: "Premium Spa & Wellness Center",
+        description: "Relax and rejuvenate with our world-class spa treatments and wellness programs.",
+        image: "/placeholder.svg?height=300&width=500",
+        url: "https://example-spa.com",
+        type: "banner",
+        category: "wellness",
+        priority: 6,
+        isActive: true,
+        impressions: 6780,
+        clicks: 89,
+        ctr: 1.31,
+        budget: 20000,
+        spent: 6200,
+        startDate: "2024-01-20T00:00:00Z",
+        endDate: "2024-03-20T23:59:59Z",
+        targetAudience: {
+          location: ["Thailand", "Asia"],
+          interests: ["wellness", "spa", "relaxation"],
+          ageRange: "25-60",
+        },
+      },
+      {
+        id: "ad-5",
+        title: "Nightlife & Entertainment Guide",
+        description: "Experience Pattaya's vibrant nightlife! Bars, clubs, and entertainment venues.",
+        image: "/placeholder.svg?height=200&width=350",
+        url: "https://example-nightlife.com",
+        type: "card",
+        category: "nightlife",
+        priority: 5,
+        isActive: true,
+        impressions: 9560,
+        clicks: 145,
+        ctr: 1.52,
+        budget: 15000,
+        spent: 4800,
+        startDate: "2024-01-05T00:00:00Z",
+        endDate: "2024-02-05T23:59:59Z",
+        targetAudience: {
+          location: ["Global"],
+          interests: ["nightlife", "entertainment", "bars"],
+          ageRange: "21-45",
+        },
+      },
+    ]
 
-    if (widgetType) {
-      filteredAds = filteredAds.filter((ad) => ad.widgetType === widgetType)
+    // Filter advertisements based on query parameters
+    let filteredAds = mockAds.filter((ad) => ad.isActive)
+
+    if (type) {
+      filteredAds = filteredAds.filter((ad) => ad.type === type)
     }
 
-    // Sort by priority
-    filteredAds.sort((a, b) => a.priority - b.priority)
+    if (category) {
+      filteredAds = filteredAds.filter((ad) => ad.category === category)
+    }
+
+    // Sort by priority (higher priority first)
+    filteredAds.sort((a, b) => b.priority - a.priority)
 
     // Limit results
     const limitedAds = filteredAds.slice(0, limit)
 
-    // Check if advertisements are enabled for this widget
-    const adSettings = {
-      enabled: true, // This would come from widget configuration
-      frequency: 3, // Show ad every 3 news items
-      maxAdsPerSession: 5,
-    }
+    // Track impressions (in a real app, you'd update the database)
+    const adsWithTracking = limitedAds.map((ad) => ({
+      ...ad,
+      impressions: ad.impressions + 1,
+    }))
 
     return NextResponse.json({
-      advertisements: limitedAds,
-      enabled: adSettings.enabled,
-      settings: adSettings,
+      success: true,
+      advertisements: adsWithTracking,
       total: filteredAds.length,
+      metadata: {
+        types: ["banner", "card", "native", "video"],
+        categories: ["hotels", "restaurants", "activities", "wellness", "nightlife"],
+        positions: ["header", "sidebar", "content", "footer"],
+      },
     })
   } catch (error) {
     console.error("Advertisement API error:", error)
-    return NextResponse.json({ error: "Failed to fetch advertisements" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch advertisements",
+        advertisements: [],
+        total: 0,
+      },
+      { status: 500 },
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { action, adId } = body
+    const { adId, action, userId } = body
 
-    if (action === "click" && adId) {
-      // Track click - in production, this would update the database
-      const ad = advertisements.find((a) => a.id === adId)
-      if (ad) {
-        ad.clickCount++
-        console.log(`Ad click tracked: ${adId} - ${ad.title}`)
-      }
-
-      return NextResponse.json({ success: true, message: "Click tracked" })
+    if (!adId || !action) {
+      return NextResponse.json({ success: false, error: "Ad ID and action are required" }, { status: 400 })
     }
 
-    if (action === "impression" && adId) {
-      // Track impression - in production, this would update the database
-      const ad = advertisements.find((a) => a.id === adId)
-      if (ad) {
-        ad.impressionCount++
-      }
-
-      return NextResponse.json({ success: true, message: "Impression tracked" })
+    // Track ad interactions
+    const trackingData = {
+      adId,
+      action, // 'click', 'view', 'conversion'
+      userId: userId || "anonymous",
+      timestamp: new Date().toISOString(),
+      userAgent: request.headers.get("user-agent"),
+      ip: request.headers.get("x-forwarded-for") || "unknown",
     }
 
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    // In a real app, you'd save this to a database
+    console.log("Ad tracking:", trackingData)
+
+    return NextResponse.json({
+      success: true,
+      message: "Ad interaction tracked successfully",
+      trackingId: `track_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    })
   } catch (error) {
-    console.error("Advertisement tracking error:", error)
-    return NextResponse.json({ error: "Failed to track advertisement interaction" }, { status: 500 })
+    console.error("Ad tracking error:", error)
+    return NextResponse.json({ success: false, error: "Failed to track ad interaction" }, { status: 500 })
   }
 }

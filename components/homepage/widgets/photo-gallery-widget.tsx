@@ -131,29 +131,29 @@ export function PhotoGalleryWidget() {
           <div>
             <h3 className="text-sm font-semibold line-clamp-1">{photo.title}</h3>
             <div className="flex items-center justify-between text-xs text-gray-600">
-              <div className="flex items-center space-x-1">
-                <User className="w-3 h-3" />
-                <span>{photo.author}</span>
+              <div className="flex items-center space-x-1 min-w-0">
+                <User className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{photo.author}</span>
               </div>
-              <span>{photo.timeAgo}</span>
+              <span className="flex-shrink-0">{photo.timeAgo}</span>
             </div>
           </div>
 
-          <p className="text-xs text-gray-600">📍 {photo.location}</p>
+          <p className="text-xs text-gray-600 truncate">📍 {photo.location}</p>
 
           {/* Stats */}
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-1">
-                <Heart className="w-3 h-3 text-red-500" />
+                <Heart className="w-3 h-3 text-red-500 flex-shrink-0" />
                 <span>{photo.likes}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <MessageCircle className="w-3 h-3" />
+                <MessageCircle className="w-3 h-3 flex-shrink-0" />
                 <span>{photo.comments}</span>
               </div>
               <div className="flex items-center space-x-1">
-                <Eye className="w-3 h-3" />
+                <Eye className="w-3 h-3 flex-shrink-0" />
                 <span>{photo.views}</span>
               </div>
             </div>

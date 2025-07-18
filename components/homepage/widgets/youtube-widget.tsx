@@ -199,11 +199,11 @@ export function YouTubeWidget() {
               <div className="bg-black bg-opacity-70 text-white p-2 rounded text-xs">
                 <div className="font-medium line-clamp-1">{currentVideo.title}</div>
                 <div className="text-gray-300 flex items-center gap-2 mt-1">
-                  <span>{currentVideo.channelName}</span>
+                  <span className="truncate">{currentVideo.channelName}</span>
                   <span>•</span>
                   <span>{formatViews(currentVideo.views)} views</span>
                   <span>•</span>
-                  <span>{currentVideo.publishedAt}</span>
+                  <span className="truncate">{currentVideo.publishedAt}</span>
                 </div>
               </div>
             </div>
@@ -248,8 +248,8 @@ export function YouTubeWidget() {
                 <div className="space-y-1">
                   <h5 className="text-xs font-medium line-clamp-2 leading-tight">{video.title}</h5>
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{formatViews(video.views)} views</span>
-                    <div className="flex items-center gap-2">
+                    <span className="truncate">{formatViews(video.views)} views</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={(e) => {
                           e.stopPropagation()

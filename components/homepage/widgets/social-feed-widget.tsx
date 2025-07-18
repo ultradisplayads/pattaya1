@@ -194,26 +194,26 @@ export function SocialFeedWidget() {
             <img
               src={post.avatar || "/placeholder.svg"}
               alt={post.author}
-              className="w-8 h-8 rounded-full mr-3 ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-200"
+              className="w-8 h-8 rounded-full mr-3 ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-200 flex-shrink-0"
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center">
-                <span className="font-medium text-sm text-gray-900">{post.author}</span>
-                {post.verified && <CheckCircle className="w-3 h-3 text-blue-500 ml-1" />}
+                <span className="font-medium text-sm text-gray-900 truncate">{post.author}</span>
+                {post.verified && <CheckCircle className="w-3 h-3 text-blue-500 ml-1 flex-shrink-0" />}
               </div>
-              <span className="text-xs text-gray-500">{post.handle}</span>
+              <span className="text-xs text-gray-500 truncate block">{post.handle}</span>
             </div>
-            <span className="text-xs text-gray-400">{post.timestamp}</span>
+            <span className="text-xs text-gray-400 flex-shrink-0">{post.timestamp}</span>
           </div>
 
           {/* Content */}
-          <p className="text-sm text-gray-700 mb-3 leading-relaxed">{post.content}</p>
+          <p className="text-sm text-gray-700 mb-3 leading-relaxed line-clamp-3">{post.content}</p>
 
           {/* Location */}
           {post.location && (
             <div className="flex items-center mb-3 text-xs text-gray-500">
-              <MapPin className="w-3 h-3 mr-1 text-red-400" />
-              {post.location}
+              <MapPin className="w-3 h-3 mr-1 text-red-400 flex-shrink-0" />
+              <span className="truncate">{post.location}</span>
             </div>
           )}
 
@@ -231,7 +231,7 @@ export function SocialFeedWidget() {
             {post.hashtags.map((tag, index) => (
               <span
                 key={index}
-                className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer transition-colors duration-200"
+                className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer transition-colors duration-200 truncate"
               >
                 {tag}
               </span>
@@ -242,19 +242,19 @@ export function SocialFeedWidget() {
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center space-x-4">
               <div className="flex items-center hover:text-red-500 cursor-pointer transition-colors duration-200">
-                <Heart className="w-3 h-3 mr-1" />
-                {post.likes}
+                <Heart className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span>{post.likes}</span>
               </div>
               <div className="flex items-center hover:text-blue-500 cursor-pointer transition-colors duration-200">
-                <MessageCircle className="w-3 h-3 mr-1" />
-                {post.comments}
+                <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span>{post.comments}</span>
               </div>
               <div className="flex items-center hover:text-green-500 cursor-pointer transition-colors duration-200">
-                <Repeat2 className="w-3 h-3 mr-1" />
-                {post.shares}
+                <Repeat2 className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span>{post.shares}</span>
               </div>
             </div>
-            <Share className="w-3 h-3 hover:text-blue-500 cursor-pointer transition-colors duration-200" />
+            <Share className="w-3 h-3 hover:text-blue-500 cursor-pointer transition-colors duration-200 flex-shrink-0" />
           </div>
         </div>
       </CardContent>
