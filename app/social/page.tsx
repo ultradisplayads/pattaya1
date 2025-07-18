@@ -34,7 +34,7 @@ export default function SocialPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       <Header theme={theme} onThemeChange={handleThemeChange} />
-      
+
       <div className="container mx-auto px-4 py-8 space-y-8">
         {/* Page Header */}
         <div className="text-center space-y-4">
@@ -48,14 +48,19 @@ export default function SocialPage() {
             </Badge>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Stay connected with the latest social media buzz from around Pattaya. Real-time posts, trending topics, and community highlights.
+            Stay connected with the latest social media buzz from around Pattaya. Real-time posts, trending topics, and
+            community highlights.
           </p>
         </div>
 
         {/* Social Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {socialStats.map((stat, index) => (
-            <Card key={stat.label} className="bg-white/70 backdrop-blur-sm hover:shadow-lg transition-all duration-300 animate-bounce-subtle" style={{ animationDelay: `${index * 0.1}s` }}>
+            <Card
+              key={stat.label}
+              className="bg-white/70 backdrop-blur-sm hover:shadow-lg transition-all duration-300 animate-bounce-subtle"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <CardContent className="p-4 text-center">
                 <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
                 <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
@@ -114,4 +119,12 @@ export default function SocialPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Curator.io Feed - Takes up 2 columns */}
-          <div className="\
+          <div className="lg:col-span-2 space-y-4">{/* Placeholder for Curator.io Feed */}</div>
+
+          {/* Right Column - Additional Content */}
+          <div className="space-y-4">{/* Placeholder for Additional Content */}</div>
+        </div>
+      </div>
+    </div>
+  )
+}

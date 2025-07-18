@@ -4,6 +4,19 @@ interface CacheEntry<T> {
   ttl: number
 }
 
+// --- Default time-to-live (shared by many widgets/routes)
+export const CACHE_TTL = 60 * 5 // seconds
+
+/**
+ * Utility to create a unique cache key.
+ * Pass any identifying parts (e.g. route, params, query).
+ *
+ * createCacheKey('weather', 'pattaya', 'today') ➜ "weather:pattaya:today"
+ */
+export function createCacheKey(...parts: Array<string | number>): string {
+  return parts.join(":")
+}
+
 class Cache {
   private cache = new Map<string, CacheEntry<any>>()
 

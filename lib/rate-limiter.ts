@@ -102,6 +102,20 @@ export const curatorApiLimiter = new RateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
 })
 
+// ---- Generic limiters ----------------------------------------------------
+
+// 1 000 requests / HOUR (fits most widget polling needs)
+export const hourlyLimiter = new RateLimiter({
+  maxRequests: 1_000,
+  windowMs: 60 * 60 * 1_000, // 1 h
+})
+
+// 10 000 requests / DAY (fallback for bulk or cron jobs)
+export const dailyLimiter = new RateLimiter({
+  maxRequests: 10_000,
+  windowMs: 24 * 60 * 60 * 1_000, // 24 h
+})
+
 // Cleanup function to run periodically
 export function cleanupRateLimiters(): void {
   googleMapsLimiter.cleanup()
