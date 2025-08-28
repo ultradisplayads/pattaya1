@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SocialLoginButtons } from "./social-login-buttons"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { useAuth } from "./auth-provider"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -18,6 +17,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
+  const { loginWithEmail } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -29,10 +29,10 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
     setError("")
 
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      await loginWithEmail(email, password)
       onClose()
     } catch (error: any) {
-      setError(error.message)
+      setError(error.message || "Failed to sign in")
     } finally {
       setLoading(false)
     }
@@ -40,7 +40,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-[90vw] sm:max-w-md overflow-hidden">
         <DialogHeader>
           <DialogTitle>Sign In to Pattaya1</DialogTitle>
         </DialogHeader>
@@ -60,7 +60,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full" />
             </div>
 
             <div className="space-y-2">
@@ -71,6 +71,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalPr
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="w-full"
               />
             </div>
 

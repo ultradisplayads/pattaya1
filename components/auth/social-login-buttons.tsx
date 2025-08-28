@@ -1,8 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { useAuth } from "./auth-provider"
 
 interface SocialLoginButtonsProps {
   onSuccess?: () => void
@@ -10,34 +9,42 @@ interface SocialLoginButtonsProps {
 }
 
 export function SocialLoginButtons({ onSuccess, onError }: SocialLoginButtonsProps) {
+  const { loginWithGoogle, loginWithFacebook, loginWithApple, loginWithLine } = useAuth()
+
   const handleGoogleLogin = async () => {
     try {
-      const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
+      await loginWithGoogle()
       onSuccess?.()
     } catch (error: any) {
-      onError?.(error.message)
+      onError?.(error.message || "Google login failed")
     }
   }
 
   const handleFacebookLogin = async () => {
     try {
-      const provider = new FacebookAuthProvider()
-      await signInWithPopup(auth, provider)
+      await loginWithFacebook()
       onSuccess?.()
     } catch (error: any) {
-      onError?.(error.message)
+      onError?.(error.message || "Facebook login failed")
     }
   }
 
   const handleLineLogin = async () => {
-    // Line ID login implementation would go here
-    onError?.("Line ID login not implemented yet")
+    try {
+      await loginWithLine()
+      onSuccess?.()
+    } catch (error: any) {
+      onError?.(error.message || "Line login failed")
+    }
   }
 
   const handleAppleLogin = async () => {
-    // Apple ID login implementation would go here
-    onError?.("Apple ID login not implemented yet")
+    try {
+      await loginWithApple()
+      onSuccess?.()
+    } catch (error: any) {
+      onError?.(error.message || "Apple login failed")
+    }
   }
 
   return (

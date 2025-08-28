@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SocialLoginButtons } from "./social-login-buttons"
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { useAuth } from "./auth-provider"
 
 interface RegisterModalProps {
   isOpen: boolean
@@ -18,6 +17,7 @@ interface RegisterModalProps {
 }
 
 export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
+  const { registerWithEmail } = useAuth()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     firstName: "",
@@ -51,13 +51,17 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
     setError("")
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password)
-      await updateProfile(userCredential.user, {
-        displayName: `${formData.firstName} ${formData.lastName}`,
+      await registerWithEmail({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        phoneNumber: formData.phoneNumber,
       })
       onClose()
     } catch (error: any) {
-      setError(error.message)
+      setError(error.message || "Failed to create account")
     } finally {
       setLoading(false)
     }
@@ -65,7 +69,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg overflow-hidden">
         <DialogHeader>
           <DialogTitle>Create Your Account</DialogTitle>
         </DialogHeader>
@@ -85,7 +89,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
               </div>
 
               <form onSubmit={handleStep1Submit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
@@ -93,6 +97,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                       value={formData.firstName}
                       onChange={(e) => handleInputChange("firstName", e.target.value)}
                       required
+                      className="w-full"
                     />
                   </div>
                   <div className="space-y-2">
@@ -102,6 +107,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                       value={formData.lastName}
                       onChange={(e) => handleInputChange("lastName", e.target.value)}
                       required
+                      className="w-full"
                     />
                   </div>
                 </div>
@@ -114,6 +120,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
+                    className="w-full"
                   />
                 </div>
 
@@ -125,6 +132,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     required
+                    className="w-full"
                   />
                 </div>
 
@@ -136,6 +144,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     required
+                    className="w-full"
                   />
                 </div>
 
@@ -156,6 +165,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                   value={formData.dateOfBirth}
                   onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
 
@@ -167,6 +177,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
 

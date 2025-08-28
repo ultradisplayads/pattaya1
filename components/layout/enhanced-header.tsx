@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { useEffect } from "react"
 
 import { useState } from "react"
 import {
@@ -51,7 +52,19 @@ export function EnhancedHeader() {
   const [isVerificationOpen, setIsVerificationOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
-  const { user, logout, loading } = useAuth()
+  const { user, logout, loading, syncWithStrapi, getStrapiToken } = useAuth()
+
+  // Auto-sync with Strapi when user is present but token is missing
+  useEffect(() => {
+    const maybeSync = async () => {
+      try {
+        if (user && !getStrapiToken()) {
+          await syncWithStrapi()
+        }
+      } catch {}
+    }
+    maybeSync()
+  }, [user, getStrapiToken, syncWithStrapi])
 
   const quickLinks: QuickLink[] = [
     {
@@ -165,7 +178,7 @@ export function EnhancedHeader() {
           </div>
 
           {/* Quick Access Icons in Header */}
-          <div className="hidden lg:flex items-center space-x-2 mx-8">
+          <div className="hidden lg:flex items-center gap-2 mx-8 flex-wrap">
             {quickLinks.map((link, index) => (
               <a
                 key={link.id}
@@ -213,8 +226,19 @@ export function EnhancedHeader() {
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.displayName} />
                           <AvatarFallback>
-                            {user.firstName?.[0]}
-                            {user.lastName?.[0]}
+                            {(() => {
+                              const fromNames = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.trim()
+                              if (fromNames) return fromNames.toUpperCase()
+                              const fromDisplay = (user.displayName || '')
+                                .split(' ')
+                                .map((p) => p[0])
+                                .slice(0, 2)
+                                .join('')
+                              if (fromDisplay) return fromDisplay.toUpperCase()
+                              const email = user.email || ''
+                              const emailInitial = email ? email[0] : '?'
+                              return String(emailInitial).toUpperCase()
+                            })()}
                           </AvatarFallback>
                         </Avatar>
                         {!user.emailVerified && (

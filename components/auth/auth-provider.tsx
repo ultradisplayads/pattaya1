@@ -12,8 +12,9 @@ import {
   sendEmailVerification,
   updateProfile,
 } from "firebase/auth"
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
-import { auth, googleProvider, facebookProvider, appleProvider, lineProvider, db } from "@/lib/firebase"
+import { auth, googleProvider, facebookProvider, appleProvider, lineProvider } from "@/lib/firebase"
+import { strapiAPI, type StrapiUser } from "@/lib/strapi-api"
+import { STRAPI_CONFIG } from "@/lib/firebase"
 
 interface UserProfile {
   uid: string
@@ -21,8 +22,8 @@ interface UserProfile {
   firstName: string
   lastName: string
   displayName: string
-  dateOfBirth: string
-  phoneNumber: string
+  dateOfBirth?: string
+  phoneNumber?: string
   avatar?: string
   role: "user" | "business" | "admin"
   verified: boolean
@@ -31,19 +32,11 @@ interface UserProfile {
   createdAt: string
   lastLogin: string
   ageVerified: boolean
-}
-
-interface AuthUser extends FirebaseUser {
-  firstName?: string
-  lastName?: string
-  displayName: string
-  avatar?: string
-  role?: string
-  emailVerified: boolean
+  strapiUser?: StrapiUser
 }
 
 interface AuthContextType {
-  user: AuthUser | null
+  user: UserProfile | null
   firebaseUser: FirebaseUser | null
   loading: boolean
   loginWithEmail: (email: string, password: string) => Promise<void>
@@ -57,6 +50,8 @@ interface AuthContextType {
   sendVerificationCode: (email: string) => Promise<void>
   verifyEmailCode: (code: string) => Promise<boolean>
   checkAge: () => boolean
+  syncWithStrapi: () => Promise<void>
+  getStrapiToken: () => string | null
 }
 
 interface RegisterData {
@@ -64,8 +59,8 @@ interface RegisterData {
   password: string
   firstName: string
   lastName: string
-  dateOfBirth: string
-  phoneNumber: string
+  dateOfBirth?: string
+  phoneNumber?: string
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -83,45 +78,145 @@ const AuthContext = createContext<AuthContextType>({
   sendVerificationCode: async () => {},
   verifyEmailCode: async () => false,
   checkAge: () => false,
+  syncWithStrapi: async () => {},
+  getStrapiToken: () => null,
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [strapiToken, setStrapiToken] = useState<string | null>(null)
+
+  // Create user profile from Firebase user
+  const createUserProfile = (firebaseUser: FirebaseUser, additionalData?: Partial<UserProfile>): UserProfile => {
+    const { displayName, email, photoURL } = firebaseUser
+    const now = new Date().toISOString()
+
+    return {
+      uid: firebaseUser.uid,
+      email: email || "",
+      firstName: additionalData?.firstName || displayName?.split(" ")[0] || "",
+      lastName: additionalData?.lastName || displayName?.split(" ").slice(1).join(" ") || "",
+      displayName: displayName || `${additionalData?.firstName} ${additionalData?.lastName}` || "",
+      dateOfBirth: additionalData?.dateOfBirth || "",
+      phoneNumber: additionalData?.phoneNumber || "",
+      avatar: photoURL || "",
+      role: "user",
+      verified: false,
+      emailVerified: firebaseUser.emailVerified,
+      createdAt: now,
+      lastLogin: now,
+      ageVerified: false,
+      ...additionalData,
+    }
+  }
+
+  // Helper to resolve email reliably from Firebase
+  const resolveEmailFromFirebase = async (currentUser: FirebaseUser): Promise<string | null> => {
+    // 1) Direct email
+    if (currentUser.email) return currentUser.email
+
+    // 2) Provider data
+    const providerEmail = currentUser.providerData.find((p) => p?.email)?.email
+    if (providerEmail) return providerEmail
+
+    // 3) REST lookup with idToken (Identity Toolkit)
+    try {
+      const idToken = await currentUser.getIdToken(true)
+      const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
+      if (!key) return null
+      const res = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        }
+      )
+      if (!res.ok) return null
+      const json = await res.json()
+      const emailFromLookup = json?.users?.[0]?.email || null
+      return emailFromLookup || null
+    } catch {
+      return null
+    }
+  }
+
+  // Sync user with Strapi
+  const syncWithStrapi = async () => {
+    if (!firebaseUser) return
+
+    try {
+      console.log('[Auth] syncWithStrapi: start', { uid: firebaseUser.uid })
+      // Get Firebase ID token
+      const idToken = await firebaseUser.getIdToken(true)
+      console.log('[Auth] got idToken length', idToken?.length)
+      
+      // Try to login with Strapi first
+      try {
+        console.log('[Auth] trying loginUser in Strapi')
+        const strapiResponse = await strapiAPI.loginUser(firebaseUser.uid)
+        setStrapiToken(idToken)
+        setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
+        console.log('✅ User logged in with Strapi:', strapiResponse.user.id)
+      } catch (error) {
+        // User doesn't exist in Strapi, register them
+        console.log('🔄 User not found in Strapi, registering...')
+        
+        // Resolve a reliable email
+        const resolvedEmail = await resolveEmailFromFirebase(firebaseUser)
+        const usernameFallback = firebaseUser.displayName || (resolvedEmail ? resolvedEmail.split('@')[0] : `user-${firebaseUser.uid.slice(0,6)}`)
+        const synthesizedEmail = resolvedEmail || `${firebaseUser.uid}@no-email.firebase`
+        const userData = {
+          username: usernameFallback,
+          email: synthesizedEmail,
+          firebaseUid: firebaseUser.uid,
+        }
+        console.log('➡️ Register payload to Strapi:', userData)
+
+        // Proceed even when provider does not return an email. Backend will accept placeholder.
+
+        try {
+          console.log('[Auth] trying registerUser in Strapi')
+          const strapiResponse = await strapiAPI.registerUser(userData)
+          setStrapiToken(idToken)
+          setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
+          console.log('✅ User registered with Strapi:', strapiResponse.user.id)
+        } catch (registerError) {
+          console.error('❌ Failed to register user with Strapi:', registerError)
+          // Still set the token even if registration fails
+          setStrapiToken(idToken)
+        }
+      }
+    } catch (error) {
+      console.error("Strapi sync error:", error)
+    }
+  }
+
+  // Get Strapi token
+  const getStrapiToken = () => strapiToken
 
   useEffect(() => {
+    console.log('[Auth] mounted. STRAPI_CONFIG.apiUrl =', STRAPI_CONFIG.apiUrl)
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('[Auth] onAuthStateChanged fired. user?', !!firebaseUser)
       setFirebaseUser(firebaseUser)
 
       if (firebaseUser) {
         try {
-          // Get user profile from Firestore
-          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid))
-          if (userDoc.exists()) {
-            const userData = userDoc.data() as UserProfile
-            setUser(userData)
+          // Create user profile from Firebase user
+          const userProfile = createUserProfile(firebaseUser)
+          setUser(userProfile)
 
-            // Update last login
-            await updateDoc(doc(db, "users", firebaseUser.uid), {
-              lastLogin: new Date().toISOString(),
-            })
-          } else {
-            setUser({
-              ...firebaseUser,
-              firstName: firebaseUser.displayName?.split(" ")[0] || "",
-              lastName: firebaseUser.displayName?.split(" ")[1] || "",
-              displayName: firebaseUser.displayName || firebaseUser.email || "User",
-              avatar: firebaseUser.photoURL || undefined,
-              role: "user",
-              emailVerified: firebaseUser.emailVerified,
-            } as AuthUser)
-          }
+          // Sync with Strapi
+          await syncWithStrapi()
         } catch (error) {
-          console.error("Error fetching user profile:", error)
+          console.error("Error setting up user profile:", error)
         }
       } else {
         setUser(null)
+        setStrapiToken(null)
       }
 
       setLoading(false)
@@ -130,46 +225,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe()
   }, [])
 
-  const createUserProfile = async (firebaseUser: FirebaseUser, additionalData?: Partial<UserProfile>) => {
-    try {
-      const userRef = doc(db, "users", firebaseUser.uid)
-      const userDoc = await getDoc(userRef)
-
-      if (!userDoc.exists()) {
-        const { displayName, email, photoURL } = firebaseUser
-        const now = new Date().toISOString()
-
-        const userData: UserProfile = {
-          uid: firebaseUser.uid,
-          email: email || "",
-          firstName: additionalData?.firstName || displayName?.split(" ")[0] || "",
-          lastName: additionalData?.lastName || displayName?.split(" ").slice(1).join(" ") || "",
-          displayName: displayName || `${additionalData?.firstName} ${additionalData?.lastName}` || "",
-          dateOfBirth: additionalData?.dateOfBirth || "",
-          phoneNumber: additionalData?.phoneNumber || "",
-          avatar: photoURL || "",
-          role: "user",
-          verified: false,
-          emailVerified: firebaseUser.emailVerified,
-          createdAt: now,
-          lastLogin: now,
-          ageVerified: false,
-          ...additionalData,
-        }
-
-        await setDoc(userRef, userData)
-        setUser(userData)
-      }
-    } catch (error) {
-      console.error("Error creating user profile:", error)
-      throw error
-    }
-  }
-
   const loginWithEmail = async (email: string, password: string) => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password)
-      await createUserProfile(result.user)
+      const userProfile = createUserProfile(result.user)
+      setUser(userProfile)
+      await syncWithStrapi()
     } catch (error) {
       console.error("Email login error:", error)
       throw error
@@ -192,11 +253,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Generate verification code
       const verificationCode = Math.floor(10000 + Math.random() * 90000).toString()
 
-      await createUserProfile(result.user, {
+      const userProfile = createUserProfile(result.user, {
         ...profileData,
         verificationCode,
         emailVerified: false,
       })
+      setUser(userProfile)
+
+      // Sync with Strapi (this will register the user)
+      await syncWithStrapi()
 
       // Send verification email with code
       await sendVerificationCode(email, verificationCode)
@@ -209,7 +274,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      await createUserProfile(result.user)
+      const userProfile = createUserProfile(result.user)
+      setUser(userProfile)
+      await syncWithStrapi()
     } catch (error) {
       console.error("Google login error:", error)
       throw error
@@ -219,7 +286,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithFacebook = async () => {
     try {
       const result = await signInWithPopup(auth, facebookProvider)
-      await createUserProfile(result.user)
+      const userProfile = createUserProfile(result.user)
+      setUser(userProfile)
+      await syncWithStrapi()
     } catch (error) {
       console.error("Facebook login error:", error)
       throw error
@@ -229,7 +298,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithApple = async () => {
     try {
       const result = await signInWithPopup(auth, appleProvider)
-      await createUserProfile(result.user)
+      const userProfile = createUserProfile(result.user)
+      setUser(userProfile)
+      await syncWithStrapi()
     } catch (error) {
       console.error("Apple login error:", error)
       throw error
@@ -239,7 +310,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithLine = async () => {
     try {
       const result = await signInWithPopup(auth, lineProvider)
-      await createUserProfile(result.user)
+      const userProfile = createUserProfile(result.user)
+      setUser(userProfile)
+      await syncWithStrapi()
     } catch (error) {
       console.error("Line login error:", error)
       throw error
@@ -250,14 +323,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth)
     setUser(null)
     setFirebaseUser(null)
+    setStrapiToken(null)
   }
 
   const updateUserProfile = async (data: Partial<UserProfile>) => {
     if (!user) return
 
     try {
-      const userRef = doc(db, "users", user.uid)
-      await updateDoc(userRef, data)
       setUser({ ...user, ...data })
     } catch (error) {
       console.error("Profile update error:", error)
@@ -330,6 +402,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sendVerificationCode,
     verifyEmailCode,
     checkAge,
+    syncWithStrapi,
+    getStrapiToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
