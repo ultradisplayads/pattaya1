@@ -34,7 +34,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoginModal } from "@/components/auth/login-modal"
 import { RegisterModal } from "@/components/auth/register-modal"
-import { EmailVerificationModal } from "@/components/auth/email-verification-modal"
 import { useAuth } from "@/components/auth/auth-provider"
 import { EnhancedMegaMenu } from "@/components/navigation/enhanced-mega-menu"
 import { MegaDrawer } from "@/components/navigation/mega-drawer"
@@ -56,7 +55,6 @@ interface QuickLink {
 export function Header({ theme, onThemeChange }: HeaderProps) {
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
-  const [isVerificationOpen, setIsVerificationOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false)
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null)
@@ -66,13 +64,11 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
   const { user, logout, loading, syncWithStrapi, getStrapiToken } = useAuth()
   const isPrimary = theme === "primary"
 
-  // Close modals when user logs in/creates account and optionally show verification
+  // Close auth modals when user logs in/creates account
   useEffect(() => {
     if (user) {
       setIsLoginOpen(false)
       setIsRegisterOpen(false)
-      // If you want to prompt email verification on first signup, uncomment:
-      if (!user.emailVerified) setIsVerificationOpen(true)
     }
   }, [user])
 
@@ -192,10 +188,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
     setIsLoginOpen(true)
   }
 
-  const openVerification = (email: string) => {
-    setIsRegisterOpen(false)
-    setIsVerificationOpen(true)
-  }
+  // Verification modal is only handled within the register flow
 
   const handleMegaMenuOpen = (menuType: string) => {
     setActiveMegaMenu(menuType)
@@ -480,11 +473,6 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       {/* Auth Modals */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onSwitchToRegister={switchToRegister} />
       <RegisterModal isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} onSwitchToLogin={switchToLogin} />
-      <EmailVerificationModal
-        isOpen={isVerificationOpen}
-        onClose={() => setIsVerificationOpen(false)}
-        email={user?.email || ""}
-      />
     </>
   )
 }
