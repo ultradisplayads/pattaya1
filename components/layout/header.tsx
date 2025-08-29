@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Camera,
   ChevronDown,
+  MoreHorizontal,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -83,6 +84,19 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
     }
     maybeSync()
   }, [user, getStrapiToken, syncWithStrapi])
+
+  // Handle body scroll when mega menu is open
+  useEffect(() => {
+    if (isMegaMenuOpen || isMobileMenuOpen) {
+      document.body.classList.add('menu-open')
+    } else {
+      document.body.classList.remove('menu-open')
+    }
+
+    return () => {
+      document.body.classList.remove('menu-open')
+    }
+  }, [isMegaMenuOpen, isMobileMenuOpen])
 
   const quickLinks: QuickLink[] = [
     {
@@ -188,8 +202,6 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
     setIsLoginOpen(true)
   }
 
-  // Verification modal is only handled within the register flow
-
   const handleMegaMenuOpen = (menuType: string) => {
     setActiveMegaMenu(menuType)
     setIsMegaMenuOpen(true)
@@ -203,15 +215,15 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${
+        className={`sticky top-0 z-[var(--z-header)] w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${
           isPrimary
             ? "bg-white/95 border-amber-200/50"
             : "bg-gradient-to-r from-purple-900/95 to-pink-900/95 border-pink-500/30"
         }`}
       >
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between px-4">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <a href="/" className="flex items-center space-x-2">
               <div className="flex items-center space-x-2">
                 <div
@@ -236,90 +248,90 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
             </a>
           </div>
 
-          {/* Navigation Menu - Desktop */}
-          <nav className="hidden lg:flex items-center space-x-6 overflow-x-auto no-scrollbar whitespace-nowrap max-w-[40vw]">
-            <Button
-              variant="ghost"
-              className={`flex items-center space-x-1 ${
-                isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
-              }`}
-              onClick={() => handleMegaMenuOpen("directory")}
-            >
-              <span>Directory</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              className={`flex items-center space-x-1 ${
-                isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
-              }`}
-              onClick={() => handleMegaMenuOpen("business")}
-            >
-              <span>Business</span>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-
-            <a
-              href="/events"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isPrimary
-                  ? "text-gray-700 hover:text-amber-700 hover:bg-amber-50"
-                  : "text-white hover:text-pink-200 hover:bg-purple-800"
-              }`}
-            >
-              Events
-              <Badge variant="secondary" className="ml-2 bg-red-500 text-white text-xs">
-                Live
-              </Badge>
-            </a>
-
-            <a
-              href="/forum"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isPrimary
-                  ? "text-gray-700 hover:text-amber-700 hover:bg-amber-50"
-                  : "text-white hover:text-pink-200 hover:bg-purple-800"
-              }`}
-            >
-              Forum
-            </a>
-
-            <a
-              href="/blog"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isPrimary
-                  ? "text-gray-700 hover:text-amber-700 hover:bg-amber-50"
-                  : "text-white hover:text-pink-200 hover:bg-purple-800"
-              }`}
-            >
-              Blog
-            </a>
-          </nav>
-
-          {/* Quick Access Icons in Header */}
-          <div className="hidden lg:flex items-center gap-2 mx-8 flex-wrap">
-            {quickLinks.map((link, index) => (
-              <a
-                key={link.id}
-                href={link.href}
-                className="group flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-all duration-300 hover:scale-105"
-                title={`${link.title} (${link.count?.toLocaleString()})`}
-              >
-                <div
-                  className={`${link.color} text-white p-2 rounded-lg group-hover:scale-110 transition-all duration-300 shadow-md`}
+          {/* Navigation Menu - Desktop (Converted to Dropdown) */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {/* Main Navigation Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`flex items-center space-x-1 ${
+                    isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
+                  }`}
                 >
-                  {link.icon}
+                  <span>Menu</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleMegaMenuOpen("directory")}>
+                  <MapPin className="mr-2 h-4 w-4" />
+                  <span>Directory</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleMegaMenuOpen("business")}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  <span>Business</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  <span>Events</span>
+                  <Badge variant="secondary" className="ml-auto bg-red-500 text-white text-xs">
+                    Live
+                  </Badge>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  <span>Forum</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Camera className="mr-2 h-4 w-4" />
+                  <span>Blog</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Quick Access Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`flex items-center space-x-1 ${
+                    isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
+                  }`}
+                >
+                  <span>Quick Access</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="grid grid-cols-2 gap-1 p-2">
+                  {quickLinks.map((link) => (
+                    <DropdownMenuItem key={link.id} asChild>
+                      <a
+                        href={link.href}
+                        className="flex items-center space-x-2 p-2 rounded hover:bg-gray-100"
+                      >
+                        <div className={`${link.color} text-white p-1 rounded`}>
+                          {link.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm">{link.title}</div>
+                          <div className="text-xs text-gray-500">{link.count?.toLocaleString()} items</div>
+                        </div>
+                      </a>
+                    </DropdownMenuItem>
+                  ))}
                 </div>
-                <span className="text-xs font-medium text-center mt-1 group-hover:text-blue-600 transition-colors duration-200">
-                  {link.title}
-                </span>
-              </a>
-            ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Right side with Search and User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             {/* Search Bar */}
             <div className="hidden md:block">
               <form onSubmit={handleSearch} className="relative">
@@ -331,7 +343,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
                 <Input
                   type="search"
                   placeholder="Search businesses, events..."
-                  className={`pl-8 w-[200px] lg:w-[300px] ${
+                  className={`pl-8 w-[200px] lg:w-[250px] ${
                     isPrimary
                       ? "border-amber-200 focus:border-amber-400"
                       : "border-pink-500/30 bg-purple-800/50 text-white placeholder:text-purple-300"

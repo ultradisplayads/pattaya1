@@ -319,7 +319,7 @@ export function ModularHomepage() {
       <ScrollingMarquee />
 
       {/* Admin Controls */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b shadow-sm">
+      <div className="sticky top-16 z-10 bg-white/95 backdrop-blur-sm border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -417,7 +417,7 @@ export function ModularHomepage() {
       )}
 
       {/* Main Widget Grid */}
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         <div className="compact-widget-grid">
           {/* Top Row - Breaking News, Weather, Radio, Hot Deals */}
           <div className="widget-container widget-small">

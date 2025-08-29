@@ -383,11 +383,11 @@ export function EnhancedMegaMenu({ isOpen, activeMenu, onClose, theme, onThemeCh
       />
 
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/20 z-40 hidden lg:block" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/20 z-[calc(var(--z-mega-menu)-1)] hidden lg:block" onClick={onClose} />
 
       {/* Desktop Mega Menu */}
       <div
-        className={`fixed top-16 left-0 right-0 z-50 hidden lg:block transform transition-all duration-300 ${
+        className={`fixed top-16 left-0 right-0 z-[var(--z-mega-menu)] hidden lg:block transform transition-all duration-300 ${
           isOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
         }`}
       >
@@ -895,7 +895,7 @@ export function EnhancedMegaMenu({ isOpen, activeMenu, onClose, theme, onThemeCh
 
       {/* Mobile Mega Menu */}
       <div
-        className={`fixed top-16 left-0 right-0 z-50 block lg:hidden transform transition-all duration-300 ${
+        className={`fixed top-16 left-0 right-0 z-[var(--z-mega-menu)] block lg:hidden transform transition-all duration-300 ${
           isOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
         }`}
       >
