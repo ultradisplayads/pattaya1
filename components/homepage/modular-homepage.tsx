@@ -280,7 +280,7 @@ export function ModularHomepage() {
   const visibleWidgets = widgets.filter((w) => w.isVisible)
 
   const getWidgetComponent = (widgetId: string) => {
-    const componentMap = {
+    const componentMap: { [key: string]: any } = {
       "breaking-news": EnhancedBreakingNewsWidget,
       weather: WeatherWidget,
       radio: RadioWidget,
@@ -418,69 +418,73 @@ export function ModularHomepage() {
 
       {/* Main Widget Grid */}
       <div className="p-4 lg:p-6">
-        <div className="compact-widget-grid">
-          {/* Top Row - Breaking News, Weather, Radio, Hot Deals */}
-          <div className="widget-container widget-small">
+        <div className="enhanced-widget-grid">
+          {/* Row 1: Breaking News, Weather, Radio, Hot Deals */}
+          <div className="widget-container widget-small" style={{ gridArea: "1 / 1 / 2 / 2" }}>
             <EnhancedBreakingNewsWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "1 / 2 / 2 / 3" }}>
             <WeatherWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "1 / 3 / 2 / 4" }}>
             <RadioWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "1 / 4 / 2 / 5" }}>
             <EnhancedHotDealsWidget />
           </div>
 
-          {/* Second Row - News Hero (large), YouTube (tall) */}
-          <div className="widget-container widget-large">
+          {/* Row 2: News Hero (spans 2 columns) */}
+          <div className="widget-container widget-medium" style={{ gridArea: "2 / 1 / 3 / 3" }}>
             <NewsHeroWidget />
           </div>
-          <div className="widget-container widget-small" style={{ gridRow: "span 3" }}>
+
+          {/* Row 2-4: YouTube (spans 3 rows, 2 columns) */}
+          <div className="widget-container widget-large" style={{ gridArea: "2 / 3 / 5 / 5" }}>
             <YouTubeWidget />
           </div>
 
-          {/* Third Row - Social Feed, Trending */}
-          <div className="widget-container widget-medium">
+          {/* Row 3: Social Feed, Trending */}
+          <div className="widget-container widget-small" style={{ gridArea: "3 / 1 / 4 / 2" }}>
             <SocialFeedWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "3 / 2 / 4 / 3" }}>
             <TrendingWidget />
           </div>
 
-          {/* Fourth Row - Business Spotlight, Google Reviews */}
-          <div className="widget-container widget-large">
+          {/* Row 4: Business Spotlight (spans 2 columns) */}
+          <div className="widget-container widget-medium" style={{ gridArea: "4 / 1 / 5 / 3" }}>
             <BusinessSpotlightWidget />
           </div>
-          <div className="widget-container widget-small">
-            <GoogleReviewsWidget />
-          </div>
 
-          {/* Fifth Row - Events Calendar, Forum Activity, Photo Gallery */}
-          <div className="widget-container widget-medium">
+          {/* Row 5: Events Calendar, Forum Activity, Photo Gallery */}
+          <div className="widget-container widget-small" style={{ gridArea: "5 / 1 / 6 / 2" }}>
             <EventsCalendarWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "5 / 2 / 6 / 3" }}>
             <ForumActivityWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "5 / 3 / 6 / 4" }}>
             <PhotoGalleryWidget />
           </div>
 
-          {/* Sixth Row - Curator Social, Live Events, Quick Links */}
-          <div className="widget-container widget-medium">
-            <CuratorSocialWidget />
+          {/* Row 6: Google Reviews, Live Events, Quick Links */}
+          <div className="widget-container widget-small" style={{ gridArea: "6 / 1 / 7 / 2" }}>
+            <GoogleReviewsWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "6 / 2 / 7 / 3" }}>
             <LiveEventsWidget />
           </div>
-          <div className="widget-container widget-small">
+          <div className="widget-container widget-small" style={{ gridArea: "6 / 3 / 7 / 4" }}>
             <QuickLinksWidget />
           </div>
 
-          {/* Bottom Row - Traffic (full width) */}
-          <div className="widget-container widget-xlarge">
+          {/* Row 7: Curator Social (spans 2 columns) */}
+          <div className="widget-container widget-medium" style={{ gridArea: "7 / 1 / 8 / 3" }}>
+            <CuratorSocialWidget />
+          </div>
+
+          {/* Row 8: Traffic (full width) */}
+          <div className="widget-container widget-xlarge" style={{ gridArea: "8 / 1 / 9 / 5" }}>
             <TrafficWidget />
           </div>
         </div>
