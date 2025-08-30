@@ -122,8 +122,8 @@
 
 .widget-medium {
   grid-column: span 2;
-  min-height: 200px;
-  max-height: 280px;
+  min-height: 240px;
+  max-height: 320px;
 }
 
 .widget-large {
