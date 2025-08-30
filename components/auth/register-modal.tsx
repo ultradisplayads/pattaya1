@@ -2,12 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SocialLoginButtons } from "./social-login-buttons"
+import { EmailVerificationModal } from "./email-verification-modal"
 import { useAuth } from "./auth-provider"
 
 interface RegisterModalProps {
@@ -17,7 +18,7 @@ interface RegisterModalProps {
 }
 
 export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps) {
-  const { registerWithEmail } = useAuth()
+  const { registerWithEmail, firebaseUser } = useAuth()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     firstName: "",
@@ -30,12 +31,37 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [verifyOpen, setVerifyOpen] = useState(false)
+  const [otpRequested, setOtpRequested] = useState(false)
+
+  const handleClose = () => {
+    setVerifyOpen(false)
+    setOtpRequested(false)
+    setStep(1)
+    onClose()
+  }
+
+  // Ensure OTP state is reset whenever the register dialog is opened fresh
+  useEffect(() => {
+    if (isOpen) {
+      setVerifyOpen(false)
+      setOtpRequested(false)
+    }
+  }, [isOpen])
+
+  // Close OTP flow if user is already authenticated (e.g., sign-in elsewhere)
+  useEffect(() => {
+    if (firebaseUser) {
+      setVerifyOpen(false)
+      setOtpRequested(false)
+    }
+  }, [firebaseUser])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleStep1Submit = (e: React.FormEvent) => {
+  const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match")
@@ -43,6 +69,27 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
     }
     setError("")
     setStep(2)
+    // send OTP and open verification modal once per flow
+    if (!otpRequested) {
+      setOtpRequested(true)
+      try {
+        const res = await fetch("/api/auth/email-otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email }),
+        })
+        const json = await res.json().catch(() => ({}))
+        if (res.ok && json?.ok) {
+          setVerifyOpen(true)
+        } else {
+          setOtpRequested(false)
+          setError(json?.message || "Failed to send verification code")
+        }
+      } catch (err: any) {
+        setOtpRequested(false)
+        setError(err?.message || "Failed to send verification code")
+      }
+    }
   }
 
   const handleStep2Submit = async (e: React.FormEvent) => {
@@ -68,13 +115,14 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg overflow-hidden">
-        <DialogHeader>
-          <DialogTitle>Create Your Account</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-[95vw] sm:max-w-lg overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Create Your Account</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6">
+          <div className="space-y-6">
           {step === 1 ? (
             <>
               <SocialLoginButtons onSuccess={onClose} onError={setError} />
@@ -194,14 +242,18 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
             </form>
           )}
 
-          <div className="text-center text-sm">
-            Already have an account?{" "}
-            <Button variant="link" className="p-0" onClick={onSwitchToLogin}>
-              Sign in
-            </Button>
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <Button variant="link" className="p-0" onClick={onSwitchToLogin}>
+                Sign in
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {isOpen && (
+        <EmailVerificationModal isOpen={verifyOpen} onClose={() => setVerifyOpen(false)} email={formData.email} />
+      )}
+    </>
   )
 }

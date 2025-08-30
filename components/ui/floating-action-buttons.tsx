@@ -19,7 +19,7 @@ export function FloatingActionButtons({ theme }: FloatingActionButtonsProps) {
   ]
 
   return (
-    <div className="fixed bottom-20 right-4 z-30">
+    <div className="fixed bottom-24 right-4 z-[var(--z-floating-buttons)]">
       <div className="flex flex-col items-end space-y-2">
         {isExpanded && (
           <>
