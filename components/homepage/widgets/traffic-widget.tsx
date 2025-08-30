@@ -38,6 +38,47 @@ interface TrafficIncident {
   estimatedClearTime: string
 }
 
+interface StrapiTrafficRoute {
+  id: number
+  From: string
+  To: string
+  Distance: string
+  NormalTime: string
+  CurrentTime: string
+  Delay: number
+  Status: string
+  Incidents: number
+  IsActive: boolean
+  Featured: boolean
+  Order: number
+  Description?: string
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
+interface StrapiTrafficIncident {
+  id: number
+  Type: string
+  Location: string
+  Severity: string
+  Description: string
+  EstimatedClearTime: string
+  IsActive: boolean
+  Featured: boolean
+  Order: number
+  Coordinates?: {
+    lat: number
+    lng: number
+  }
+  AffectedRoutes?: string[]
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 interface TrafficWidgetProps {
   isExpanded?: boolean
   onToggleExpand?: () => void
@@ -65,105 +106,151 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
   const loadTrafficData = async () => {
     try {
-      // Simulate API call - replace with actual traffic data
-      const mockRoutes: TrafficRoute[] = [
-        {
-          id: "1",
-          from: "Bangkok",
-          to: "Pattaya",
-          distance: "147 km",
-          normalTime: "1h 45m",
-          currentTime: "2h 15m",
-          delay: 30,
-          status: "moderate",
-          incidents: 2,
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          from: "Pattaya Center",
-          to: "Jomtien Beach",
-          distance: "6.2 km",
-          normalTime: "15m",
-          currentTime: "12m",
-          delay: -3,
-          status: "clear",
-          incidents: 0,
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "3",
-          from: "Suvarnabhumi Airport",
-          to: "Pattaya",
-          distance: "120 km",
-          normalTime: "1h 30m",
-          currentTime: "2h 45m",
-          delay: 75,
-          status: "heavy",
-          incidents: 3,
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "4",
-          from: "Walking Street",
-          to: "Terminal 21",
-          distance: "3.8 km",
-          normalTime: "8m",
-          currentTime: "8m",
-          delay: 0,
-          status: "clear",
-          incidents: 0,
-          lastUpdated: new Date().toISOString(),
-        },
-        {
-          id: "5",
-          from: "Pattaya",
-          to: "Rayong",
-          distance: "85 km",
-          normalTime: "1h 15m",
-          currentTime: "1h 35m",
-          delay: 20,
-          status: "moderate",
-          incidents: 1,
-          lastUpdated: new Date().toISOString(),
-        },
-      ]
-
-      const mockIncidents: TrafficIncident[] = [
-        {
-          id: "1",
-          type: "accident",
-          location: "Highway 7, km 125",
-          severity: "high",
-          description: "Multi-vehicle accident blocking 2 lanes",
-          estimatedClearTime: "45 minutes",
-        },
-        {
-          id: "2",
-          type: "construction",
-          location: "Sukhumvit Road, Central Pattaya",
-          severity: "medium",
-          description: "Road maintenance, single lane closure",
-          estimatedClearTime: "2 hours",
-        },
-        {
-          id: "3",
-          type: "event",
-          location: "Beach Road",
-          severity: "low",
-          description: "Festival setup causing minor delays",
-          estimatedClearTime: "30 minutes",
-        },
-      ]
-
-      setRoutes(mockRoutes)
-      setIncidents(mockIncidents)
+      setLoading(true)
+      console.log('Fetching traffic data from Strapi...')
+      
+      // Fetch traffic routes
+      const routesResponse = await fetch("http://localhost:1337/api/traffic-routes?populate=*&sort=Order:asc")
+      const incidentsResponse = await fetch("http://localhost:1337/api/traffic-incidents?populate=*&sort=Order:asc")
+      
+      if (routesResponse.ok && incidentsResponse.ok) {
+        const routesData = await routesResponse.json()
+        const incidentsData = await incidentsResponse.json()
+        
+        if (routesData.data && routesData.data.length > 0) {
+          const transformedRoutes: TrafficRoute[] = routesData.data.map((strapiRoute: StrapiTrafficRoute) => ({
+            id: strapiRoute.id.toString(),
+            from: strapiRoute.From,
+            to: strapiRoute.To,
+            distance: strapiRoute.Distance,
+            normalTime: strapiRoute.NormalTime,
+            currentTime: strapiRoute.CurrentTime,
+            delay: strapiRoute.Delay,
+            status: strapiRoute.Status as "clear" | "moderate" | "heavy" | "blocked",
+            incidents: strapiRoute.Incidents,
+            lastUpdated: strapiRoute.LastUpdated,
+          }))
+          setRoutes(transformedRoutes)
+        } else {
+          setRoutes(getFallbackRoutes())
+        }
+        
+        if (incidentsData.data && incidentsData.data.length > 0) {
+          const transformedIncidents: TrafficIncident[] = incidentsData.data.map((strapiIncident: StrapiTrafficIncident) => ({
+            id: strapiIncident.id.toString(),
+            type: strapiIncident.Type as "accident" | "construction" | "event" | "weather",
+            location: strapiIncident.Location,
+            severity: strapiIncident.Severity as "low" | "medium" | "high",
+            description: strapiIncident.Description,
+            estimatedClearTime: strapiIncident.EstimatedClearTime,
+          }))
+          setIncidents(transformedIncidents)
+        } else {
+          setIncidents(getFallbackIncidents())
+        }
+      } else {
+        console.error("Failed to load traffic data from Strapi:", routesResponse.status, incidentsResponse.status)
+        setRoutes(getFallbackRoutes())
+        setIncidents(getFallbackIncidents())
+      }
     } catch (error) {
       console.error("Failed to load traffic data:", error)
+      setRoutes(getFallbackRoutes())
+      setIncidents(getFallbackIncidents())
     } finally {
       setLoading(false)
     }
   }
+
+  const getFallbackRoutes = (): TrafficRoute[] => [
+    {
+      id: "1",
+      from: "Bangkok",
+      to: "Pattaya",
+      distance: "147 km",
+      normalTime: "1h 45m",
+      currentTime: "2h 15m",
+      delay: 30,
+      status: "moderate",
+      incidents: 2,
+      lastUpdated: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      from: "Pattaya Center",
+      to: "Jomtien Beach",
+      distance: "6.2 km",
+      normalTime: "15m",
+      currentTime: "12m",
+      delay: -3,
+      status: "clear",
+      incidents: 0,
+      lastUpdated: new Date().toISOString(),
+    },
+    {
+      id: "3",
+      from: "Suvarnabhumi Airport",
+      to: "Pattaya",
+      distance: "120 km",
+      normalTime: "1h 30m",
+      currentTime: "2h 45m",
+      delay: 75,
+      status: "heavy",
+      incidents: 3,
+      lastUpdated: new Date().toISOString(),
+    },
+    {
+      id: "4",
+      from: "Walking Street",
+      to: "Terminal 21",
+      distance: "3.8 km",
+      normalTime: "8m",
+      currentTime: "8m",
+      delay: 0,
+      status: "clear",
+      incidents: 0,
+      lastUpdated: new Date().toISOString(),
+    },
+    {
+      id: "5",
+      from: "Pattaya",
+      to: "Rayong",
+      distance: "85 km",
+      normalTime: "1h 15m",
+      currentTime: "1h 35m",
+      delay: 20,
+      status: "moderate",
+      incidents: 1,
+      lastUpdated: new Date().toISOString(),
+    },
+  ]
+
+  const getFallbackIncidents = (): TrafficIncident[] => [
+    {
+      id: "1",
+      type: "accident",
+      location: "Highway 7, km 125",
+      severity: "high",
+      description: "Multi-vehicle accident blocking 2 lanes",
+      estimatedClearTime: "45 minutes",
+    },
+    {
+      id: "2",
+      type: "construction",
+      location: "Sukhumvit Road, Central Pattaya",
+      severity: "medium",
+      description: "Road maintenance, single lane closure",
+      estimatedClearTime: "2 hours",
+    },
+    {
+      id: "3",
+      type: "event",
+      location: "Beach Road",
+      severity: "low",
+      description: "Festival setup causing minor delays",
+      estimatedClearTime: "30 minutes",
+    },
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
