@@ -20,6 +20,15 @@ export interface StrapiAuthResponse {
   message: string
 }
 
+export interface FirebaseUserProfilePayload {
+  firebaseUid: string
+  email?: string
+  displayName?: string
+  photoURL?: string
+  phoneNumber?: string
+  emailVerified?: boolean
+}
+
 class StrapiAPI {
   private baseUrl: string
 
@@ -56,8 +65,10 @@ class StrapiAPI {
 
       return json as T
     } catch (error) {
-      console.error('[StrapiAPI] Request failed', { url, error })
-      throw error
+      const err = error as any
+      const message = err?.message || String(err)
+      console.error('[StrapiAPI] Request failed', { url, method: config.method || 'GET', message, error: err })
+      throw err
     }
   }
 
@@ -103,6 +114,38 @@ class StrapiAPI {
   // Get server status
   async getServerStatus(): Promise<any> {
     return this.request('/test/status')
+  }
+
+  // Confirm user in Strapi after successful email OTP verification
+  async confirmUser(email: string, token?: string): Promise<{ ok: boolean; message?: string }> {
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    return this.request<{ ok: boolean; message?: string }>(
+      '/firebase-auth/confirm',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ email }),
+      }
+    )
+  }
+
+  // Upsert Firebase user profile into Strapi (idempotent)
+  async syncFirebaseUser(profile: FirebaseUserProfilePayload, token?: string): Promise<{ ok: boolean }> {
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    return this.request<{ ok: boolean }>(
+      '/firebase-auth/sync',
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(profile),
+      }
+    )
   }
 }
 

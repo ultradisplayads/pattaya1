@@ -3,6 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useAuth } from "./auth-provider"
+import { strapiAPI } from "@/lib/strapi-api"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,28 +20,58 @@ export function EmailVerificationModal({ isOpen, onClose, email }: EmailVerifica
   const [code, setCode] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const { updateUserProfile } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-    // Simulate verification
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    if (code === "12345") {
+    try {
+      const res = await fetch("/api/auth/email-otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json?.ok) {
+        setError(json?.message || "Invalid verification code")
+        return
+      }
+      // Mark verified locally
+      await updateUserProfile({ emailVerified: true, verified: true })
+      // Also confirm in Strapi (best-effort)
+      try {
+        const idToken = await (window as any)?.firebaseAuthCurrentUser?.getIdToken?.() // optional if you expose it
+        await strapiAPI.confirmUser(email)
+      } catch {}
       onClose()
-    } else {
-      setError("Invalid verification code")
+    } catch (err: any) {
+      setError(err?.message || "Verification failed")
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handleResend = async () => {
-    // Simulate resend
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    alert("Verification code sent!")
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/auth/email-otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json?.ok) {
+        setError(json?.message || "Failed to send code")
+        return
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to send code")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
