@@ -423,75 +423,67 @@ export function ModularHomepage() {
         </div>
       )}
 
-      {/* Main Widget Grid */}
+      {/* Main Widget Grid - Auto-filling */}
       <div className="p-4 lg:p-6">
         <div className="enhanced-widget-grid">
-          {/* Row 1: Breaking News, Weather, Radio, Hot Deals */}
-          <div className="widget-container widget-small" style={{ gridArea: "1 / 1 / 2 / 2" }}>
+          {/* Small widgets - auto-fit in first row */}
+          <div className="widget-container widget-small">
             <EnhancedBreakingNewsWidget />
           </div>
-          <div className="widget-container widget-small" style={{ gridArea: "1 / 2 / 2 / 3" }}>
+          <div className="widget-container widget-small">
             <WeatherWidget />
           </div>
-          <div className="widget-container widget-small" style={{ gridArea: "1 / 3 / 2 / 4" }}>
+          <div className="widget-container widget-small">
             <RadioWidget />
           </div>
-          <div className="widget-container widget-small" style={{ gridArea: "1 / 4 / 2 / 5" }}>
+          <div className="widget-container widget-small">
             <EnhancedHotDealsWidget />
           </div>
 
-          {/* Row 2: News Hero (spans 2 columns) */}
-          <div className="widget-container widget-medium" style={{ gridArea: "2 / 1 / 3 / 3" }}>
+          {/* Medium widgets - will auto-fit based on available space */}
+          <div className="widget-container widget-medium">
             <NewsHeroWidget />
           </div>
-
-          {/* Row 2-4: YouTube (spans 3 rows, 2 columns) */}
-          <div className="widget-container widget-large" style={{ gridArea: "2 / 3 / 5 / 5" }}>
-            <YouTubeWidget />
-          </div>
-
-          {/* Row 3: Social Feed, Trending */}
-          <div className="widget-container widget-small" style={{ gridArea: "3 / 1 / 4 / 2" }}>
-            <SocialFeedWidget />
-          </div>
-          <div className="widget-container widget-small" style={{ gridArea: "3 / 2 / 4 / 3" }}>
-            <TrendingWidget />
-          </div>
-
-          {/* Row 4: Business Spotlight (spans 2 columns) */}
-          <div className="widget-container widget-medium" style={{ gridArea: "4 / 1 / 5 / 3" }}>
+          <div className="widget-container widget-medium">
             <BusinessSpotlightWidget />
           </div>
-
-          {/* Row 5: Events Calendar, Forum Activity, Photo Gallery */}
-          <div className="widget-container widget-small" style={{ gridArea: "5 / 1 / 6 / 2" }}>
-            <EventsCalendarWidget />
-          </div>
-          <div className="widget-container widget-small" style={{ gridArea: "5 / 2 / 6 / 3" }}>
-            <ForumActivityWidget />
-          </div>
-          <div className="widget-container widget-small" style={{ gridArea: "5 / 3 / 6 / 4" }}>
-            <PhotoGalleryWidget />
-          </div>
-
-          {/* Row 6: Google Reviews, Live Events, Quick Links */}
-          <div className="widget-container widget-small" style={{ gridArea: "6 / 1 / 7 / 2" }}>
-            <GoogleReviewsWidget />
-          </div>
-          <div className="widget-container widget-small" style={{ gridArea: "6 / 2 / 7 / 3" }}>
-            <LiveEventsWidget />
-          </div>
-          <div className="widget-container widget-small" style={{ gridArea: "6 / 3 / 7 / 4" }}>
-            <QuickLinksWidget />
-          </div>
-
-          {/* Row 7: Curator Social (spans 2 columns) */}
-          <div className="widget-container widget-medium" style={{ gridArea: "7 / 1 / 8 / 3" }}>
+          <div className="widget-container widget-medium">
             <CuratorSocialWidget />
           </div>
 
-          {/* Row 8: Traffic (full width) */}
-          <div className="widget-container widget-xlarge" style={{ gridArea: "8 / 1 / 9 / 5" }}>
+          {/* Large widget - YouTube */}
+          <div className="widget-container widget-large">
+            <YouTubeWidget />
+          </div>
+
+          {/* Small widgets - auto-fit in remaining space */}
+          <div className="widget-container widget-small">
+            <SocialFeedWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <TrendingWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <EventsCalendarWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <ForumActivityWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <PhotoGalleryWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <GoogleReviewsWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <LiveEventsWidget />
+          </div>
+          <div className="widget-container widget-small">
+            <QuickLinksWidget />
+          </div>
+
+          {/* Extra large widget - Traffic (full width) */}
+          <div className="widget-container widget-xlarge">
             <TrafficWidget />
           </div>
         </div>

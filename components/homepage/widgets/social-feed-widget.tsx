@@ -67,8 +67,6 @@ interface StrapiSocialMediaPost {
 }
 
 export function SocialFeedWidget() {
-  const [currentPost, setCurrentPost] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -229,19 +227,7 @@ export function SocialFeedWidget() {
     },
   ]
 
-  useEffect(() => {
-    if (socialPosts && socialPosts.length > 0) {
-      const interval = setInterval(() => {
-        setIsAnimating(true)
-        setTimeout(() => {
-          setCurrentPost((prev) => (prev + 1) % socialPosts.length)
-          setIsAnimating(false)
-        }, 300)
-      }, 5000)
 
-      return () => clearInterval(interval)
-    }
-  }, [socialPosts])
 
   const getPlatformColor = (platform: string) => {
     switch (platform) {
@@ -276,7 +262,7 @@ export function SocialFeedWidget() {
   // Show loading state while fetching data
   if (loading) {
     return (
-      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+      <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
             <div className="flex items-center">
@@ -311,7 +297,7 @@ export function SocialFeedWidget() {
   // Check if we have posts and current post exists
   if (!socialPosts || socialPosts.length === 0) {
     return (
-      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+      <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
             <div className="flex items-center">
@@ -329,130 +315,105 @@ export function SocialFeedWidget() {
     )
   }
 
-  const post = socialPosts[currentPost]
-
-  // Additional safety check
-  if (!post) {
-    return (
-      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-              Social Feed
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="flex items-center justify-center h-32">
-            <p className="text-gray-500 text-sm">No posts available</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
-    <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+    <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
             Social Feed
           </div>
-          <div className="flex space-x-1">
-            {socialPosts.map((_, index) => (
-              <div
-                key={index}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentPost ? "bg-blue-500 scale-125" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </div>
+          <Badge variant="secondary" className="text-xs">
+            {socialPosts.length} posts
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-        <div
-          className={`transition-all duration-300 ${isAnimating ? "opacity-0 transform scale-95" : "opacity-100 transform scale-100"}`}
-        >
-          {/* Platform Badge */}
-          <div className="flex items-center justify-between mb-3">
-            <Badge className={`${getPlatformColor(post.platform)} px-2 py-1 text-xs font-medium animate-pulse`}>
-              {getPlatformIcon(post.platform)} {post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
-            </Badge>
-            <a href="#" className="text-gray-400 hover:text-blue-500 transition-colors duration-200">
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
-
-          {/* Author Info */}
-          <div className="flex items-center mb-3">
-            <img
-              src={post.avatar || "/placeholder.svg"}
-              alt={post.author}
-              className="w-8 h-8 rounded-full mr-3 ring-2 ring-blue-200 hover:ring-blue-400 transition-all duration-200 flex-shrink-0"
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center">
-                <span className="font-medium text-sm text-gray-900 truncate">{post.author}</span>
-                {post.verified && <CheckCircle className="w-3 h-3 text-blue-500 ml-1 flex-shrink-0" />}
+        <div className="space-y-4 max-h-80 overflow-y-auto social-feed-scroll">
+          {socialPosts.map((post) => (
+            <div key={post.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+              {/* Platform Badge */}
+              <div className="flex items-center justify-between mb-3">
+                <Badge className={`${getPlatformColor(post.platform)} px-2 py-1 text-xs font-medium`}>
+                  {getPlatformIcon(post.platform)} {post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
+                </Badge>
+                <a href="#" className="text-gray-400">
+                  <ExternalLink className="w-4 h-4" />
+                </a>
               </div>
-              <span className="text-xs text-gray-500 truncate block">{post.handle}</span>
+
+              {/* Author Info */}
+              <div className="flex items-center mb-3">
+                <img
+                  src={post.avatar || "/placeholder.svg"}
+                  alt={post.author}
+                  className="w-8 h-8 rounded-full mr-3 ring-2 ring-blue-200 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center">
+                    <span className="font-medium text-sm text-gray-900 truncate">{post.author}</span>
+                    {post.verified && <CheckCircle className="w-3 h-3 text-blue-500 ml-1 flex-shrink-0" />}
+                  </div>
+                  <span className="text-xs text-gray-500 truncate block">{post.handle}</span>
+                </div>
+                <span className="text-xs text-gray-400 flex-shrink-0">{post.timestamp}</span>
+              </div>
+
+              {/* Content */}
+              <p className="text-sm text-gray-700 mb-3 leading-relaxed line-clamp-2">{post.content}</p>
+
+              {/* Location */}
+              {post.location && (
+                <div className="flex items-center mb-3 text-xs text-gray-500">
+                  <MapPin className="w-3 h-3 mr-1 text-red-400 flex-shrink-0" />
+                  <span className="truncate">{post.location}</span>
+                </div>
+              )}
+
+              {/* Image */}
+              {post.image && (
+                <img
+                  src={post.image || "/placeholder.svg"}
+                  alt="Post content"
+                  className="w-full h-16 object-cover rounded-lg mb-3"
+                />
+              )}
+
+              {/* Hashtags */}
+              <div className="flex flex-wrap gap-1 mb-3">
+                {post.hashtags.slice(0, 3).map((tag, index) => (
+                  <span
+                    key={index}
+                    className="text-xs text-blue-600 cursor-pointer truncate"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {post.hashtags.length > 3 && (
+                  <span className="text-xs text-gray-500">+{post.hashtags.length - 3} more</span>
+                )}
+              </div>
+
+              {/* Engagement */}
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center cursor-pointer">
+                    <Heart className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span>{post.likes}</span>
+                  </div>
+                  <div className="flex items-center cursor-pointer">
+                    <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span>{post.comments}</span>
+                  </div>
+                  <div className="flex items-center cursor-pointer">
+                    <Repeat2 className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span>{post.shares}</span>
+                  </div>
+                </div>
+                <Share className="w-3 h-3 cursor-pointer flex-shrink-0" />
+              </div>
             </div>
-            <span className="text-xs text-gray-400 flex-shrink-0">{post.timestamp}</span>
-          </div>
-
-          {/* Content */}
-          <p className="text-sm text-gray-700 mb-3 leading-relaxed line-clamp-3">{post.content}</p>
-
-          {/* Location */}
-          {post.location && (
-            <div className="flex items-center mb-3 text-xs text-gray-500">
-              <MapPin className="w-3 h-3 mr-1 text-red-400 flex-shrink-0" />
-              <span className="truncate">{post.location}</span>
-            </div>
-          )}
-
-          {/* Image */}
-          {post.image && (
-            <img
-              src={post.image || "/placeholder.svg"}
-              alt="Post content"
-              className="w-full h-20 object-cover rounded-lg mb-3 hover:scale-105 transition-transform duration-200"
-            />
-          )}
-
-          {/* Hashtags */}
-          <div className="flex flex-wrap gap-1 mb-3">
-            {post.hashtags.map((tag, index) => (
-              <span
-                key={index}
-                className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer transition-colors duration-200 truncate"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Engagement */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center hover:text-red-500 cursor-pointer transition-colors duration-200">
-                <Heart className="w-3 h-3 mr-1 flex-shrink-0" />
-                <span>{post.likes}</span>
-              </div>
-              <div className="flex items-center hover:text-blue-500 cursor-pointer transition-colors duration-200">
-                <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                <span>{post.comments}</span>
-              </div>
-              <div className="flex items-center hover:text-green-500 cursor-pointer transition-colors duration-200">
-                <Repeat2 className="w-3 h-3 mr-1 flex-shrink-0" />
-                <span>{post.shares}</span>
-              </div>
-            </div>
-            <Share className="w-3 h-3 hover:text-blue-500 cursor-pointer transition-colors duration-200 flex-shrink-0" />
-          </div>
+          ))}
         </div>
       </CardContent>
     </Card>
