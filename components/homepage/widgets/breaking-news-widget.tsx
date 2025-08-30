@@ -7,24 +7,53 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 interface BreakingNews {
-  id: string
-  title: string
-  summary: string
-  severity: "low" | "medium" | "high" | "critical"
-  category: string
-  timestamp: string
-  source: string
-  url: string
-  isBreaking: boolean
+  id: number
+  Title: string
+  Summary: string
+  Severity: "low" | "medium" | "high" | "critical"
+  Category: string
+  Source: string
+  URL: string
+  IsBreaking: boolean
+  PublishedTimestamp: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface Advertisement {
-  id: string
-  title: string
-  content: string
-  url: string
-  imageUrl?: string
-  sponsor: string
+  id: number
+  attributes: {
+    Tiltle: string
+    Content: string
+    URL: string
+    Image?: {
+      data: {
+        id: number
+        attributes: {
+          url: string
+          name: string
+        }
+      }
+    }
+    Sponsor: string
+    WidgetTarget: string
+    Active: boolean
+    PublishedTimestamp: string
+    createdAt: string
+    updatedAt: string
+  }
+}
+
+interface StrapiResponse<T> {
+  data: T[]
+  meta: {
+    pagination: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+  }
 }
 
 export function BreakingNewsWidget() {
@@ -38,29 +67,30 @@ export function BreakingNewsWidget() {
     loadBreakingNews()
     loadAdvertisements()
 
-    // Auto-rotate every 5 seconds
+    // Auto-rotate every 10 seconds for premium experience
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
         const totalItems = news.length + (showAds ? advertisements.length : 0)
         return totalItems > 0 ? (prev + 1) % totalItems : 0
       })
-    }, 5000)
+    }, 10000)
 
     return () => clearInterval(interval)
   }, [news.length, advertisements.length, showAds])
 
   const loadBreakingNews = async () => {
     try {
-      const response = await fetch("/api/news/breaking")
+      const response = await fetch("http://localhost:1337/api/breaking-news-plural?sort=PublishedTimestamp:desc&pagination[limit]=10")
       if (response.ok) {
-        const data = await response.json()
-        setNews(data.news || getFallbackNews())
+        const data: StrapiResponse<BreakingNews> = await response.json()
+        setNews(data.data || [])
       } else {
-        setNews(getFallbackNews())
+        console.error("Failed to load breaking news:", response.status)
+        setNews([])
       }
     } catch (error) {
       console.error("Failed to load breaking news:", error)
-      setNews(getFallbackNews())
+      setNews([])
     } finally {
       setLoading(false)
     }
@@ -68,144 +98,33 @@ export function BreakingNewsWidget() {
 
   const loadAdvertisements = async () => {
     try {
-      const response = await fetch("/api/widgets/advertisements?widget=breaking-news")
+      const response = await fetch("http://localhost:1337/api/advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc&pagination[limit]=5")
       if (response.ok) {
-        const data = await response.json()
-        setAdvertisements(data.advertisements || [])
-        setShowAds(data.enabled || false)
+        const data: StrapiResponse<Advertisement> = await response.json()
+        setAdvertisements(data.data || [])
+        setShowAds(data.data.length > 0)
+      } else {
+        console.error("Failed to load advertisements:", response.status)
+        setAdvertisements([])
+        setShowAds(false)
       }
     } catch (error) {
       console.error("Failed to load advertisements:", error)
-      // Fallback ads for demo
-      setAdvertisements([
-        {
-          id: "ad1",
-          title: "Visit Pattaya Beach Resort",
-          content: "Luxury beachfront accommodation with stunning ocean views. Book now for special rates!",
-          url: "#",
-          imageUrl: "/placeholder.svg?height=40&width=60&text=Resort",
-          sponsor: "Pattaya Beach Resort",
-        },
-        {
-          id: "ad2",
-          title: "Best Thai Restaurant",
-          content: "Authentic Thai cuisine in the heart of Pattaya. Fresh ingredients, traditional recipes.",
-          url: "#",
-          imageUrl: "/placeholder.svg?height=40&width=60&text=Food",
-          sponsor: "Thai Garden Restaurant",
-        },
-      ])
+      setAdvertisements([])
+      setShowAds(false)
     }
   }
-
-  const getFallbackNews = (): BreakingNews[] => [
-    {
-      id: "1",
-      title: "New Tourist Attraction Opens in Central Pattaya",
-      summary:
-        "State-of-the-art entertainment complex welcomes first visitors with grand opening ceremony featuring international performers and local cultural shows",
-      severity: "medium",
-      category: "Tourism",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      source: "Pattaya News",
-      url: "#",
-      isBreaking: true,
-    },
-    {
-      id: "2",
-      title: "Traffic Update: Beach Road Construction Phase 2",
-      summary:
-        "Major road improvements continue with temporary closures affecting main tourist areas. Alternative routes recommended for visitors",
-      severity: "high",
-      category: "Traffic",
-      timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      source: "City Hall",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "3",
-      title: "Weather Alert: Heavy Rain Expected This Weekend",
-      summary:
-        "Monsoon conditions forecasted with potential flooding in low-lying areas. Tourists advised to plan indoor activities",
-      severity: "medium",
-      category: "Weather",
-      timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-      source: "Weather Service",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "4",
-      title: "New Underwater World Aquarium Grand Opening",
-      summary:
-        "Marine life sanctuary opens doors to public with interactive exhibits and educational programs for all ages",
-      severity: "low",
-      category: "Tourism",
-      timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
-      source: "Tourism Board",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "5",
-      title: "Festival Announcement: Songkran 2024 Celebrations",
-      summary:
-        "Traditional water festival dates confirmed with special events throughout the city including cultural performances",
-      severity: "low",
-      category: "Events",
-      timestamp: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
-      source: "Cultural Department",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "6",
-      title: "Public Transport Schedule Changes Effective Monday",
-      summary: "New bus routes and extended operating hours to better serve tourist areas with improved connectivity",
-      severity: "medium",
-      category: "Transport",
-      timestamp: new Date(Date.now() - 150 * 60 * 1000).toISOString(),
-      source: "Transport Authority",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "7",
-      title: "Health Advisory: Dengue Prevention Campaign Launched",
-      summary:
-        "Health officials launch city-wide initiative to eliminate mosquito breeding sites and protect residents and tourists",
-      severity: "high",
-      category: "Health",
-      timestamp: new Date(Date.now() - 180 * 60 * 1000).toISOString(),
-      source: "Health Department",
-      url: "#",
-      isBreaking: false,
-    },
-    {
-      id: "8",
-      title: "Economic Update: Tourism Numbers Surge 25% This Month",
-      summary:
-        "Visitor arrivals show strong recovery with increased international bookings and positive economic indicators",
-      severity: "low",
-      category: "Economy",
-      timestamp: new Date(Date.now() - 210 * 60 * 1000).toISOString(),
-      source: "Economic Bureau",
-      url: "#",
-      isBreaking: false,
-    },
-  ]
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-red-600 text-white"
+        return "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-sm"
       case "high":
-        return "bg-orange-500 text-white"
+        return "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm"
       case "medium":
-        return "bg-yellow-500 text-white"
+        return "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
       default:
-        return "bg-blue-500 text-white"
+        return "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-sm"
     }
   }
 
@@ -222,7 +141,7 @@ export function BreakingNewsWidget() {
 
   const allItems = [...news, ...(showAds ? advertisements : [])]
   const currentItem = allItems[currentIndex]
-  const isAdvertisement = currentItem && "sponsor" in currentItem
+  const isAdvertisement = currentItem && "attributes" in currentItem && "Sponsor" in currentItem.attributes
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + allItems.length) % allItems.length)
@@ -234,19 +153,18 @@ export function BreakingNewsWidget() {
 
   if (loading) {
     return (
-      <Card className="top-row-widget">
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Breaking News</span>
+      <Card className="top-row-widget bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-3">
+            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full animate-pulse shadow-sm"></div>
+            <span className="tracking-wide">BREAKING NEWS</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded"></div>
-            <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-6 bg-gray-200 rounded"></div>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="h-6 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md animate-pulse"></div>
+            <div className="h-5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md w-4/5 animate-pulse"></div>
+            <div className="h-5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md w-3/5 animate-pulse"></div>
           </div>
         </CardContent>
       </Card>
@@ -255,17 +173,17 @@ export function BreakingNewsWidget() {
 
   if (!currentItem) {
     return (
-      <Card className="top-row-widget">
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Breaking News</span>
+      <Card className="top-row-widget bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-3">
+            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-sm"></div>
+            <span className="tracking-wide">BREAKING NEWS</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-3" />
-            <p className="text-sm">No news available</p>
+        <CardContent>
+          <div className="text-center py-12">
+            <div className="w-12 h-12 bg-gradient-to-r from-slate-200 to-slate-300 rounded-full mx-auto mb-4 animate-pulse"></div>
+            <p className="text-sm text-slate-500 font-medium">No news available</p>
           </div>
         </CardContent>
       </Card>
@@ -273,91 +191,121 @@ export function BreakingNewsWidget() {
   }
 
   return (
-    <Card className="top-row-widget breaking-news-widget">
-      <CardHeader>
+    <Card className="top-row-widget breaking-news-widget bg-white/90 backdrop-blur-sm border border-slate-200/60 shadow-xl hover:shadow-2xl transition-all duration-300">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <span>Breaking News</span>
-            <Badge className="bg-red-500 text-white text-xs animate-pulse">LIVE</Badge>
+          <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-3 tracking-wide">
+            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-sm"></div>
+            <span>BREAKING NEWS</span>
+            {            allItems.some(item => 
+              "Title" in item && 
+              !("Sponsor" in item) && 
+              (item as BreakingNews).IsBreaking
+            ) && (
+              <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-3 py-1 font-bold shadow-sm">
+                LIVE
+              </Badge>
+            )}
           </CardTitle>
-          <div className="news-navigation">
-            <Button variant="ghost" size="sm" onClick={goToPrevious} className="h-7 w-7 p-0">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-xs text-gray-500 px-2">
-              {currentIndex + 1}/{allItems.length}
-            </span>
-            <Button variant="ghost" size="sm" onClick={goToNext} className="h-7 w-7 p-0">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          
+          {allItems.length > 1 && (
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={goToPrevious} 
+                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+              >
+                <ChevronLeft className="w-4 h-4 text-slate-600" />
+              </Button>
+              <span className="text-xs text-slate-500 px-2 py-1 bg-slate-100/60 rounded-full font-medium min-w-[3rem] text-center">
+                {currentIndex + 1}/{allItems.length}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={goToNext} 
+                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+              >
+                <ChevronRight className="w-4 h-4 text-slate-600" />
+              </Button>
+            </div>
+          )}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="pt-0">
         {isAdvertisement ? (
-          <div className="advertisement-content">
-            <div className="flex items-start justify-between mb-3">
-              <Badge className="advertisement-badge">AD</Badge>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold px-3 py-1 shadow-sm">
+                SPONSORED
+              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.open((currentItem as Advertisement).url, "_blank")}
-                className="h-6 w-6 p-0"
+                onClick={() => window.open((currentItem as Advertisement).attributes.URL, "_blank")}
+                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
               >
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-4 h-4 text-slate-600" />
               </Button>
             </div>
-            <h4 className="text-sm font-semibold text-gray-800 mb-2">{(currentItem as Advertisement).title}</h4>
-            <p className="text-sm text-gray-600 mb-3 line-clamp-3">{(currentItem as Advertisement).content}</p>
-            <div className="text-xs text-gray-500">
-              Sponsored by <span className="font-medium">{(currentItem as Advertisement).sponsor}</span>
+            
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 leading-tight mb-3">
+                {(currentItem as Advertisement).attributes.Tiltle}
+              </h4>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                {(currentItem as Advertisement).attributes.Content}
+              </p>
+            </div>
+            
+            <div className="text-xs text-slate-500 pt-3 border-t border-slate-200/60 font-medium">
+              Sponsored by <span className="font-bold text-slate-700">{(currentItem as Advertisement).attributes.Sponsor}</span>
             </div>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge className={`text-xs ${getSeverityColor((currentItem as BreakingNews).severity)}`}>
-                  {(currentItem as BreakingNews).category}
-                </Badge>
-                {(currentItem as BreakingNews).isBreaking && (
-                  <Badge className="bg-red-600 text-white text-xs animate-pulse">
-                    <Zap className="w-2 h-2 mr-1" />
+              <div className="flex items-center gap-3">
+                              <Badge className={`text-xs font-bold px-3 py-1 ${getSeverityColor((currentItem as BreakingNews).Severity)}`}>
+                {(currentItem as BreakingNews).Category}
+              </Badge>
+              {(currentItem as BreakingNews).IsBreaking && (
+                  <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1 shadow-sm">
+                    <Zap className="w-3 h-3 mr-1" />
                     BREAKING
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
+              
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                   <Clock className="w-3 h-3" />
-                  <span>{formatTimeAgo((currentItem as BreakingNews).timestamp)}</span>
+                  <span>{formatTimeAgo((currentItem as BreakingNews).PublishedTimestamp)}</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.open((currentItem as BreakingNews).url, "_blank")}
-                  className="h-6 w-6 p-0"
+                  onClick={() => window.open((currentItem as BreakingNews).URL, "_blank")}
+                  className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
                 >
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-4 h-4 text-slate-600" />
                 </Button>
               </div>
             </div>
 
-            <h4 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-relaxed">
-              {(currentItem as BreakingNews).title}
-            </h4>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 leading-tight mb-3">
+                {(currentItem as BreakingNews).Title}
+              </h4>
+              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                {(currentItem as BreakingNews).Summary}
+              </p>
+            </div>
 
-            <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
-              {(currentItem as BreakingNews).summary}
-            </p>
-
-            <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
-              <span>Source: {(currentItem as BreakingNews).source}</span>
-              <span>
-                {currentIndex + 1} of {allItems.length}
-              </span>
+            <div className="text-xs text-slate-500 pt-3 border-t border-slate-200/60 font-medium">
+              Source: <span className="font-bold text-slate-700">{(currentItem as BreakingNews).Source}</span>
             </div>
           </div>
         )}

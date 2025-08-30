@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Slider } from "@/components/ui/slider"
+import { Separator } from "@/components/ui/separator"
 
 interface RadioStation {
   id: string
@@ -37,33 +39,66 @@ export function RadioWidget() {
   const [favorites, setFavorites] = useState<string[]>([])
   const [darkMode, setDarkMode] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     loadStations()
     loadFavorites()
+    // Refresh every 5 minutes
+    const interval = setInterval(loadStations, 300000)
+    return () => clearInterval(interval)
   }, [])
 
   const loadStations = async () => {
     try {
-      const response = await fetch("/api/radio/stations")
+      setError(null)
+      console.log('Fetching radio stations from Strapi...')
+      const response = await fetch("http://localhost:1337/api/radio-stations?populate=*&sort=Featured:desc,Listeners:desc")
       if (response.ok) {
         const data = await response.json()
-        const stationList = data.stations || getAllStations()
-        setStations(stationList)
+        console.log('Strapi response:', data)
+        if (data.data && data.data.length > 0) {
+          const stationList = data.data.map((item: any) => ({
+            id: item.id.toString(),
+            name: item.Name,
+            frequency: item.Frequency,
+            genre: item.Genre,
+            streamUrl: item.StreamURL,
+            logo: item.Logo?.url 
+              ? `http://localhost:1337${item.Logo.url}`
+              : "/placeholder.svg?height=40&width=40&text=RF",
+            isLive: item.IsLive,
+            listeners: item.Listeners || 0,
+            nowPlaying: item.CurrentTrack || "Live Stream",
+            featured: item.Featured,
+            description: item.Description || "",
+            website: item.Website,
+            social: {
+              facebook: item.Facebook,
+              twitter: item.Twitter,
+              instagram: item.Instagram,
+            },
+          }))
+          console.log('Transformed stations:', stationList)
+          setStations(stationList)
 
-        // Set first featured station as default, or first station
-        const defaultStation = stationList.find((s: RadioStation) => s.featured) || stationList[0]
-        if (defaultStation) {
-          setCurrentStation(defaultStation)
+          // Set first featured station as default, or first station
+          const defaultStation = stationList.find((s: RadioStation) => s.featured) || stationList[0]
+          if (defaultStation) {
+            setCurrentStation(defaultStation)
+          }
+        } else {
+          throw new Error("No radio stations available")
         }
       } else {
-        const fallbackStations = getAllStations()
-        setStations(fallbackStations)
-        setCurrentStation(fallbackStations[0])
+        throw new Error("Failed to fetch radio stations")
       }
     } catch (error) {
       console.error("Failed to load stations:", error)
+      setError("Unable to load radio stations")
+      // Fallback to hardcoded stations
       const fallbackStations = getAllStations()
       setStations(fallbackStations)
       setCurrentStation(fallbackStations[0])
@@ -252,20 +287,46 @@ export function RadioWidget() {
     }
   }
 
+  const handleVolumeChange = (value: number[]) => {
+    setVolume(value)
+    if (audioRef.current) {
+      audioRef.current.volume = value[0] / 100
+    }
+  }
+
   if (loading) {
     return (
-      <Card className="top-row-widget">
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <Radio className="w-4 h-4" />
-            <span>Radio</span>
-          </CardTitle>
+      <Card className="top-row-widget bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Radio className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-semibold text-gray-800">Live Radio</CardTitle>
+                <p className="text-xs text-gray-500">Pattaya's Finest Stations</p>
+              </div>
+            </div>
+            <div className="animate-pulse">
+              <div className="w-12 h-6 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-8 bg-gray-200 rounded"></div>
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+            <div className="flex justify-center space-x-4">
+              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -273,111 +334,226 @@ export function RadioWidget() {
   }
 
   return (
-    <Card className={`top-row-widget radio-widget-proper ${darkMode ? "bg-gray-900 text-white" : ""}`}>
-      <CardHeader>
+    <Card className="top-row-widget bg-gradient-to-br from-blue-50 via-white to-purple-50 border-0 shadow-xl overflow-hidden">
+      <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <span className="radio-frequency">{currentStation?.frequency || "103.5"} FM</span>
-            <span className="radio-genre">{currentStation?.genre || "Pop/Rock"}</span>
-          </CardTitle>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Radio className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold">Live Radio</CardTitle>
+              <p className="text-xs text-blue-100">Pattaya's Finest Stations</p>
+            </div>
+          </div>
           <div className="flex items-center space-x-2">
-            <Badge className="bg-red-500 text-white text-xs animate-pulse">LIVE</Badge>
-            <Switch checked={darkMode} onCheckedChange={setDarkMode} className="scale-75" />
+            <Badge className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
+              LIVE
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={loadStations} 
+              className="h-7 w-7 p-0 hover:bg-white/20 rounded-full transition-colors text-white" 
+              disabled={loading}
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+            </Button>
+            <Switch 
+              checked={darkMode} 
+              onCheckedChange={setDarkMode} 
+              className="scale-75 data-[state=checked]:bg-white/20" 
+            />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* Current Station Info */}
+      <CardContent className="p-4 space-y-4">
+        {/* Current Station Display */}
         {currentStation && (
-          <div className="station-info">
-            <div className="flex items-center space-x-3">
-              <img
-                src={currentStation.logo || "/placeholder.svg"}
-                alt={currentStation.name}
-                className="w-10 h-10 rounded object-cover"
-              />
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <img
+                  src={currentStation.logo || "/placeholder.svg"}
+                  alt={currentStation.name}
+                  className="w-16 h-16 rounded-xl object-cover shadow-md"
+                />
+                {currentStation.featured && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <Star className="w-3 h-3 text-white fill-white" />
+                  </div>
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2">
-                  <span className="station-name">{currentStation.name}</span>
-                  {currentStation.featured && <span className="text-yellow-400 text-sm">⭐</span>}
+                <div className="flex items-center space-x-2 mb-1">
+                  <h3 className="font-bold text-gray-900 text-lg truncate">{currentStation.name}</h3>
                 </div>
-                <div className="now-playing truncate text-gray-600">{currentStation.nowPlaying}</div>
+                <div className="flex items-center space-x-3 text-sm text-gray-600 mb-2">
+                  <span className="font-mono font-semibold text-blue-600">{currentStation.frequency} FM</span>
+                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                  <span className="bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">
+                    {currentStation.genre}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                  <div className="flex items-center space-x-1">
+                    <Users className="w-3 h-3" />
+                    <span>{currentStation.listeners.toLocaleString()} listeners</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Music className="w-3 h-3" />
+                    <span className="truncate max-w-32">{currentStation.nowPlaying}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Controls */}
-        <div className="radio-controls-layout">
-          <div className="radio-play-controls">
+        {/* Main Controls */}
+        <div className="flex items-center justify-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => currentStation && playStation(currentStation)}
+            className="h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+          </Button>
+          
+          <div className="relative">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => currentStation && playStation(currentStation)}
-              className="h-10 w-10 p-0"
+              onClick={toggleMute}
+              onMouseEnter={() => setShowVolumeSlider(true)}
+              onMouseLeave={() => setShowVolumeSlider(false)}
+              className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="sm" onClick={toggleMute} className="h-10 w-10 p-0">
-              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-            </Button>
+            
+            {showVolumeSlider && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white rounded-lg shadow-lg border p-3 z-10">
+                <Slider
+                  value={volume}
+                  onValueChange={handleVolumeChange}
+                  max={100}
+                  step={1}
+                  className="w-20"
+                />
+                <p className="text-xs text-center text-gray-500 mt-1">{volume[0]}%</p>
+              </div>
+            )}
           </div>
 
-          <div className="radio-menu-controls">
-            {currentStation && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  toggleFavorite(currentStation.id)
-                }}
-                className="h-10 w-10 p-0"
-              >
-                <Heart
-                  className={`w-5 h-5 ${
-                    favorites.includes(currentStation.id) ? "fill-red-500 text-red-500" : "text-gray-400"
+          {currentStation && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleFavorite(currentStation.id)}
+              className={`h-10 w-10 rounded-full transition-all duration-200 ${
+                favorites.includes(currentStation.id)
+                  ? "bg-red-50 text-red-500 hover:bg-red-100"
+                  : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
+            </Button>
+          )}
+        </div>
+
+        <Separator className="my-2" />
+
+        {/* Station Selector */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">Quick Select:</span>
+            <div className="flex space-x-1">
+              {stations.slice(0, 3).map((station) => (
+                <Button
+                  key={station.id}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => playStation(station)}
+                  className={`h-8 px-3 rounded-full text-xs transition-all duration-200 ${
+                    currentStation?.id === station.id
+                      ? "bg-blue-100 text-blue-700 font-medium"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
-                />
-              </Button>
+                >
+                  {station.frequency}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {/* Error indicator */}
+            {error && (
+              <div className="flex items-center space-x-1 text-xs text-amber-600">
+                <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+                <span className="font-medium">Connection issue</span>
+              </div>
             )}
 
-            {/* Station Menu */}
+            {/* All Stations Menu */}
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
-                  <MoreVertical className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto radio-station-menu">
-                <div className="p-2">
-                  <div className="text-xs font-semibold text-gray-500 mb-2">All Stations ({stations.length})</div>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 px-3 rounded-full text-xs">
+                <MoreVertical className="w-3 h-3 mr-1" />
+                All Stations
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+              <div className="p-3">
+                <div className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-between">
+                  <span>All Stations ({stations.length})</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {favorites.length} Favorites
+                  </Badge>
+                </div>
+                <div className="space-y-1">
                   {stations.map((station) => (
-                    <div
+                    <DropdownMenuItem
                       key={station.id}
-                      className={`station-item flex items-center space-x-2 p-2 rounded cursor-pointer ${
-                        currentStation?.id === station.id ? "active" : ""
+                      className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                        currentStation?.id === station.id
+                          ? "bg-blue-50 border border-blue-200"
+                          : "hover:bg-gray-50"
                       }`}
                       onClick={() => playStation(station)}
                     >
-                      <img
-                        src={station.logo || "/placeholder.svg"}
-                        alt={station.name}
-                        className="w-6 h-6 rounded object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-1">
-                          <p className="text-xs font-medium truncate">{station.name}</p>
-                          {station.featured && <span className="text-yellow-400 text-xs">⭐</span>}
+                      <div className="flex items-center space-x-3 w-full">
+                        <div className="relative">
+                          <img
+                            src={station.logo || "/placeholder.svg"}
+                            alt={station.name}
+                            className="w-10 h-10 rounded-lg object-cover"
+                          />
+                          {station.featured && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                              <Star className="w-2 h-2 text-white fill-white" />
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <span>{station.frequency} FM</span>
-                          <span>•</span>
-                          <span>{station.genre}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2">
+                            <p className="font-medium text-sm truncate">{station.name}</p>
+                            {station.isLive && (
+                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1">
+                            <span className="font-mono font-semibold text-blue-600">{station.frequency} FM</span>
+                            <span>•</span>
+                            <span>{station.genre}</span>
+                            <span>•</span>
+                            <span>{station.listeners.toLocaleString()} listeners</span>
+                          </div>
+                          <p className="text-xs text-gray-400 truncate mt-1">{station.nowPlaying}</p>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-1">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -385,20 +561,21 @@ export function RadioWidget() {
                             e.stopPropagation()
                             toggleFavorite(station.id)
                           }}
-                          className="h-5 w-5 p-0"
+                          className={`h-6 w-6 p-0 rounded-full ${
+                            favorites.includes(station.id)
+                              ? "text-red-500 hover:bg-red-50"
+                              : "text-gray-400 hover:bg-gray-100"
+                          }`}
                         >
-                          <Heart
-                            className={`w-3 h-3 ${
-                              favorites.includes(station.id) ? "fill-red-500 text-red-500" : "text-gray-400"
-                            }`}
-                          />
+                          <Heart className={`w-3 h-3 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
                         </Button>
                       </div>
-                    </div>
+                    </DropdownMenuItem>
                   ))}
                 </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </div>
         </div>
 
