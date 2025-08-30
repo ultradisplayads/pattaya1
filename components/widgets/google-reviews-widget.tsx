@@ -38,6 +38,31 @@ interface GoogleReviewsData {
   lastUpdated: string
 }
 
+interface StrapiGoogleReview {
+  id: number
+  AuthorName: string
+  AuthorProfilePhotoUrl: string
+  AuthorProfileUrl: string
+  Rating: number
+  ReviewText: string
+  ReviewTime: string
+  RelativeTimeDescription: string
+  BusinessName: string
+  BusinessAddress: string
+  BusinessType: string
+  BusinessUrl: string
+  Verified: boolean
+  IsActive: boolean
+  Featured: boolean
+  Category: string
+  Location: string
+  Language: string
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function GoogleReviewsWidget() {
   const [reviewsData, setReviewsData] = useState<GoogleReviewsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -66,30 +91,77 @@ export function GoogleReviewsWidget() {
   const loadReviews = async () => {
     try {
       setError(null)
-      const response = await fetch("/api/google/reviews/latest")
-      if (!response.ok) throw new Error("Failed to fetch reviews")
-      const data = (await response.json()) as GoogleReviewsData
-      setReviewsData(data)
+      setLoading(true)
+      console.log('Fetching Google reviews from Strapi...')
+      
+      const response = await fetch("http://localhost:1337/api/google-reviews?populate=*&sort=ReviewTime:desc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (data.data && data.data.length > 0) {
+          const transformedReviews: GoogleReview[] = data.data.map((strapiReview: any) => ({
+            id: strapiReview.id.toString(),
+            author: {
+              name: strapiReview.AuthorName,
+              profilePhotoUrl: strapiReview.AuthorProfilePhotoUrl,
+              profileUrl: strapiReview.AuthorProfileUrl,
+            },
+            rating: strapiReview.Rating,
+            text: strapiReview.ReviewText,
+            time: strapiReview.ReviewTime,
+            relativeTimeDescription: strapiReview.RelativeTimeDescription,
+            businessName: strapiReview.BusinessName,
+            businessAddress: strapiReview.BusinessAddress,
+            businessType: strapiReview.BusinessType,
+            businessUrl: strapiReview.BusinessUrl,
+            verified: strapiReview.Verified,
+          }))
+
+          // Calculate average rating and total reviews
+          const totalRating = transformedReviews.reduce((sum, review) => sum + review.rating, 0)
+          const averageRating = totalRating / transformedReviews.length
+
+          setReviewsData({
+            reviews: transformedReviews,
+            averageRating: Math.round(averageRating * 10) / 10,
+            totalReviews: transformedReviews.length,
+            businessInfo: {
+              name: "Pattaya Businesses",
+              address: "Pattaya, Thailand",
+              type: "Various",
+              placeId: "pattaya-general",
+            },
+            lastUpdated: new Date().toISOString(),
+          })
+        } else {
+          setReviewsData(getFallbackReviewsData())
+        }
+      } else {
+        console.error("Failed to load Google reviews from Strapi:", response.status)
+        setReviewsData(getFallbackReviewsData())
+      }
     } catch (err) {
       console.error("Reviews loading error:", err)
       setError("Unable to load reviews")
-      // --- fallback demo data ---
-      setReviewsData({
-        reviews: sampleReviews,
-        averageRating: 4.6,
-        totalReviews: 1247,
-        businessInfo: {
-          name: "Pattaya Businesses",
-          address: "Pattaya, Thailand",
-          type: "Various",
-          placeId: "pattaya-general",
-        },
-        lastUpdated: new Date().toISOString(),
-      })
+      setReviewsData(getFallbackReviewsData())
     } finally {
       setLoading(false)
     }
   }
+
+  const getFallbackReviewsData = (): GoogleReviewsData => ({
+    reviews: sampleReviews,
+    averageRating: 4.6,
+    totalReviews: 1247,
+    businessInfo: {
+      name: "Pattaya Businesses",
+      address: "Pattaya, Thailand",
+      type: "Various",
+      placeId: "pattaya-general",
+    },
+    lastUpdated: new Date().toISOString(),
+  })
 
   /* ------------------------------------------------------------------ */
   /*                            HELPERS                                 */

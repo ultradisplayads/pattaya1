@@ -57,220 +57,227 @@ export function ModularHomepage() {
   }, [])
 
   const initializeWidgets = () => {
-    const defaultWidgets: Widget[] = [
-      {
-        id: "breaking-news",
-        name: "Breaking News",
-        type: "news",
-        description: "Live breaking news and alerts",
-        size: "small",
-        position: { row: 1, col: 1, rowSpan: 1, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 300000,
-          advertisements: { enabled: true, slots: 2, content: [] },
+    try {
+      console.log('Initializing widgets...')
+      const defaultWidgets: Widget[] = [
+        {
+          id: "breaking-news",
+          name: "Breaking News",
+          type: "news",
+          description: "Live breaking news and alerts",
+          size: "small",
+          position: { row: 1, col: 1, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 300000,
+            advertisements: { enabled: true, slots: 2, content: [] },
+          },
         },
-      },
-      {
-        id: "weather",
-        name: "Weather Widget",
-        type: "weather",
-        description: "Current weather conditions",
-        size: "small",
-        position: { row: 1, col: 2, rowSpan: 1, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          apiKeys: { openweather: process.env.OPENWEATHER_API_KEY || "" },
-          refreshInterval: 600000,
+        {
+          id: "weather",
+          name: "Weather Widget",
+          type: "weather",
+          description: "Current weather conditions",
+          size: "small",
+          position: { row: 1, col: 2, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            apiKeys: { openweather: process.env.OPENWEATHER_API_KEY || "" },
+            refreshInterval: 600000,
+          },
         },
-      },
-      {
-        id: "radio",
-        name: "Radio Player",
-        type: "media",
-        description: "Live radio streaming",
-        size: "small",
-        position: { row: 1, col: 3, rowSpan: 1, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 30000,
+        {
+          id: "radio",
+          name: "Radio Player",
+          type: "media",
+          description: "Live radio streaming",
+          size: "small",
+          position: { row: 1, col: 3, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 30000,
+          },
         },
-      },
-      {
-        id: "hot-deals",
-        name: "Hot Deals",
-        type: "business",
-        description: "Latest deals and promotions with Groupon integration",
-        size: "small",
-        position: { row: 1, col: 4, rowSpan: 1, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 1800000,
-          advertisements: { enabled: true, slots: 3, content: [] },
+        {
+          id: "hot-deals",
+          name: "Hot Deals",
+          type: "business",
+          description: "Latest deals and promotions with Groupon integration",
+          size: "small",
+          position: { row: 1, col: 4, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 1800000,
+            advertisements: { enabled: true, slots: 3, content: [] },
+          },
         },
-      },
-      {
-        id: "news-hero",
-        name: "News Hero",
-        type: "news",
-        description: "Featured news stories",
-        size: "large",
-        position: { row: 2, col: 1, rowSpan: 2, colSpan: 3 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 300000,
+        {
+          id: "news-hero",
+          name: "News Hero",
+          type: "news",
+          description: "Featured news stories",
+          size: "large",
+          position: { row: 2, col: 1, rowSpan: 2, colSpan: 3 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 300000,
+          },
         },
-      },
-      {
-        id: "youtube",
-        name: "YouTube Videos",
-        type: "media",
-        description: "Featured YouTube content",
-        size: "medium",
-        position: { row: 2, col: 4, rowSpan: 3, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          apiKeys: { youtube: process.env.YOUTUBE_API_KEY || "" },
-          refreshInterval: 900000,
+        {
+          id: "youtube",
+          name: "YouTube Videos",
+          type: "media",
+          description: "Featured YouTube content",
+          size: "medium",
+          position: { row: 2, col: 4, rowSpan: 3, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            apiKeys: { youtube: process.env.YOUTUBE_API_KEY || "" },
+            refreshInterval: 900000,
+          },
         },
-      },
-      {
-        id: "social-feed",
-        name: "Social Media Feed",
-        type: "social",
-        description: "Live social media updates",
-        size: "medium",
-        position: { row: 4, col: 1, rowSpan: 2, colSpan: 2 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 120000,
+        {
+          id: "social-feed",
+          name: "Social Media Feed",
+          type: "social",
+          description: "Real-time social media updates",
+          size: "small",
+          position: { row: 3, col: 1, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 120000,
+          },
         },
-      },
-      {
-        id: "trending",
-        name: "Trending Topics",
-        type: "social",
-        description: "What's trending now",
-        size: "small",
-        position: { row: 4, col: 3, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 300000,
+        {
+          id: "trending",
+          name: "Trending Topics",
+          type: "social",
+          description: "Hot trending topics and hashtags",
+          size: "small",
+          position: { row: 3, col: 2, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 300000,
+          },
         },
-      },
-      {
-        id: "business-spotlight",
-        name: "Business Spotlight",
-        type: "business",
-        description: "Featured local businesses",
-        size: "large",
-        position: { row: 6, col: 1, rowSpan: 2, colSpan: 3 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 3600000,
-          advertisements: { enabled: true, slots: 1, content: [] },
+        {
+          id: "business-spotlight",
+          name: "Business Spotlight",
+          type: "business",
+          description: "Featured local businesses",
+          size: "medium",
+          position: { row: 4, col: 1, rowSpan: 1, colSpan: 2 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 600000,
+          },
         },
-      },
-      {
-        id: "google-reviews",
-        name: "Google Reviews",
-        type: "reviews",
-        description: "Latest Google reviews",
-        size: "small",
-        position: { row: 5, col: 4, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
-          refreshInterval: 1800000,
+        {
+          id: "events-calendar",
+          name: "Events Calendar",
+          type: "events",
+          description: "Upcoming events and activities",
+          size: "small",
+          position: { row: 5, col: 1, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 300000,
+          },
         },
-      },
-      {
-        id: "events-calendar",
-        name: "Events Calendar",
-        type: "events",
-        description: "Upcoming events",
-        size: "medium",
-        position: { row: 8, col: 1, rowSpan: 2, colSpan: 2 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 1800000,
+        {
+          id: "forum-activity",
+          name: "Forum Activity",
+          type: "social",
+          description: "Latest forum discussions",
+          size: "small",
+          position: { row: 5, col: 2, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 180000,
+          },
         },
-      },
-      {
-        id: "forum-activity",
-        name: "Forum Activity",
-        type: "community",
-        description: "Latest forum discussions",
-        size: "small",
-        position: { row: 8, col: 3, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 300000,
+        {
+          id: "photo-gallery",
+          name: "Photo Gallery",
+          type: "media",
+          description: "User-submitted photos",
+          size: "small",
+          position: { row: 5, col: 3, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 600000,
+          },
         },
-      },
-      {
-        id: "photo-gallery",
-        name: "Photo Gallery",
-        type: "media",
-        description: "Community photos",
-        size: "small",
-        position: { row: 7, col: 4, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 600000,
+        {
+          id: "google-reviews",
+          name: "Google Reviews",
+          type: "business",
+          description: "Latest Google reviews",
+          size: "small",
+          position: { row: 6, col: 1, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 900000,
+          },
         },
-      },
-      {
-        id: "curator-social",
-        name: "Curated Social Feed",
-        type: "social",
-        description: "Curated social media content",
-        size: "medium",
-        position: { row: 10, col: 1, rowSpan: 2, colSpan: 2 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 300000,
+        {
+          id: "live-events",
+          name: "Live Events",
+          type: "events",
+          description: "Currently happening events",
+          size: "small",
+          position: { row: 6, col: 2, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 60000,
+          },
         },
-      },
-      {
-        id: "live-events",
-        name: "Live Events",
-        type: "events",
-        description: "Currently happening events",
-        size: "small",
-        position: { row: 10, col: 3, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {
-          refreshInterval: 60000,
+        {
+          id: "quick-links",
+          name: "Quick Links",
+          type: "navigation",
+          description: "Quick access to popular sections",
+          size: "small",
+          position: { row: 6, col: 3, rowSpan: 1, colSpan: 1 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 3600000,
+          },
         },
-      },
-      {
-        id: "quick-links",
-        name: "Quick Links",
-        type: "navigation",
-        description: "Popular page shortcuts",
-        size: "small",
-        position: { row: 9, col: 4, rowSpan: 2, colSpan: 1 },
-        isVisible: true,
-        settings: {},
-      },
-      {
-        id: "traffic",
-        name: "Traffic Information",
-        type: "transport",
-        description: "Live traffic updates",
-        size: "xlarge",
-        position: { row: 12, col: 1, rowSpan: 1, colSpan: 4 },
-        isVisible: true,
-        settings: {
-          apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
-          refreshInterval: 300000,
+        {
+          id: "curator-social",
+          name: "Curator Social",
+          type: "social",
+          description: "Curated social media content",
+          size: "medium",
+          position: { row: 7, col: 1, rowSpan: 1, colSpan: 2 },
+          isVisible: true,
+          settings: {
+            refreshInterval: 300000,
+          },
         },
-      },
-    ]
+        {
+          id: "traffic",
+          name: "Traffic Updates",
+          type: "transport",
+          description: "Live traffic updates",
+          size: "xlarge",
+          position: { row: 12, col: 1, rowSpan: 1, colSpan: 4 },
+          isVisible: true,
+          settings: {
+            apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
+            refreshInterval: 300000,
+          },
+        },
+      ]
 
-    setWidgets(defaultWidgets)
-    setLoading(false)
+      setWidgets(defaultWidgets)
+      console.log('Widgets initialized successfully')
+      setLoading(false)
+    } catch (error) {
+      console.error('Error initializing widgets:', error)
+      setLoading(false)
+    }
   }
 
   const handleToggleWidget = (widgetId: string) => {

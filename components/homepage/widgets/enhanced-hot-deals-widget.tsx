@@ -54,6 +54,70 @@ interface Deal {
   }
 }
 
+interface StrapiDeal {
+  id: number
+  title: string
+  slug: string
+  description: string
+  originalPrice: number
+  salePrice: number
+  discountPercent: number
+  currency: string
+  startDate: string
+  endDate: string
+  maxQuantity: number
+  soldQuantity: number
+  isActive: boolean
+  featured: boolean
+  views: number
+  clicks: number
+  conversions: number
+  images?: {
+    data: Array<{
+      id: number
+      attributes: {
+        name: string
+        url: string
+        formats?: {
+          thumbnail?: { url: string }
+          small?: { url: string }
+          medium?: { url: string }
+          large?: { url: string }
+        }
+      }
+    }>
+  }
+  business?: {
+    data: {
+      id: number
+      attributes: {
+        name: string
+        rating: number
+        reviewCount: number
+        logo?: {
+          data: {
+            attributes: {
+              url: string
+            }
+          }
+        }
+      }
+    }
+  }
+  category?: {
+    data: {
+      id: number
+      attributes: {
+        name: string
+        slug: string
+      }
+    }
+  }
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function EnhancedHotDealsWidget() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [activeCategory, setActiveCategory] = useState<string>("all")
@@ -69,113 +133,211 @@ export function EnhancedHotDealsWidget() {
   const fetchDeals = async () => {
     try {
       setIsLoading(true)
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      console.log('Fetching deals from Strapi...')
+      
+      // Call Strapi API to get deals with populated relations
+      const response = await fetch("http://localhost:1337/api/deals?populate=*")
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Strapi deals response:', data)
+        
+        if (data.data && data.data.length > 0) {
+          // Transform Strapi data to match component interface
+          const transformedDeals: Deal[] = data.data
+            .filter((strapiDeal: StrapiDeal) => strapiDeal.isActive) // Filter active deals
+            .sort((a: StrapiDeal, b: StrapiDeal) => {
+              // Sort by featured first, then by end date
+              if (a.featured && !b.featured) return -1;
+              if (!a.featured && b.featured) return 1;
+              return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+            })
+            .map((strapiDeal: StrapiDeal) => {
+            // Get image URL with fallback
+            let imageUrl = "/placeholder.svg?height=200&width=300&text=Deal"
+            if (strapiDeal.images?.data && strapiDeal.images.data.length > 0) {
+              imageUrl = `http://localhost:1337${strapiDeal.images.data[0].attributes.url}`
+            }
 
-      const mockDeals: Deal[] = [
-        {
-          id: "1",
-          title: "Luxury Beachfront Resort - 3 Days 2 Nights",
-          description: "Experience paradise at our 5-star beachfront resort with all-inclusive dining and spa access.",
-          originalPrice: 15000,
-          discountedPrice: 8999,
-          discountPercentage: 40,
-          category: "hotel",
-          vendor: {
-            name: "Paradise Resort Pattaya",
-            rating: 4.8,
-            reviewCount: 1247,
-            image: "/placeholder.svg?height=40&width=40",
-          },
-          image: "/placeholder.svg?height=200&width=300&text=Luxury+Resort",
-          location: "Jomtien Beach",
-          validUntil: "2024-01-20T23:59:59Z",
-          soldCount: 89,
-          maxQuantity: 150,
-          highlights: ["Private Beach Access", "Spa Included", "All Meals"],
-          tags: ["luxury", "beachfront", "spa"],
-          isFlashDeal: true,
-          timeLeft: { hours: 23, minutes: 45, seconds: 30 },
-        },
-        {
-          id: "2",
-          title: "Authentic Thai Cooking Class + Market Tour",
-          description: "Learn to cook authentic Thai dishes with a professional chef and visit local markets.",
-          originalPrice: 2500,
-          discountedPrice: 1499,
-          discountPercentage: 40,
-          category: "activity",
-          vendor: {
-            name: "Thai Cooking Academy",
-            rating: 4.9,
-            reviewCount: 856,
-            image: "/placeholder.svg?height=40&width=40",
-          },
-          image: "/placeholder.svg?height=200&width=300&text=Cooking+Class",
-          location: "Central Pattaya",
-          validUntil: "2024-01-18T23:59:59Z",
-          soldCount: 156,
-          maxQuantity: 200,
-          highlights: ["Professional Chef", "Market Tour", "Recipe Book"],
-          tags: ["cooking", "culture", "food"],
-          isFlashDeal: false,
-        },
-        {
-          id: "3",
-          title: "Sunset Dinner Cruise with Live Music",
-          description: "Enjoy a romantic sunset cruise with gourmet dinner and live entertainment.",
-          originalPrice: 3500,
-          discountedPrice: 2199,
-          discountPercentage: 37,
-          category: "restaurant",
-          vendor: {
-            name: "Ocean Cruises Pattaya",
-            rating: 4.7,
-            reviewCount: 634,
-            image: "/placeholder.svg?height=40&width=40",
-          },
-          image: "/placeholder.svg?height=200&width=300&text=Sunset+Cruise",
-          location: "Pattaya Bay",
-          validUntil: "2024-01-22T23:59:59Z",
-          soldCount: 67,
-          maxQuantity: 100,
-          highlights: ["Sunset Views", "Live Music", "Gourmet Dinner"],
-          tags: ["romantic", "cruise", "dinner"],
-          isFlashDeal: true,
-          timeLeft: { hours: 12, minutes: 30, seconds: 15 },
-        },
-        {
-          id: "4",
-          title: "Traditional Thai Massage & Spa Package",
-          description: "Relax with a traditional Thai massage and spa treatment in a luxury setting.",
-          originalPrice: 1800,
-          discountedPrice: 999,
-          discountPercentage: 44,
-          category: "spa",
-          vendor: {
-            name: "Serenity Spa & Wellness",
-            rating: 4.8,
-            reviewCount: 445,
-            image: "/placeholder.svg?height=40&width=40",
-          },
-          image: "/placeholder.svg?height=200&width=300&text=Spa+Package",
-          location: "North Pattaya",
-          validUntil: "2024-01-25T23:59:59Z",
-          soldCount: 234,
-          maxQuantity: 300,
-          highlights: ["Traditional Massage", "Spa Treatment", "Relaxation"],
-          tags: ["spa", "wellness", "relaxation"],
-          isFlashDeal: false,
-        },
-      ]
+            // Get vendor info with fallback
+            const vendor = strapiDeal.business?.data?.attributes || {
+              name: "Pattaya Business",
+              rating: 4.5,
+              reviewCount: 100,
+              image: "/placeholder.svg?height=40&width=40"
+            }
 
-      setDeals(mockDeals)
+            // Get vendor logo
+            let vendorImage = "/placeholder.svg?height=40&width=40"
+            if (strapiDeal.business?.data?.attributes?.logo?.data?.attributes?.url) {
+              vendorImage = `http://localhost:1337${strapiDeal.business.data.attributes.logo.data.attributes.url}`
+            }
+
+            // Determine category from business or use default
+            const category = strapiDeal.category?.data?.attributes?.name?.toLowerCase() || "activity"
+
+            // Calculate if it's a flash deal (ending within 24 hours)
+            const endDate = new Date(strapiDeal.endDate)
+            const now = new Date()
+            const timeDiff = endDate.getTime() - now.getTime()
+            const hoursLeft = timeDiff / (1000 * 60 * 60)
+            const isFlashDeal = hoursLeft <= 24
+
+            // Calculate time left for flash deals
+            let timeLeft = undefined
+            if (isFlashDeal && timeDiff > 0) {
+              const hours = Math.floor(hoursLeft)
+              const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+              const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000)
+              timeLeft = { hours, minutes, seconds }
+            }
+
+            return {
+              id: strapiDeal.id.toString(),
+              title: strapiDeal.title,
+              description: strapiDeal.description,
+              originalPrice: strapiDeal.originalPrice,
+              discountedPrice: strapiDeal.salePrice,
+              discountPercentage: strapiDeal.discountPercent,
+              category: category as any,
+              vendor: {
+                name: vendor.name,
+                rating: vendor.rating || 4.5,
+                reviewCount: vendor.reviewCount || 100,
+                image: vendorImage,
+              },
+              image: imageUrl,
+              location: "Pattaya, Thailand", // Default location
+              validUntil: strapiDeal.endDate,
+              soldCount: strapiDeal.soldQuantity,
+              maxQuantity: strapiDeal.maxQuantity,
+              highlights: ["Great Value", "Limited Time"], // Default highlights
+              tags: ["deal", "discount"], // Default tags
+              isFlashDeal: isFlashDeal,
+              timeLeft: timeLeft,
+            }
+          })
+          
+          console.log('Transformed deals:', transformedDeals)
+          setDeals(transformedDeals)
+        } else {
+          console.log('No active deals found, using fallback data')
+          // Use fallback data if no deals found
+          const fallbackDeals = getFallbackDeals()
+          setDeals(fallbackDeals)
+        }
+      } else {
+        console.error("Failed to fetch deals from Strapi:", response.status)
+        // Use fallback data on error
+        const fallbackDeals = getFallbackDeals()
+        setDeals(fallbackDeals)
+      }
     } catch (error) {
       console.error("Failed to fetch deals:", error)
+      // Use fallback data on error
+      const fallbackDeals = getFallbackDeals()
+      setDeals(fallbackDeals)
     } finally {
       setIsLoading(false)
     }
   }
+
+  const getFallbackDeals = (): Deal[] => [
+    {
+      id: "1",
+      title: "Luxury Beachfront Resort - 3 Days 2 Nights",
+      description: "Experience paradise at our 5-star beachfront resort with all-inclusive dining and spa access.",
+      originalPrice: 15000,
+      discountedPrice: 8999,
+      discountPercentage: 40,
+      category: "hotel",
+      vendor: {
+        name: "Paradise Resort Pattaya",
+        rating: 4.8,
+        reviewCount: 1247,
+        image: "/placeholder.svg?height=40&width=40",
+      },
+      image: "/placeholder.svg?height=200&width=300&text=Luxury+Resort",
+      location: "Jomtien Beach",
+      validUntil: "2024-01-20T23:59:59Z",
+      soldCount: 89,
+      maxQuantity: 150,
+      highlights: ["Private Beach Access", "Spa Included", "All Meals"],
+      tags: ["luxury", "beachfront", "spa"],
+      isFlashDeal: true,
+      timeLeft: { hours: 23, minutes: 45, seconds: 30 },
+    },
+    {
+      id: "2",
+      title: "Authentic Thai Cooking Class + Market Tour",
+      description: "Learn to cook authentic Thai dishes with a professional chef and visit local markets.",
+      originalPrice: 2500,
+      discountedPrice: 1499,
+      discountPercentage: 40,
+      category: "activity",
+      vendor: {
+        name: "Thai Cooking Academy",
+        rating: 4.9,
+        reviewCount: 856,
+        image: "/placeholder.svg?height=40&width=40",
+      },
+      image: "/placeholder.svg?height=200&width=300&text=Cooking+Class",
+      location: "Central Pattaya",
+      validUntil: "2024-01-18T23:59:59Z",
+      soldCount: 156,
+      maxQuantity: 200,
+      highlights: ["Professional Chef", "Market Tour", "Recipe Book"],
+      tags: ["cooking", "culture", "food"],
+      isFlashDeal: false,
+    },
+    {
+      id: "3",
+      title: "Sunset Dinner Cruise with Live Music",
+      description: "Enjoy a romantic sunset cruise with gourmet dinner and live entertainment.",
+      originalPrice: 3500,
+      discountedPrice: 2199,
+      discountPercentage: 37,
+      category: "restaurant",
+      vendor: {
+        name: "Ocean Cruises Pattaya",
+        rating: 4.7,
+        reviewCount: 634,
+        image: "/placeholder.svg?height=40&width=40",
+      },
+      image: "/placeholder.svg?height=200&width=300&text=Sunset+Cruise",
+      location: "Pattaya Bay",
+      validUntil: "2024-01-22T23:59:59Z",
+      soldCount: 67,
+      maxQuantity: 100,
+      highlights: ["Sunset Views", "Live Music", "Gourmet Dinner"],
+      tags: ["romantic", "cruise", "dinner"],
+      isFlashDeal: true,
+      timeLeft: { hours: 12, minutes: 30, seconds: 15 },
+    },
+    {
+      id: "4",
+      title: "Traditional Thai Massage & Spa Package",
+      description: "Relax with a traditional Thai massage and spa treatment in a luxury setting.",
+      originalPrice: 1800,
+      discountedPrice: 999,
+      discountPercentage: 44,
+      category: "spa",
+      vendor: {
+        name: "Serenity Spa & Wellness",
+        rating: 4.8,
+        reviewCount: 445,
+        image: "/placeholder.svg?height=40&width=40",
+      },
+      image: "/placeholder.svg?height=200&width=300&text=Spa+Package",
+      location: "North Pattaya",
+      validUntil: "2024-01-25T23:59:59Z",
+      soldCount: 234,
+      maxQuantity: 300,
+      highlights: ["Traditional Massage", "Spa Treatment", "Relaxation"],
+      tags: ["spa", "wellness", "relaxation"],
+      isFlashDeal: false,
+    },
+  ]
 
   const updateTimers = () => {
     setDeals((prevDeals) =>

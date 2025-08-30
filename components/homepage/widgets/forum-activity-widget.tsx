@@ -6,21 +6,38 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-interface ForumPost {
-  id: string
-  title: string
-  author: {
+interface StrapiForumActivity {
+  id: number
+  Title: string
+  AuthorName: string
+  AuthorAvatar?: {
+    id: number
     name: string
-    avatar: string
-    reputation: number
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
   }
-  category: string
-  replies: number
-  views: number
-  likes: number
-  lastActivity: string
-  isHot: boolean
-  isPinned: boolean
+  AuthorReputation: number
+  Category: string
+  Replies: number
+  Views: number
+  Likes: number
+  LastActivity: string
+  IsHot: boolean
+  IsPinned: boolean
+  IsActive: boolean
+  Featured: boolean
+  Content?: string
+  Tags?: string[]
+  URL?: string
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
 }
 
 interface ForumStats {
@@ -31,7 +48,7 @@ interface ForumStats {
 }
 
 export function ForumActivityWidget() {
-  const [posts, setPosts] = useState<ForumPost[]>([])
+  const [posts, setPosts] = useState<StrapiForumActivity[]>([])
   const [stats, setStats] = useState<ForumStats>({
     totalPosts: 0,
     activeUsers: 0,
@@ -48,108 +65,95 @@ export function ForumActivityWidget() {
 
   const loadForumData = async () => {
     try {
-      // Simulate API call - replace with actual forum data
-      const mockPosts: ForumPost[] = [
-        {
-          id: "1",
-          title: "Best rooftop bars in Pattaya with ocean views?",
-          author: {
-            name: "TravelMike",
-            avatar: "/placeholder.svg?height=32&width=32&text=TM",
-            reputation: 1250,
-          },
-          category: "Nightlife",
-          replies: 23,
-          views: 456,
-          likes: 18,
-          lastActivity: "5 minutes ago",
-          isHot: true,
-          isPinned: false,
-        },
-        {
-          id: "2",
-          title: "Visa extension process at Jomtien Immigration",
-          author: {
-            name: "ExpatLife",
-            avatar: "/placeholder.svg?height=32&width=32&text=EL",
-            reputation: 2890,
-          },
-          category: "Visa & Legal",
-          replies: 67,
-          views: 1234,
-          likes: 45,
-          lastActivity: "12 minutes ago",
-          isHot: true,
-          isPinned: true,
-        },
-        {
-          id: "3",
-          title: "Motorcycle taxi rates from Walking Street",
-          author: {
-            name: "BudgetTraveler",
-            avatar: "/placeholder.svg?height=32&width=32&text=BT",
-            reputation: 567,
-          },
-          category: "Transportation",
-          replies: 15,
-          views: 289,
-          likes: 8,
-          lastActivity: "25 minutes ago",
-          isHot: false,
-          isPinned: false,
-        },
-        {
-          id: "4",
-          title: "Songkran 2024 - Best places to celebrate?",
-          author: {
-            name: "FestivalFan",
-            avatar: "/placeholder.svg?height=32&width=32&text=FF",
-            reputation: 890,
-          },
-          category: "Events",
-          replies: 34,
-          views: 678,
-          likes: 29,
-          lastActivity: "1 hour ago",
-          isHot: true,
-          isPinned: false,
-        },
-        {
-          id: "5",
-          title: "Reliable internet providers in Jomtien area",
-          author: {
-            name: "DigitalNomad",
-            avatar: "/placeholder.svg?height=32&width=32&text=DN",
-            reputation: 1456,
-          },
-          category: "Living",
-          replies: 19,
-          views: 345,
-          likes: 12,
-          lastActivity: "2 hours ago",
-          isHot: false,
-          isPinned: false,
-        },
-      ]
-
-      const mockStats: ForumStats = {
-        totalPosts: 15847,
-        activeUsers: 234,
-        newPostsToday: 67,
-        hotTopics: 12,
+      setLoading(true)
+      console.log('Fetching forum activities from Strapi...')
+      const response = await fetch("http://localhost:1337/api/forum-activities?populate=*&sort=LastActivity:desc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (data.data && data.data.length > 0) {
+          // Transform Strapi data to match our interface
+          const transformedPosts = data.data.map((item: any) => ({
+            id: item.id,
+            Title: item.Title,
+            AuthorName: item.AuthorName,
+            AuthorAvatar: item.AuthorAvatar ? {
+              id: item.AuthorAvatar.id,
+              name: item.AuthorAvatar.name,
+              url: item.AuthorAvatar.url,
+              formats: item.AuthorAvatar.formats
+            } : undefined,
+            AuthorReputation: item.AuthorReputation,
+            Category: item.Category,
+            Replies: item.Replies,
+            Views: item.Views,
+            Likes: item.Likes,
+            LastActivity: item.LastActivity,
+            IsHot: item.IsHot,
+            IsPinned: item.IsPinned,
+            IsActive: item.IsActive,
+            Featured: item.Featured,
+            Content: item.Content,
+            Tags: item.Tags,
+            URL: item.URL,
+            LastUpdated: item.LastUpdated,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            publishedAt: item.publishedAt
+          }))
+          
+          setPosts(transformedPosts)
+          
+          // Calculate stats from the data
+          const totalPosts = transformedPosts.length
+          const activeUsers = new Set(transformedPosts.map((post: StrapiForumActivity) => post.AuthorName)).size
+          const newPostsToday = transformedPosts.filter((post: StrapiForumActivity) => {
+            const postDate = new Date(post.LastActivity)
+            const today = new Date()
+            return postDate.toDateString() === today.toDateString()
+          }).length
+          const hotTopics = transformedPosts.filter((post: StrapiForumActivity) => post.IsHot).length
+          
+          setStats({
+            totalPosts,
+            activeUsers,
+            newPostsToday,
+            hotTopics,
+          })
+        } else {
+          setPosts([])
+          setStats({
+            totalPosts: 0,
+            activeUsers: 0,
+            newPostsToday: 0,
+            hotTopics: 0,
+          })
+        }
+      } else {
+        console.error("Failed to load forum data from Strapi:", response.status)
+        setPosts([])
       }
-
-      setPosts(mockPosts)
-      setStats(mockStats)
     } catch (error) {
       console.error("Failed to load forum data:", error)
+      setPosts([])
     } finally {
       setLoading(false)
     }
   }
 
+  const formatTimeAgo = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
+    return `${Math.floor(diffInMinutes / 1440)}d ago`
+  }
+
   const getCategoryColor = (category: string) => {
-    const colors = {
+    const colors: { [key: string]: string } = {
       Nightlife: "bg-purple-100 text-purple-800",
       "Visa & Legal": "bg-blue-100 text-blue-800",
       Transportation: "bg-green-100 text-green-800",
@@ -220,26 +224,26 @@ export function ForumActivityWidget() {
             >
               <div className="flex space-x-3">
                 <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={post.author.avatar || "/placeholder.svg"} alt={post.author.name} />
-                  <AvatarFallback className="text-xs">{post.author.name.slice(0, 2)}</AvatarFallback>
+                  <AvatarImage src={post.AuthorAvatar?.url || "/placeholder.svg"} alt={post.AuthorName} />
+                  <AvatarFallback className="text-xs">{post.AuthorName.slice(0, 2)}</AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-1">
                     <h4 className="font-medium text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
-                      {post.isPinned && "📌 "}
-                      {post.title}
-                      {post.isHot && <TrendingUp className="inline w-3 h-3 ml-1 text-red-500 flex-shrink-0" />}
+                      {post.IsPinned && "📌 "}
+                      {post.Title}
+                      {post.IsHot && <TrendingUp className="inline w-3 h-3 ml-1 text-red-500 flex-shrink-0" />}
                     </h4>
                   </div>
 
                   <div className="flex items-center space-x-2 mb-2">
-                    <Badge variant="secondary" className={`text-xs ${getCategoryColor(post.category)}`}>
-                      {post.category}
+                    <Badge variant="secondary" className={`text-xs ${getCategoryColor(post.Category)}`}>
+                      {post.Category}
                     </Badge>
-                    <span className="text-xs text-gray-500 truncate">by {post.author.name}</span>
+                    <span className="text-xs text-gray-500 truncate">by {post.AuthorName}</span>
                     <Badge variant="outline" className="text-xs">
-                      {post.author.reputation}
+                      {post.AuthorReputation}
                     </Badge>
                   </div>
 
@@ -247,20 +251,20 @@ export function ForumActivityWidget() {
                     <div className="flex items-center space-x-3">
                       <div className="flex items-center">
                         <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span>{post.replies}</span>
+                        <span>{post.Replies}</span>
                       </div>
                       <div className="flex items-center">
                         <Eye className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span>{formatNumber(post.views)}</span>
+                        <span>{formatNumber(post.Views)}</span>
                       </div>
                       <div className="flex items-center">
                         <ThumbsUp className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span>{post.likes}</span>
+                        <span>{post.Likes}</span>
                       </div>
                     </div>
                     <div className="flex items-center flex-shrink-0">
                       <Clock className="w-3 h-3 mr-1" />
-                      <span className="truncate">{post.lastActivity}</span>
+                      <span className="truncate">{formatTimeAgo(post.LastActivity)}</span>
                     </div>
                   </div>
                 </div>

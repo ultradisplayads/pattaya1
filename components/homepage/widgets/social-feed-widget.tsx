@@ -22,11 +22,129 @@ interface SocialPost {
   image?: string
 }
 
+interface StrapiSocialMediaPost {
+  id: number
+  Platform: "twitter" | "threads" | "instagram" | "bluesky" | "facebook" | "tiktok"
+  Author: string
+  Handle: string
+  Content: string
+  Timestamp: string
+  Likes: number
+  Comments: number
+  Shares: number
+  Location: string
+  Verified: boolean
+  Hashtags: string[]
+  URL: string
+  IsActive: boolean
+  Featured: boolean
+  Category: string
+  Avatar?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  Image?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function SocialFeedWidget() {
   const [currentPost, setCurrentPost] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const socialPosts: SocialPost[] = [
+  useEffect(() => {
+    fetchSocialPosts()
+    const interval = setInterval(fetchSocialPosts, 300000) // Refresh every 5 minutes
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchSocialPosts = async () => {
+    try {
+      setLoading(true)
+      console.log('Fetching social media posts from Strapi...')
+      
+      // Call Strapi API to get social media posts sorted by timestamp
+      const response = await fetch("http://localhost:1337/api/social-media-posts?populate=*&sort=Timestamp:desc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Strapi social media posts response:', data)
+        
+        if (data.data && data.data.length > 0) {
+          // Transform Strapi data to match component interface
+          const transformedPosts: SocialPost[] = data.data.map((strapiPost: any) => {
+            // Get avatar URL with fallback
+            let avatarUrl = "/placeholder.svg?height=40&width=40"
+            if (strapiPost.Avatar) {
+              avatarUrl = `http://localhost:1337${strapiPost.Avatar.url}`
+            }
+
+            // Get image URL with fallback
+            let imageUrl = undefined
+            if (strapiPost.Image) {
+              imageUrl = `http://localhost:1337${strapiPost.Image.url}`
+            }
+
+            return {
+              id: strapiPost.id.toString(),
+              platform: strapiPost.Platform as any,
+              author: strapiPost.Author,
+              handle: strapiPost.Handle,
+              avatar: avatarUrl,
+              content: strapiPost.Content,
+              timestamp: strapiPost.Timestamp || strapiPost.publishedAt,
+              likes: strapiPost.Likes,
+              comments: strapiPost.Comments,
+              shares: strapiPost.Shares,
+              location: strapiPost.Location,
+              verified: strapiPost.Verified,
+              hashtags: strapiPost.Hashtags || [],
+              image: imageUrl,
+            }
+          })
+          
+          console.log('Transformed social media posts:', transformedPosts)
+          setSocialPosts(transformedPosts)
+        } else {
+          console.log('No social media posts found, using fallback data')
+          // Use fallback data if no posts found
+          setSocialPosts(getFallbackSocialPosts())
+        }
+      } else {
+        console.error("Failed to fetch social media posts from Strapi:", response.status)
+        // Use fallback data on error
+        setSocialPosts(getFallbackSocialPosts())
+      }
+    } catch (error) {
+      console.error("Failed to load social media posts:", error)
+      // Use fallback data on error
+      setSocialPosts(getFallbackSocialPosts())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getFallbackSocialPosts = (): SocialPost[] => [
     {
       id: "1",
       platform: "twitter",
@@ -112,16 +230,18 @@ export function SocialFeedWidget() {
   ]
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true)
-      setTimeout(() => {
-        setCurrentPost((prev) => (prev + 1) % socialPosts.length)
-        setIsAnimating(false)
-      }, 300)
-    }, 5000)
+    if (socialPosts && socialPosts.length > 0) {
+      const interval = setInterval(() => {
+        setIsAnimating(true)
+        setTimeout(() => {
+          setCurrentPost((prev) => (prev + 1) % socialPosts.length)
+          setIsAnimating(false)
+        }, 300)
+      }, 5000)
 
-    return () => clearInterval(interval)
-  }, [socialPosts.length])
+      return () => clearInterval(interval)
+    }
+  }, [socialPosts])
 
   const getPlatformColor = (platform: string) => {
     switch (platform) {
@@ -153,7 +273,84 @@ export function SocialFeedWidget() {
     }
   }
 
+  // Show loading state while fetching data
+  if (loading) {
+    return (
+      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              Social Feed
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="animate-pulse space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+              <div className="h-4 bg-gray-200 rounded w-4"></div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-gray-200 rounded w-24"></div>
+                <div className="h-3 bg-gray-200 rounded w-32"></div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 bg-gray-200 rounded w-full"></div>
+              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Check if we have posts and current post exists
+  if (!socialPosts || socialPosts.length === 0) {
+    return (
+      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              Social Feed
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="flex items-center justify-center h-32">
+            <p className="text-gray-500 text-sm">No social media posts available</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const post = socialPosts[currentPost]
+
+  // Additional safety check
+  if (!post) {
+    return (
+      <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              Social Feed
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="flex items-center justify-center h-32">
+            <p className="text-gray-500 text-sm">No posts available</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">

@@ -1,131 +1,92 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { 
   Play, 
-  Pause, 
   ThumbsUp, 
   Eye, 
-  Heart, 
   MessageCircle, 
   TrendingUp, 
-  Clock,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
-interface Video {
-  id: string
+interface StrapiYouTubeVideo {
+  id: number
   title: string
-  thumbnail: string
   description: string
-  views: number
-  likes: number
-  dislikes: number
-  promoted?: boolean
-  tags: string[]
+  videoId: string
+  thumbnailUrl: string | null
   duration: string
-  channelName: string
+  viewCount: number
+  likeCount: number
   publishedAt: string
+  channelName: string
+  category: string
+  promoted: boolean
+  featured: boolean
+  comments: number
 }
 
-const mockVideos: Video[] = [
-  {
-    id: "dQw4w9WgXcQ",
-    title: "Pattaya Beach Sunset - Amazing Views",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Pattaya+Sunset",
-    description: "Beautiful sunset views from Pattaya Beach with stunning ocean vistas",
-    views: 15420,
-    likes: 892,
-    dislikes: 23,
-    promoted: true,
-    tags: ["pattaya", "beach", "sunset", "travel"],
-    duration: "3:45",
-    channelName: "Pattaya Explorer",
-    publishedAt: "2 days ago",
-  },
-  {
-    id: "jNQXAC9IVRw",
-    title: "Best Street Food in Pattaya 2024",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Street+Food",
-    description: "Discover the most delicious street food in Pattaya's local markets",
-    views: 8750,
-    likes: 654,
-    dislikes: 12,
-    tags: ["food", "pattaya", "street food", "thai cuisine"],
-    duration: "8:22",
-    channelName: "Food Adventures",
-    publishedAt: "1 week ago",
-  },
-  {
-    id: "M7lc1UVf-VE",
-    title: "Pattaya Nightlife Guide 2024",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Nightlife",
-    description: "Complete guide to Pattaya's vibrant nightlife scene and entertainment",
-    views: 23100,
-    likes: 1205,
-    dislikes: 45,
-    promoted: true,
-    tags: ["nightlife", "pattaya", "entertainment", "bars"],
-    duration: "12:15",
-    channelName: "Night Explorer",
-    publishedAt: "3 days ago",
-  },
-  {
-    id: "kJQP7kiw5Fk",
-    title: "Top 10 Hotels in Pattaya",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Hotels",
-    description: "Best accommodation options in Pattaya for every budget and preference",
-    views: 12300,
-    likes: 789,
-    dislikes: 18,
-    tags: ["hotels", "pattaya", "accommodation", "travel"],
-    duration: "6:30",
-    channelName: "Travel Guide",
-    publishedAt: "5 days ago",
-  },
-  {
-    id: "abc123def",
-    title: "Water Sports Adventure in Pattaya",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Water+Sports",
-    description: "Exciting water sports activities and adventures in Pattaya",
-    views: 8900,
-    likes: 567,
-    dislikes: 15,
-    tags: ["water sports", "adventure", "pattaya", "activities"],
-    duration: "5:15",
-    channelName: "Adventure Zone",
-    publishedAt: "4 days ago",
-  },
-  {
-    id: "xyz789ghi",
-    title: "Pattaya Temple Tour - Cultural Experience",
-    thumbnail: "/placeholder.svg?height=180&width=320&text=Temples",
-    description: "Explore the beautiful temples and cultural sites of Pattaya",
-    views: 6700,
-    likes: 423,
-    dislikes: 8,
-    tags: ["temples", "culture", "pattaya", "tourism"],
-    duration: "7:45",
-    channelName: "Cultural Explorer",
-    publishedAt: "1 week ago",
-  },
-]
-
-const trendingTags = ["pattaya", "beach", "nightlife", "food", "travel", "hotels", "sunset", "entertainment"]
-
 export function YouTubeWidget() {
-  const [videos, setVideos] = useState<Video[]>(mockVideos)
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [videos, setVideos] = useState<StrapiYouTubeVideo[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const formatNumber = (num: number): string => {
+  useEffect(() => {
+    fetchVideos()
+    const interval = setInterval(fetchVideos, 300000) // Refresh every 5 minutes
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchVideos = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("http://localhost:1337/api/youtube-videos?populate=*")
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('YouTube videos data received:', data)
+      
+      if (data.data && Array.isArray(data.data)) {
+        const mappedData = data.data.map((item: any) => ({
+          id: item.id,
+          title: item.Title,
+          description: item.Description,
+          videoId: item.VideoId,
+          thumbnailUrl: item.Thumbnail,
+          duration: item.Duration,
+          viewCount: item.Views,
+          likeCount: item.Likes,
+          publishedAt: item.publishedAt,
+          channelName: item.ChannelName,
+          category: item.Category,
+          promoted: item.Promoted,
+          featured: item.Featured,
+          comments: item.Comments,
+        }))
+        setVideos(mappedData)
+      } else {
+        console.warn('No YouTube videos data found or invalid format')
+        setVideos([])
+      }
+    } catch (error) {
+      console.error("Failed to fetch YouTube videos from Strapi:", error)
+      setVideos([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatNumber = (num: number | undefined | null): string => {
+    if (num === undefined || num === null) {
+      return '0'
+    }
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M'
     } else if (num >= 1000) {
@@ -134,23 +95,45 @@ export function YouTubeWidget() {
     return num.toString()
   }
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -320, behavior: 'smooth' })
-    }
-  }
-
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 320, behavior: 'smooth' })
-    }
-  }
-
   const handleVideoClick = (videoId: string) => {
-    setSelectedVideo(videoId)
-    setIsPlaying(true)
-    // In a real app, you would open the video player or navigate to YouTube
     window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank')
+  }
+
+  if (loading) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-4">
+          <div className="animate-pulse space-y-3">
+            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-1 gap-3">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-100 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (videos.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <Play className="w-4 h-4 text-white fill-current" />
+            </div>
+            <span>Featured Videos</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="text-center text-gray-500 py-8">
+            No videos available at the moment.
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -168,7 +151,7 @@ export function YouTubeWidget() {
           </Badge>
         </CardTitle>
       </CardHeader>
-      
+    
       <CardContent className="p-4 pt-0 space-y-4 flex-1 overflow-y-auto widget-content">
         {/* Featured Video Section - Shows first 2 videos */}
         <div className="space-y-3">
@@ -178,11 +161,11 @@ export function YouTubeWidget() {
               <div
                 key={video.id}
                 className="group cursor-pointer bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors"
-                onClick={() => handleVideoClick(video.id)}
+                onClick={() => handleVideoClick(video.videoId)}
               >
                 <div className="relative">
                   <img
-                    src={video.thumbnail}
+                    src={video.thumbnailUrl ? `http://localhost:1337${video.thumbnailUrl}` : "https://via.placeholder.com/320x180/1f2937/ffffff?text=Pattaya+Video"}
                     alt={video.title}
                     className="w-full h-32 object-cover"
                   />
@@ -217,114 +200,19 @@ export function YouTubeWidget() {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Eye className="w-3 h-3" />
-                      <span>{formatNumber(video.views)}</span>
+                      <span>{formatNumber(video.viewCount)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <ThumbsUp className="w-3 h-3" />
-                      <span>{formatNumber(video.likes)}</span>
+                      <span>{formatNumber(video.likeCount)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageCircle className="w-3 h-3" />
-                      <span>{formatNumber(video.likes / 10)}</span>
+                      <span>{formatNumber(video.comments)}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scrollable Videos Section */}
-        {videos.length > 2 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-gray-700">More Videos</h3>
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-8 h-8 p-0"
-                  onClick={scrollLeft}
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-8 h-8 p-0"
-                  onClick={scrollRight}
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div 
-              ref={scrollContainerRef}
-              className="flex gap-3 overflow-x-auto scrollbar-hide pb-2"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {videos.slice(2).map((video) => (
-                <div
-                  key={video.id}
-                  className="group cursor-pointer flex-shrink-0 w-64 bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors"
-                  onClick={() => handleVideoClick(video.id)}
-                >
-                  <div className="relative">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-32 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                      <div className="w-10 h-10 bg-white bg-opacity-90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-4 h-4 text-gray-800 fill-current ml-0.5" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-1.5 py-0.5 rounded">
-                      {video.duration}
-                    </div>
-                  </div>
-                  
-                  <div className="p-3">
-                    <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
-                      {video.title}
-                    </h4>
-                    
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                      <span className="font-medium text-gray-700">{video.channelName}</span>
-                      <span>{video.publishedAt}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
-                        <span>{formatNumber(video.views)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="w-3 h-3" />
-                        <span>{formatNumber(video.likes)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Trending Tags */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-700">Trending</h3>
-          <div className="flex flex-wrap gap-1">
-            {trendingTags.slice(0, 6).map((tag) => (
-              <Badge
-                key={tag}
-                variant="outline"
-                className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors"
-              >
-                #{tag}
-              </Badge>
             ))}
           </div>
         </div>
