@@ -254,15 +254,15 @@ export function RadioWidget() {
 
   if (loading) {
     return (
-      <Card className="top-row-widget">
-        <CardHeader>
+      <Card className="top-row-widget h-full">
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center space-x-2">
             <Radio className="w-4 h-4" />
             <span>Radio</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="animate-pulse space-y-3">
+        <CardContent className="space-y-3">
+          <div className="animate-pulse space-y-2">
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="h-3 bg-gray-200 rounded w-1/2"></div>
             <div className="h-8 bg-gray-200 rounded"></div>
@@ -273,8 +273,8 @@ export function RadioWidget() {
   }
 
   return (
-    <Card className={`top-row-widget radio-widget-proper ${darkMode ? "bg-gray-900 text-white" : ""}`}>
-      <CardHeader>
+    <Card className="top-row-widget radio-widget-proper h-full overflow-hidden">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center space-x-2">
             <span className="radio-frequency">{currentStation?.frequency || "103.5"} FM</span>
@@ -287,40 +287,40 @@ export function RadioWidget() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 h-full flex flex-col">
         {/* Current Station Info */}
         {currentStation && (
-          <div className="station-info">
+          <div className="station-info flex-shrink-0">
             <div className="flex items-center space-x-3">
               <img
                 src={currentStation.logo || "/placeholder.svg"}
                 alt={currentStation.name}
-                className="w-10 h-10 rounded object-cover"
+                className="w-10 h-10 rounded object-cover flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">
-                  <span className="station-name">{currentStation.name}</span>
-                  {currentStation.featured && <span className="text-yellow-400 text-sm">⭐</span>}
+                  <span className="station-name truncate">{currentStation.name}</span>
+                  {currentStation.featured && <span className="text-yellow-400 text-sm flex-shrink-0">⭐</span>}
                 </div>
-                <div className="now-playing truncate text-gray-600">{currentStation.nowPlaying}</div>
+                <div className="now-playing truncate text-gray-600 text-xs">{currentStation.nowPlaying}</div>
               </div>
             </div>
           </div>
         )}
 
         {/* Controls */}
-        <div className="radio-controls-layout">
+        <div className="radio-controls-layout flex-shrink-0">
           <div className="radio-play-controls">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => currentStation && playStation(currentStation)}
-              className="h-10 w-10 p-0"
+              className="h-8 w-8 p-0"
             >
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="sm" onClick={toggleMute} className="h-10 w-10 p-0">
-              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            <Button variant="ghost" size="sm" onClick={toggleMute} className="h-8 w-8 p-0">
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </Button>
           </div>
 
@@ -333,10 +333,10 @@ export function RadioWidget() {
                   e.stopPropagation()
                   toggleFavorite(currentStation.id)
                 }}
-                className="h-10 w-10 p-0"
+                className="h-8 w-8 p-0"
               >
                 <Heart
-                  className={`w-5 h-5 ${
+                  className={`w-4 h-4 ${
                     favorites.includes(currentStation.id) ? "fill-red-500 text-red-500" : "text-gray-400"
                   }`}
                 />
@@ -346,8 +346,8 @@ export function RadioWidget() {
             {/* Station Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
-                  <MoreVertical className="w-5 h-5" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreVertical className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 max-h-80 overflow-y-auto radio-station-menu">
@@ -364,20 +364,20 @@ export function RadioWidget() {
                       <img
                         src={station.logo || "/placeholder.svg"}
                         alt={station.name}
-                        className="w-6 h-6 rounded object-cover"
+                        className="w-6 h-6 rounded object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-1">
                           <p className="text-xs font-medium truncate">{station.name}</p>
-                          {station.featured && <span className="text-yellow-400 text-xs">⭐</span>}
+                          {station.featured && <span className="text-yellow-400 text-xs flex-shrink-0">⭐</span>}
                         </div>
                         <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <span>{station.frequency} FM</span>
-                          <span>•</span>
-                          <span>{station.genre}</span>
+                          <span className="truncate">{station.frequency} FM</span>
+                          <span className="flex-shrink-0">•</span>
+                          <span className="truncate">{station.genre}</span>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 flex-shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"

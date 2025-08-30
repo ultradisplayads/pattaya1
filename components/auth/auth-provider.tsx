@@ -6,6 +6,7 @@ import {
   type User as FirebaseUser,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -152,6 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Get Firebase ID token
       const idToken = await firebaseUser.getIdToken(true)
       console.log('[Auth] got idToken length', idToken?.length)
+      // Resolve a reliable email upfront for sync
+      const resolvedEmailForSync = await resolveEmailFromFirebase(firebaseUser)
       
       // Try to login with Strapi first
       try {
@@ -160,12 +163,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStrapiToken(idToken)
         setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
         console.log('✅ User logged in with Strapi:', strapiResponse.user.id)
+        // Best-effort profile sync in Strapi
+        try {
+          await strapiAPI.syncFirebaseUser({
+            firebaseUid: firebaseUser.uid,
+            email: resolvedEmailForSync || firebaseUser.email || undefined,
+            displayName: firebaseUser.displayName || undefined,
+            photoURL: firebaseUser.photoURL || undefined,
+            phoneNumber: firebaseUser.phoneNumber || undefined,
+            emailVerified: !!firebaseUser.emailVerified,
+          }, idToken)
+        } catch (e) {
+          console.warn('[Auth] Strapi profile sync (login) failed', e)
+        }
       } catch (error) {
         // User doesn't exist in Strapi, register them
         console.log('🔄 User not found in Strapi, registering...')
         
         // Resolve a reliable email
-        const resolvedEmail = await resolveEmailFromFirebase(firebaseUser)
+        const resolvedEmail = resolvedEmailForSync
         const usernameFallback = firebaseUser.displayName || (resolvedEmail ? resolvedEmail.split('@')[0] : `user-${firebaseUser.uid.slice(0,6)}`)
         const synthesizedEmail = resolvedEmail || `${firebaseUser.uid}@no-email.firebase`
         const userData = {
@@ -183,6 +199,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setStrapiToken(idToken)
           setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
           console.log('✅ User registered with Strapi:', strapiResponse.user.id)
+          // Best-effort profile sync in Strapi right after registration
+          try {
+            await strapiAPI.syncFirebaseUser({
+              firebaseUid: firebaseUser.uid,
+              email: synthesizedEmail,
+              displayName: firebaseUser.displayName || undefined,
+              photoURL: firebaseUser.photoURL || undefined,
+              phoneNumber: firebaseUser.phoneNumber || undefined,
+              emailVerified: !!firebaseUser.emailVerified,
+            }, idToken)
+          } catch (e) {
+            console.warn('[Auth] Strapi profile sync (register) failed', e)
+          }
         } catch (registerError) {
           console.error('❌ Failed to register user with Strapi:', registerError)
           // Still set the token even if registration fails
@@ -290,6 +319,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(userProfile)
       await syncWithStrapi()
     } catch (error) {
+      // Fallback to redirect flow if popups are blocked
+      const errorCode = (error as { code?: string })?.code || ""
+      if (errorCode === "auth/popup-blocked") {
+        try {
+          await signInWithRedirect(auth, facebookProvider)
+          return
+        } catch (redirectError) {
+          console.error("Facebook redirect login error:", redirectError)
+          throw redirectError
+        }
+      }
       console.error("Facebook login error:", error)
       throw error
     }

@@ -135,41 +135,41 @@ export function YouTubeWidget() {
   const currentVideo = videos[currentCarouselIndex]
 
   return (
-    <Card className="youtube-widget h-full">
-      <CardHeader className="pb-3">
+    <Card className="youtube-widget h-full overflow-hidden">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <Play className="w-5 h-5 text-red-500" />
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Play className="w-4 h-4 text-red-500" />
             YouTube Videos
-            <Badge variant="secondary" className="ml-2">
+            <Badge variant="secondary" className="ml-2 text-xs">
               Live
             </Badge>
           </CardTitle>
-          <Button variant="ghost" size="sm">
-            <TrendingUp className="w-4 h-4" />
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+            <TrendingUp className="w-3 h-3" />
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 p-4">
+      <CardContent className="space-y-3 p-3 h-full flex flex-col overflow-hidden">
         {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <div className="relative flex-shrink-0">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
           <Input
             type="text"
             value={searchQuery}
             onChange={handleSearch}
             placeholder="Search videos..."
-            className="pl-10 h-8 text-sm"
+            className="pl-7 h-7 text-xs"
           />
         </div>
 
         {/* Trending Tags */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Trending Tags</h4>
+        <div className="space-y-1 flex-shrink-0">
+          <h4 className="text-xs font-medium text-gray-700">Trending Tags</h4>
           <div className="flex flex-wrap gap-1">
-            {trendingTags.slice(0, 6).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs px-2 py-1 cursor-pointer hover:bg-blue-50">
+            {trendingTags.slice(0, 4).map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs px-1 py-0.5 cursor-pointer hover:bg-blue-50">
                 #{tag}
               </Badge>
             ))}
@@ -177,8 +177,8 @@ export function YouTubeWidget() {
         </div>
 
         {/* Video Carousel */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Featured Video</h4>
+        <div className="space-y-1 flex-shrink-0">
+          <h4 className="text-xs font-medium text-gray-700">Featured Video</h4>
           <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
             <img
               src={currentVideo.thumbnail || "/placeholder.svg"}
@@ -188,27 +188,25 @@ export function YouTubeWidget() {
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
               <Button
                 variant="ghost"
-                size="lg"
-                className="text-white hover:bg-white hover:bg-opacity-20"
+                size="sm"
+                className="text-white hover:bg-white hover:bg-opacity-20 h-8 w-8 p-0"
                 onClick={() => setIsPlaying(!isPlaying)}
               >
-                {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </Button>
             </div>
-            <div className="absolute bottom-2 left-2 right-2">
-              <div className="bg-black bg-opacity-70 text-white p-2 rounded text-xs">
+            <div className="absolute bottom-1 left-1 right-1">
+              <div className="bg-black bg-opacity-70 text-white p-1 rounded text-xs">
                 <div className="font-medium line-clamp-1">{currentVideo.title}</div>
-                <div className="text-gray-300 flex items-center gap-2 mt-1">
-                  <span className="truncate">{currentVideo.channelName}</span>
-                  <span>•</span>
-                  <span>{formatViews(currentVideo.views)} views</span>
-                  <span>•</span>
-                  <span className="truncate">{currentVideo.publishedAt}</span>
+                <div className="text-gray-300 flex items-center gap-1 mt-0.5">
+                  <span className="truncate text-xs">{currentVideo.channelName}</span>
+                  <span className="flex-shrink-0">•</span>
+                  <span className="flex-shrink-0">{formatViews(currentVideo.views)} views</span>
                 </div>
               </div>
             </div>
             {currentVideo.promoted && (
-              <Badge className="absolute top-2 right-2 bg-yellow-500 text-black">Promoted</Badge>
+              <Badge className="absolute top-1 right-1 bg-yellow-500 text-black text-xs">Promoted</Badge>
             )}
           </div>
 
@@ -217,7 +215,7 @@ export function YouTubeWidget() {
             {videos.map((_, index) => (
               <button
                 key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
+                className={`w-1.5 h-1.5 rounded-full transition-colors ${
                   index === currentCarouselIndex ? "bg-blue-500" : "bg-gray-300"
                 }`}
                 onClick={() => setCurrentCarouselIndex(index)}
@@ -227,48 +225,38 @@ export function YouTubeWidget() {
         </div>
 
         {/* Video Grid */}
-        <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">More Videos</h4>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1 flex-1 overflow-hidden">
+          <h4 className="text-xs font-medium text-gray-700">More Videos</h4>
+          <div className="grid grid-cols-2 gap-1 overflow-y-auto max-h-32">
             {filteredVideos.slice(0, 4).map((video) => (
               <div key={video.id} className="group cursor-pointer">
-                <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-video mb-1">
+                <div className="relative bg-gray-100 rounded overflow-hidden aspect-video mb-1">
                   <img
                     src={video.thumbnail || "/placeholder.svg"}
                     alt={video.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                   />
-                  <div className="absolute bottom-1 right-1 bg-black bg-opacity-70 text-white text-xs px-1 rounded">
+                  <div className="absolute bottom-0.5 right-0.5 bg-black bg-opacity-70 text-white text-xs px-1 rounded">
                     {video.duration}
                   </div>
                   {video.promoted && (
-                    <Badge className="absolute top-1 left-1 bg-yellow-500 text-black text-xs">Promoted</Badge>
+                    <Badge className="absolute top-0.5 left-0.5 bg-yellow-500 text-black text-xs">Promoted</Badge>
                   )}
                 </div>
-                <div className="space-y-1">
-                  <h5 className="text-xs font-medium line-clamp-2 leading-tight">{video.title}</h5>
+                <div className="space-y-0.5">
+                  <h5 className="text-xs font-medium line-clamp-1 leading-tight">{video.title}</h5>
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span className="truncate">{formatViews(video.views)} views</span>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleLike(video.id)
                         }}
-                        className="flex items-center gap-1 hover:text-blue-500"
+                        className="flex items-center gap-0.5 hover:text-blue-500"
                       >
-                        <ThumbsUp className="w-3 h-3" />
-                        <span>{video.likes}</span>
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDislike(video.id)
-                        }}
-                        className="flex items-center gap-1 hover:text-red-500"
-                      >
-                        <ThumbsDown className="w-3 h-3" />
-                        <span>{video.dislikes}</span>
+                        <ThumbsUp className="w-2.5 h-2.5" />
+                        <span className="text-xs">{video.likes}</span>
                       </button>
                     </div>
                   </div>
@@ -279,26 +267,26 @@ export function YouTubeWidget() {
         </div>
 
         {/* Analytics Summary */}
-        <div className="bg-gray-50 rounded-lg p-3 space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">Video Analytics</h4>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="space-y-1">
+        <div className="bg-gray-50 rounded p-2 space-y-1 flex-shrink-0">
+          <h4 className="text-xs font-medium text-gray-700">Video Analytics</h4>
+          <div className="grid grid-cols-3 gap-1 text-center">
+            <div className="space-y-0.5">
               <div className="flex items-center justify-center">
-                <Eye className="w-4 h-4 text-blue-500" />
+                <Eye className="w-3 h-3 text-blue-500" />
               </div>
               <div className="text-xs font-medium">{formatViews(videos.reduce((sum, v) => sum + v.views, 0))}</div>
               <div className="text-xs text-gray-500">Total Views</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-center justify-center">
-                <Heart className="w-4 h-4 text-red-500" />
+                <Heart className="w-3 h-3 text-red-500" />
               </div>
               <div className="text-xs font-medium">{videos.reduce((sum, v) => sum + v.likes, 0)}</div>
               <div className="text-xs text-gray-500">Total Likes</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-green-500" />
+                <MessageCircle className="w-3 h-3 text-green-500" />
               </div>
               <div className="text-xs font-medium">{videos.length}</div>
               <div className="text-xs text-gray-500">Videos</div>
