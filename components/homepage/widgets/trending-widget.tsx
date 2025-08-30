@@ -7,18 +7,20 @@ import { TrendingUp, Hash, MapPin, Calendar, Building, Users, ArrowUp, ArrowDown
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-interface TrendingItem {
-  id: string
+interface StrapiTrendingTopic {
+  id: number
   title: string
-  type: "hashtag" | "location" | "event" | "business" | "topic"
+  type: string
   posts: number
   growth: number
   category: string
-  icon: React.ReactNode
+  icon: string
+  description: string
+  url: string | null
 }
 
 export function TrendingWidget() {
-  const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([])
+  const [trendingItems, setTrendingItems] = useState<StrapiTrendingTopic[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -29,105 +31,49 @@ export function TrendingWidget() {
 
   const loadTrendingData = async () => {
     try {
-      // Simulate API call - replace with actual trending data
-      const mockData: TrendingItem[] = [
-        {
-          id: "1",
-          title: "#PattayaBeach",
-          type: "hashtag",
-          posts: 2847,
-          growth: 23.5,
-          category: "Tourism",
-          icon: <Hash className="w-3 h-3" />,
-        },
-        {
-          id: "2",
-          title: "Walking Street",
-          type: "location",
-          posts: 1923,
-          growth: 18.2,
-          category: "Nightlife",
-          icon: <MapPin className="w-3 h-3" />,
-        },
-        {
-          id: "3",
-          title: "Songkran Festival",
-          type: "event",
-          posts: 3421,
-          growth: 45.7,
-          category: "Events",
-          icon: <Calendar className="w-3 h-3" />,
-        },
-        {
-          id: "4",
-          title: "Terminal 21 Pattaya",
-          type: "business",
-          posts: 892,
-          growth: 12.3,
-          category: "Shopping",
-          icon: <Building className="w-3 h-3" />,
-        },
-        {
-          id: "5",
-          title: "#JomtienBeach",
-          type: "hashtag",
-          posts: 1567,
-          growth: 31.8,
-          category: "Tourism",
-          icon: <Hash className="w-3 h-3" />,
-        },
-        {
-          id: "6",
-          title: "Sanctuary of Truth",
-          type: "location",
-          posts: 1234,
-          growth: 8.9,
-          category: "Culture",
-          icon: <MapPin className="w-3 h-3" />,
-        },
-        {
-          id: "7",
-          title: "Pattaya Music Festival",
-          type: "event",
-          posts: 2156,
-          growth: 67.4,
-          category: "Events",
-          icon: <Calendar className="w-3 h-3" />,
-        },
-        {
-          id: "8",
-          title: "Floating Market",
-          type: "business",
-          posts: 743,
-          growth: -5.2,
-          category: "Tourism",
-          icon: <Building className="w-3 h-3" />,
-        },
-        {
-          id: "9",
-          title: "#PattayaNightlife",
-          type: "hashtag",
-          posts: 3892,
-          growth: 28.6,
-          category: "Nightlife",
-          icon: <Hash className="w-3 h-3" />,
-        },
-        {
-          id: "10",
-          title: "Nong Nooch Garden",
-          type: "location",
-          posts: 1089,
-          growth: 15.7,
-          category: "Tourism",
-          icon: <MapPin className="w-3 h-3" />,
-        },
-      ]
-
-      setTrendingItems(mockData)
+      setLoading(true)
+      const response = await fetch("http://localhost:1337/api/trending-topics?populate=*")
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('Trending data received:', data)
+      
+      if (data.data && Array.isArray(data.data)) {
+        const mappedData = data.data.map((item: any) => ({
+          id: item.id,
+          title: item.Title,
+          type: item.Type,
+          posts: item.Posts,
+          growth: item.Growth,
+          category: item.Category,
+          icon: item.Icon,
+          description: item.Description,
+          url: item.URL,
+        }))
+        setTrendingItems(mappedData)
+      } else {
+        console.warn('No trending data found or invalid format')
+        setTrendingItems([])
+      }
     } catch (error) {
-      console.error("Failed to load trending data:", error)
+      console.error("Failed to load trending data from Strapi:", error)
+      setTrendingItems([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'hashtag': return <Hash className="w-3 h-3" />
+      case 'location': return <MapPin className="w-3 h-3" />
+      case 'event': return <Calendar className="w-3 h-3" />
+      case 'business': return <Building className="w-3 h-3" />
+      case 'topic': return <TrendingUp className="w-3 h-3" />
+      default: return <Hash className="w-3 h-3" />
     }
   }
 
@@ -145,13 +91,15 @@ export function TrendingWidget() {
   }
 
   const getCategoryColor = (category: string) => {
-    const colors = {
+    const colors: { [key: string]: string } = {
       Tourism: "bg-blue-100 text-blue-800",
       Nightlife: "bg-purple-100 text-purple-800",
       Events: "bg-green-100 text-green-800",
       Shopping: "bg-pink-100 text-pink-800",
       Culture: "bg-orange-100 text-orange-800",
       Food: "bg-yellow-100 text-yellow-800",
+      Business: "bg-indigo-100 text-indigo-800",
+      Entertainment: "bg-red-100 text-red-800",
     }
     return colors[category] || "bg-gray-100 text-gray-800"
   }
@@ -167,6 +115,24 @@ export function TrendingWidget() {
                 <div key={i} className="h-16 bg-gray-100 rounded"></div>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (trendingItems.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+            <TrendingUp className="h-4 w-4 mr-2 text-red-500" />
+            Trending Now
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="text-center text-gray-500 py-8">
+            No trending topics available at the moment.
           </div>
         </CardContent>
       </Card>
@@ -195,7 +161,7 @@ export function TrendingWidget() {
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center space-x-1">
-                  <div className="text-gray-600 group-hover:text-blue-600 transition-colors">{item.icon}</div>
+                  <div className="text-gray-600 group-hover:text-blue-600 transition-colors">{getIcon(item.type)}</div>
                   <span className="text-xs font-medium text-gray-500">#{index + 1}</span>
                 </div>
                 <div className="flex items-center space-x-1">
@@ -224,9 +190,11 @@ export function TrendingWidget() {
               {/* Growth bar */}
               <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
                 <div
-                  className={`h-1 rounded-full transition-all duration-500 ${getGrowthColor(item.growth)}`}
+                  className={`h-1 rounded-full transition-all duration-300 ${
+                    item.growth > 0 ? "bg-green-500" : item.growth < 0 ? "bg-red-500" : "bg-gray-400"
+                  }`}
                   style={{ width: `${Math.min(Math.abs(item.growth), 100)}%` }}
-                />
+                ></div>
               </div>
             </div>
           ))}

@@ -50,13 +50,30 @@ export function ForumPage() {
 
   const loadForumData = async () => {
     try {
-      const [topicsRes, categoriesRes] = await Promise.all([fetch("/api/forum/topics"), fetch("/api/forum/categories")])
+      setLoading(true)
+      const [topicsRes, categoriesRes] = await Promise.all([
+        fetch("/api/forum/topics"), 
+        fetch("/api/forum/categories")
+      ])
 
       if (topicsRes.ok && categoriesRes.ok) {
         const topicsData = await topicsRes.json()
         const categoriesData = await categoriesRes.json()
+        
+        if (topicsData.error) {
+          console.error("Topics API error:", topicsData.error)
+        }
+        if (categoriesData.error) {
+          console.error("Categories API error:", categoriesData.error)
+        }
+        
         setTopics(topicsData.data || [])
         setCategories(categoriesData.data || [])
+      } else {
+        console.error("Failed to load forum data:", {
+          topics: topicsRes.status,
+          categories: categoriesRes.status
+        })
       }
     } catch (error) {
       console.error("Failed to load forum data:", error)

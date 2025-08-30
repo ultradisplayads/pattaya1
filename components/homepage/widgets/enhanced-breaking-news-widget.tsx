@@ -6,31 +6,49 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
-interface BreakingNews {
-  id: string
-  title: string
-  summary: string
-  severity: "low" | "medium" | "high" | "critical"
-  category: string
-  timestamp: string
-  source: string
-  url: string
-  isBreaking: boolean
-  imageUrl?: string
+interface StrapiBreakingNews {
+  id: number
+  Title: string
+  Summary: string
+  Severity: "low" | "medium" | "high" | "critical"
+  Category: string
+  Source: string
+  URL: string
+  IsBreaking: boolean
+  PublishedTimestamp: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
 }
 
-interface Advertisement {
-  id: string
-  title: string
-  content: string
-  url: string
-  imageUrl?: string
-  sponsor: string
+interface StrapiAdvertisement {
+  id: number
+  Tiltle: string
+  Content: string
+  URL: string
+  Image?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  Sponsor: string
+  WidgetTarget: string
+  Active: boolean
+  PublishedTimestamp: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
 }
 
 export function EnhancedBreakingNewsWidget() {
-  const [news, setNews] = useState<BreakingNews[]>([])
-  const [advertisements, setAdvertisements] = useState<Advertisement[]>([])
+  const [news, setNews] = useState<StrapiBreakingNews[]>([])
+  const [advertisements, setAdvertisements] = useState<StrapiAdvertisement[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showAds, setShowAds] = useState(true)
@@ -52,120 +70,48 @@ export function EnhancedBreakingNewsWidget() {
 
   const loadBreakingNews = async () => {
     try {
-      const response = await fetch("/api/news/breaking")
+      // Call Strapi API directly
+      const response = await fetch("http://localhost:1337/api/breaking-news-plural?sort=PublishedTimestamp:desc")
       if (response.ok) {
         const data = await response.json()
-        setNews(data.news || getFallbackNews())
+        
+        if (data.data && data.data.length > 0) {
+          setNews(data.data)
+        } else {
+          setNews([])
+        }
       } else {
-        setNews(getFallbackNews())
+        console.error("Failed to load breaking news from Strapi:", response.status)
+        setNews([])
       }
     } catch (error) {
-      console.error("Failed to load breaking news:", error)
-      setNews(getFallbackNews())
-    } finally {
-      setLoading(false)
+      console.error("Failed to load breaking news from Strapi:", error)
+      setNews([])
     }
   }
 
   const loadAdvertisements = async () => {
     try {
-      const response = await fetch("/api/widgets/advertisements?widget=breaking-news")
+      const response = await fetch("http://localhost:1337/api/advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc")
       if (response.ok) {
         const data = await response.json()
-        setAdvertisements(data.advertisements || [])
-        setShowAds(data.enabled || false)
+        
+        if (data.data && data.data.length > 0) {
+          setAdvertisements(data.data)
+        } else {
+          setAdvertisements([])
+        }
+      } else {
+        console.error("Failed to load advertisements from Strapi:", response.status)
+        setAdvertisements([])
       }
     } catch (error) {
-      console.error("Failed to load advertisements:", error)
-      // Fallback ads for demo
-      setAdvertisements([
-        {
-          id: "ad1",
-          title: "Visit Pattaya Beach Resort",
-          content: "Luxury beachfront accommodation with stunning ocean views. Book now for special rates!",
-          url: "/business/pattaya-beach-resort",
-          imageUrl: "/placeholder.svg?height=40&width=60&text=Resort",
-          sponsor: "Pattaya Beach Resort",
-        },
-        {
-          id: "ad2",
-          title: "Best Thai Restaurant",
-          content: "Authentic Thai cuisine in the heart of Pattaya. Fresh ingredients, traditional recipes.",
-          url: "/business/thai-garden-restaurant",
-          imageUrl: "/placeholder.svg?height=40&width=60&text=Food",
-          sponsor: "Thai Garden Restaurant",
-        },
-      ])
+      console.error("Failed to load advertisements from Strapi:", error)
+      setAdvertisements([])
+    } finally {
+      setLoading(false)
     }
   }
-
-  const getFallbackNews = (): BreakingNews[] => [
-    {
-      id: "1",
-      title: "New Tourist Attraction Opens in Central Pattaya",
-      summary:
-        "State-of-the-art entertainment complex welcomes first visitors with grand opening ceremony featuring international performers and local cultural shows",
-      severity: "medium",
-      category: "Tourism",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      source: "Pattaya News",
-      url: "/news/new-tourist-attraction-opens",
-      isBreaking: true,
-      imageUrl: "/placeholder.svg?height=80&width=120&text=Attraction",
-    },
-    {
-      id: "2",
-      title: "Traffic Update: Beach Road Construction Phase 2",
-      summary:
-        "Major road improvements continue with temporary closures affecting main tourist areas. Alternative routes recommended for visitors",
-      severity: "high",
-      category: "Traffic",
-      timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      source: "City Hall",
-      url: "/news/beach-road-construction-update",
-      isBreaking: false,
-      imageUrl: "/placeholder.svg?height=80&width=120&text=Traffic",
-    },
-    {
-      id: "3",
-      title: "Weather Alert: Heavy Rain Expected This Weekend",
-      summary:
-        "Monsoon conditions forecasted with potential flooding in low-lying areas. Tourists advised to plan indoor activities",
-      severity: "medium",
-      category: "Weather",
-      timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-      source: "Weather Service",
-      url: "/weather/heavy-rain-alert",
-      isBreaking: false,
-      imageUrl: "/placeholder.svg?height=80&width=120&text=Weather",
-    },
-    {
-      id: "4",
-      title: "New Underwater World Aquarium Grand Opening",
-      summary:
-        "Marine life sanctuary opens doors to public with interactive exhibits and educational programs for all ages",
-      severity: "low",
-      category: "Tourism",
-      timestamp: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
-      source: "Tourism Board",
-      url: "/attractions/underwater-world-aquarium",
-      isBreaking: false,
-      imageUrl: "/placeholder.svg?height=80&width=120&text=Aquarium",
-    },
-    {
-      id: "5",
-      title: "Festival Announcement: Songkran 2024 Celebrations",
-      summary:
-        "Traditional water festival dates confirmed with special events throughout the city including cultural performances",
-      severity: "low",
-      category: "Events",
-      timestamp: new Date(Date.now() - 120 * 60 * 1000).toISOString(),
-      source: "Cultural Department",
-      url: "/events/songkran-2024-celebrations",
-      isBreaking: false,
-      imageUrl: "/placeholder.svg?height=80&width=120&text=Festival",
-    },
-  ]
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -193,7 +139,19 @@ export function EnhancedBreakingNewsWidget() {
 
   const allItems = [...news, ...(showAds ? advertisements : [])]
   const currentItem = allItems[currentIndex]
-  const isAdvertisement = currentItem && "sponsor" in currentItem
+  const isAdvertisement = currentItem && "Sponsor" in currentItem
+
+  if (!currentItem) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-4">
+          <div className="text-center text-gray-500 py-8">
+            No breaking news available at the moment.
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + allItems.length) % allItems.length)
@@ -205,7 +163,7 @@ export function EnhancedBreakingNewsWidget() {
 
   const handleItemClick = () => {
     if (currentItem) {
-      const url = isAdvertisement ? (currentItem as Advertisement).url : (currentItem as BreakingNews).url
+      const url = isAdvertisement ? (currentItem as StrapiAdvertisement).URL : (currentItem as StrapiBreakingNews).URL
       window.open(url, "_blank")
     }
   }
@@ -298,7 +256,7 @@ export function EnhancedBreakingNewsWidget() {
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open((currentItem as Advertisement).url, "_blank")
+                  window.open((currentItem as StrapiAdvertisement).URL, "_blank")
                 }}
                 className="h-5 w-5 p-0"
               >
@@ -307,20 +265,20 @@ export function EnhancedBreakingNewsWidget() {
             </div>
 
             <div className="flex space-x-3">
-              {(currentItem as Advertisement).imageUrl && (
+              {(currentItem as StrapiAdvertisement).Image && (
                 <img
-                  src={(currentItem as Advertisement).imageUrl || "/placeholder.svg"}
-                  alt={(currentItem as Advertisement).title}
+                  src={`http://localhost:1337${(currentItem as StrapiAdvertisement).Image!.url}`}
+                  alt={(currentItem as StrapiAdvertisement).Tiltle}
                   className="w-16 h-12 rounded object-cover flex-shrink-0"
                 />
               )}
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">
-                  {(currentItem as Advertisement).title}
+                  {(currentItem as StrapiAdvertisement).Tiltle}
                 </h4>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as Advertisement).content}</p>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as StrapiAdvertisement).Content}</p>
                 <div className="text-xs text-gray-500">
-                  by <span className="font-medium">{(currentItem as Advertisement).sponsor}</span>
+                  by <span className="font-medium">{(currentItem as StrapiAdvertisement).Sponsor}</span>
                 </div>
               </div>
             </div>
@@ -329,10 +287,10 @@ export function EnhancedBreakingNewsWidget() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Badge className={`text-xs ${getSeverityColor((currentItem as BreakingNews).severity)}`}>
-                  {(currentItem as BreakingNews).category}
+                <Badge className={`text-xs ${getSeverityColor((currentItem as StrapiBreakingNews).Severity)}`}>
+                  {(currentItem as StrapiBreakingNews).Category}
                 </Badge>
-                {(currentItem as BreakingNews).isBreaking && (
+                {(currentItem as StrapiBreakingNews).IsBreaking && (
                   <Badge className="bg-red-600 text-white text-xs animate-pulse">
                     <Zap className="w-2 h-2 mr-1" />
                     BREAKING
@@ -342,14 +300,14 @@ export function EnhancedBreakingNewsWidget() {
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 text-xs text-gray-500">
                   <Clock className="w-3 h-3" />
-                  <span>{formatTimeAgo((currentItem as BreakingNews).timestamp)}</span>
+                  <span>{formatTimeAgo((currentItem as StrapiBreakingNews).PublishedTimestamp)}</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation()
-                    window.open((currentItem as BreakingNews).url, "_blank")
+                    window.open((currentItem as StrapiBreakingNews).URL, "_blank")
                   }}
                   className="h-5 w-5 p-0"
                 >
@@ -359,19 +317,12 @@ export function EnhancedBreakingNewsWidget() {
             </div>
 
             <div className="flex space-x-3">
-              {(currentItem as BreakingNews).imageUrl && (
-                <img
-                  src={(currentItem as BreakingNews).imageUrl || "/placeholder.svg"}
-                  alt={(currentItem as BreakingNews).title}
-                  className="w-16 h-12 rounded object-cover flex-shrink-0"
-                />
-              )}
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">
-                  {(currentItem as BreakingNews).title}
+                  {(currentItem as StrapiBreakingNews).Title}
                 </h4>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as BreakingNews).summary}</p>
-                <div className="text-xs text-gray-500">Source: {(currentItem as BreakingNews).source}</div>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as StrapiBreakingNews).Summary}</p>
+                <div className="text-xs text-gray-500">Source: {(currentItem as StrapiBreakingNews).Source}</div>
               </div>
             </div>
           </div>

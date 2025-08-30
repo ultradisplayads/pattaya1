@@ -67,40 +67,57 @@ export function NewsHeroWidget() {
 
   const loadNews = async () => {
     try {
-      // Call Strapi API directly
+      setLoading(true)
+      console.log('Fetching news articles from Strapi...')
+      
+      // Call Strapi API to get news articles with populated media
       const response = await fetch("http://localhost:1337/api/news-articles?populate=*&sort=PublishedTimestamp:desc")
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('Strapi news articles response:', data)
         
-        // Transform Strapi data to match component interface
-        const transformedArticles: NewsArticle[] = data.data.map((strapiArticle: StrapiArticle) => {
-          // Get image URL with fallback
-          let imageUrl = "/placeholder.svg?height=300&width=450&text=News"
-          if (strapiArticle.Image) {
-            imageUrl = `http://localhost:1337${strapiArticle.Image.url}`
-          }
+        if (data.data && data.data.length > 0) {
+          // Transform Strapi data to match component interface
+          const transformedArticles: NewsArticle[] = data.data.map((strapiArticle: StrapiArticle) => {
+            // Get image URL with fallback
+            let imageUrl = "/placeholder.svg?height=300&width=450&text=News"
+            if (strapiArticle.Image) {
+              imageUrl = `http://localhost:1337${strapiArticle.Image.url}`
+            }
 
-          return {
-            id: strapiArticle.id.toString(),
-            title: strapiArticle.Title,
-            summary: strapiArticle.Summary,
-            image: imageUrl,
-            source: strapiArticle.Source,
-            timestamp: strapiArticle.PublishedTimestamp || strapiArticle.publishedAt,
-            category: strapiArticle.Culture,
-            trending: strapiArticle.Trending || false,
-            url: strapiArticle.URL,
-          }
-        })
-
-        setArticles(transformedArticles.length > 0 ? transformedArticles : getFallbackNews())
+            return {
+              id: strapiArticle.id.toString(),
+              title: strapiArticle.Title,
+              summary: strapiArticle.Summary,
+              image: imageUrl,
+              source: strapiArticle.Source,
+              timestamp: strapiArticle.PublishedTimestamp || strapiArticle.publishedAt,
+              category: strapiArticle.Culture,
+              trending: strapiArticle.Trending || false,
+              url: strapiArticle.URL,
+            }
+          })
+          
+          console.log('Transformed news articles:', transformedArticles)
+          setArticles(transformedArticles)
+        } else {
+          console.log('No news articles found, using fallback data')
+          // Use fallback data if no articles found
+          const fallbackArticles = getFallbackNews()
+          setArticles(fallbackArticles)
+        }
       } else {
-        console.error("Failed to load news from Strapi:", response.status)
-        setArticles(getFallbackNews())
+        console.error("Failed to fetch news articles from Strapi:", response.status)
+        // Use fallback data on error
+        const fallbackArticles = getFallbackNews()
+        setArticles(fallbackArticles)
       }
     } catch (error) {
-      console.error("Failed to load news from Strapi:", error)
-      setArticles(getFallbackNews())
+      console.error("Failed to load news articles:", error)
+      // Use fallback data on error
+      const fallbackArticles = getFallbackNews()
+      setArticles(fallbackArticles)
     } finally {
       setLoading(false)
     }

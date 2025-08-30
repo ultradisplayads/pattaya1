@@ -119,8 +119,21 @@ export function EnhancedForumPage() {
       if (categoriesRes.ok && topicsRes.ok) {
         const categoriesData = await categoriesRes.json()
         const topicsData = await topicsRes.json()
-        setCategories(categoriesData.data)
-        setTopics(topicsData.data)
+        
+        if (categoriesData.error) {
+          console.error("Categories API error:", categoriesData.error)
+        }
+        if (topicsData.error) {
+          console.error("Topics API error:", topicsData.error)
+        }
+        
+        setCategories(categoriesData.data || [])
+        setTopics(topicsData.data || [])
+      } else {
+        console.error("Failed to load forum data:", {
+          categories: categoriesRes.status,
+          topics: topicsRes.status
+        })
       }
     } catch (error) {
       console.error("Failed to load forum data:", error)
@@ -146,7 +159,7 @@ export function EnhancedForumPage() {
   }
 
   const getCategoryIcon = (iconName: string) => {
-    const icons = {
+    const icons: { [key: string]: React.ElementType } = {
       general: MessageSquare,
       travel: MapPin,
       food: Utensils,

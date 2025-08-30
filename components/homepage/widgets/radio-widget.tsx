@@ -30,6 +30,49 @@ interface RadioStation {
   }
 }
 
+interface StrapiRadioStation {
+  id: number
+  Name: string
+  Frequency: string
+  Genre: string
+  Description: string
+  StreamURL: string
+  Logo?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  CoverImage?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  IsLive: boolean
+  Featured: boolean
+  Verified: boolean
+  Listeners: number
+  CurrentTrack: string
+  Website: string
+  Facebook: string
+  Instagram: string
+  Twitter: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function RadioWidget() {
   const [stations, setStations] = useState<RadioStation[]>([])
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null)
@@ -55,33 +98,45 @@ export function RadioWidget() {
     try {
       setError(null)
       console.log('Fetching radio stations from Strapi...')
-      const response = await fetch("http://localhost:1337/api/radio-stations?populate=*&sort=Featured:desc,Listeners:desc")
+      
+      // Call Strapi API to get radio stations with populated media
+      const response = await fetch("http://localhost:1337/api/radio-stations?populate=*&sort=Listeners:desc")
+      
       if (response.ok) {
         const data = await response.json()
-        console.log('Strapi response:', data)
+        console.log('Strapi radio stations response:', data)
+        
         if (data.data && data.data.length > 0) {
-          const stationList = data.data.map((item: any) => ({
-            id: item.id.toString(),
-            name: item.Name,
-            frequency: item.Frequency,
-            genre: item.Genre,
-            streamUrl: item.StreamURL,
-            logo: item.Logo?.url 
-              ? `http://localhost:1337${item.Logo.url}`
-              : "/placeholder.svg?height=40&width=40&text=RF",
-            isLive: item.IsLive,
-            listeners: item.Listeners || 0,
-            nowPlaying: item.CurrentTrack || "Live Stream",
-            featured: item.Featured,
-            description: item.Description || "",
-            website: item.Website,
-            social: {
-              facebook: item.Facebook,
-              twitter: item.Twitter,
-              instagram: item.Instagram,
-            },
-          }))
-          console.log('Transformed stations:', stationList)
+          // Transform Strapi data to match component interface
+          const stationList: RadioStation[] = data.data.map((strapiStation: any) => {
+            // Get logo URL with fallback
+            let logoUrl = "/placeholder.svg?height=40&width=40&text=RF"
+            if (strapiStation.Logo) {
+              logoUrl = `http://localhost:1337${strapiStation.Logo.url}`
+            }
+
+            return {
+              id: strapiStation.id.toString(),
+              name: strapiStation.Name,
+              frequency: strapiStation.Frequency,
+              genre: strapiStation.Genre,
+              streamUrl: strapiStation.StreamURL,
+              logo: logoUrl,
+              isLive: strapiStation.IsLive,
+              listeners: strapiStation.Listeners || 0,
+              nowPlaying: strapiStation.CurrentTrack || "Live Stream",
+              featured: strapiStation.Featured,
+              description: strapiStation.Description || "",
+              website: strapiStation.Website,
+              social: {
+                facebook: strapiStation.Facebook,
+                twitter: strapiStation.Twitter,
+                instagram: strapiStation.Instagram,
+              },
+            }
+          })
+          
+          console.log('Transformed radio stations:', stationList)
           setStations(stationList)
 
           // Set first featured station as default, or first station
@@ -93,11 +148,13 @@ export function RadioWidget() {
           throw new Error("No radio stations available")
         }
       } else {
+        console.error("Failed to fetch radio stations from Strapi:", response.status)
         throw new Error("Failed to fetch radio stations")
       }
     } catch (error) {
-      console.error("Failed to load stations:", error)
+      console.error("Failed to load radio stations:", error)
       setError("Unable to load radio stations")
+      
       // Fallback to hardcoded stations
       const fallbackStations = getAllStations()
       setStations(fallbackStations)

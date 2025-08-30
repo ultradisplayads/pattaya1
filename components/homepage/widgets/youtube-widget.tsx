@@ -2,262 +2,213 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Play, Pause, ThumbsUp, ThumbsDown, Search, TrendingUp, Eye, Heart, MessageCircle } from "lucide-react"
+import { 
+  Play, 
+  ThumbsUp, 
+  Eye, 
+  MessageCircle, 
+  TrendingUp, 
+  ExternalLink
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 
-interface Video {
-  id: string
+interface StrapiYouTubeVideo {
+  id: number
   title: string
-  thumbnail: string
   description: string
-  views: number
-  likes: number
-  dislikes: number
-  promoted?: boolean
-  tags: string[]
+  videoId: string
+  thumbnailUrl: string | null
   duration: string
-  channelName: string
+  viewCount: number
+  likeCount: number
   publishedAt: string
+  channelName: string
+  category: string
+  promoted: boolean
+  featured: boolean
+  comments: number
 }
 
-const mockVideos: Video[] = [
-  {
-    id: "dQw4w9WgXcQ",
-    title: "Pattaya Beach Sunset - Amazing Views",
-    thumbnail: "/placeholder.svg?height=180&width=320",
-    description: "Beautiful sunset views from Pattaya Beach",
-    views: 15420,
-    likes: 892,
-    dislikes: 23,
-    promoted: true,
-    tags: ["pattaya", "beach", "sunset", "travel"],
-    duration: "3:45",
-    channelName: "Pattaya Explorer",
-    publishedAt: "2 days ago",
-  },
-  {
-    id: "jNQXAC9IVRw",
-    title: "Best Street Food in Pattaya 2024",
-    thumbnail: "/placeholder.svg?height=180&width=320",
-    description: "Discover the most delicious street food in Pattaya",
-    views: 8750,
-    likes: 654,
-    dislikes: 12,
-    tags: ["food", "pattaya", "street food", "thai cuisine"],
-    duration: "8:22",
-    channelName: "Food Adventures",
-    publishedAt: "1 week ago",
-  },
-  {
-    id: "M7lc1UVf-VE",
-    title: "Pattaya Nightlife Guide 2024",
-    thumbnail: "/placeholder.svg?height=180&width=320",
-    description: "Complete guide to Pattaya's vibrant nightlife scene",
-    views: 23100,
-    likes: 1205,
-    dislikes: 45,
-    promoted: true,
-    tags: ["nightlife", "pattaya", "entertainment", "bars"],
-    duration: "12:15",
-    channelName: "Night Explorer",
-    publishedAt: "3 days ago",
-  },
-  {
-    id: "kJQP7kiw5Fk",
-    title: "Top 10 Hotels in Pattaya",
-    thumbnail: "/placeholder.svg?height=180&width=320",
-    description: "Best accommodation options in Pattaya for every budget",
-    views: 12300,
-    likes: 789,
-    dislikes: 18,
-    tags: ["hotels", "pattaya", "accommodation", "travel"],
-    duration: "6:30",
-    channelName: "Travel Guide",
-    publishedAt: "5 days ago",
-  },
-]
-
-const trendingTags = ["pattaya", "beach", "nightlife", "food", "travel", "hotels", "sunset", "entertainment"]
-
 export function YouTubeWidget() {
-  const [videos, setVideos] = useState<Video[]>(mockVideos)
-  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filteredVideos, setFilteredVideos] = useState<Video[]>(mockVideos)
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [videos, setVideos] = useState<StrapiYouTubeVideo[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Auto-rotate carousel every 5 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentCarouselIndex((prevIndex) => (prevIndex + 1) % videos.length)
-    }, 5000)
-
+    fetchVideos()
+    const interval = setInterval(fetchVideos, 300000) // Refresh every 5 minutes
     return () => clearInterval(interval)
-  }, [videos.length])
+  }, [])
 
-  // Handle search
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const query = event.target.value
-    setSearchQuery(query)
-    const filtered = videos.filter(
-      (video) =>
-        video.title.toLowerCase().includes(query.toLowerCase()) ||
-        video.description.toLowerCase().includes(query.toLowerCase()) ||
-        video.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())),
+  const fetchVideos = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("http://localhost:1337/api/youtube-videos?populate=*")
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('YouTube videos data received:', data)
+      
+      if (data.data && Array.isArray(data.data)) {
+        const mappedData = data.data.map((item: any) => ({
+          id: item.id,
+          title: item.Title,
+          description: item.Description,
+          videoId: item.VideoId,
+          thumbnailUrl: item.Thumbnail,
+          duration: item.Duration,
+          viewCount: item.Views,
+          likeCount: item.Likes,
+          publishedAt: item.publishedAt,
+          channelName: item.ChannelName,
+          category: item.Category,
+          promoted: item.Promoted,
+          featured: item.Featured,
+          comments: item.Comments,
+        }))
+        setVideos(mappedData)
+      } else {
+        console.warn('No YouTube videos data found or invalid format')
+        setVideos([])
+      }
+    } catch (error) {
+      console.error("Failed to fetch YouTube videos from Strapi:", error)
+      setVideos([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatNumber = (num: number | undefined | null): string => {
+    if (num === undefined || num === null) {
+      return '0'
+    }
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M'
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K'
+    }
+    return num.toString()
+  }
+
+  const handleVideoClick = (videoId: string) => {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank')
+  }
+
+  if (loading) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-4">
+          <div className="animate-pulse space-y-3">
+            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-1 gap-3">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-100 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     )
-    setFilteredVideos(filtered)
   }
 
-  // Handle like/dislike
-  const handleLike = async (videoId: string) => {
-    setVideos((prev) => prev.map((video) => (video.id === videoId ? { ...video, likes: video.likes + 1 } : video)))
-    // In real app, make API call here
-  }
-
-  const handleDislike = async (videoId: string) => {
-    setVideos((prev) =>
-      prev.map((video) => (video.id === videoId ? { ...video, dislikes: video.dislikes + 1 } : video)),
+  if (videos.length === 0) {
+    return (
+      <Card className="h-full">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <Play className="w-4 h-4 text-white fill-current" />
+            </div>
+            <span>Featured Videos</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-0">
+          <div className="text-center text-gray-500 py-8">
+            No videos available at the moment.
+          </div>
+        </CardContent>
+      </Card>
     )
-    // In real app, make API call here
   }
-
-  const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`
-    return views.toString()
-  }
-
-  const promotedVideos = videos.filter((video) => video.promoted)
-  const currentVideo = videos[currentCarouselIndex]
 
   return (
-    <Card className="youtube-widget h-full overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Play className="w-4 h-4 text-red-500" />
-            YouTube Videos
-            <Badge variant="secondary" className="ml-2 text-xs">
-              Live
-            </Badge>
-          </CardTitle>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-            <TrendingUp className="w-3 h-3" />
-          </Button>
-        </div>
+    <Card className="h-full hover:shadow-lg transition-all duration-200 flex flex-col">
+      <CardHeader className="pb-3 flex-shrink-0">
+        <CardTitle className="text-lg font-semibold flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <Play className="w-4 h-4 text-white fill-current" />
+            </div>
+            <span>Featured Videos</span>
+          </div>
+          <Badge variant="secondary" className="text-xs">
+            {videos.length} Videos
+          </Badge>
+        </CardTitle>
       </CardHeader>
-
-      <CardContent className="space-y-3 p-3 h-full flex flex-col overflow-hidden">
-        {/* Search Bar */}
-        <div className="relative flex-shrink-0">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
-          <Input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search videos..."
-            className="pl-7 h-7 text-xs"
-          />
-        </div>
-
-        {/* Trending Tags */}
-        <div className="space-y-1 flex-shrink-0">
-          <h4 className="text-xs font-medium text-gray-700">Trending Tags</h4>
-          <div className="flex flex-wrap gap-1">
-            {trendingTags.slice(0, 4).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs px-1 py-0.5 cursor-pointer hover:bg-blue-50">
-                #{tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Video Carousel */}
-        <div className="space-y-1 flex-shrink-0">
-          <h4 className="text-xs font-medium text-gray-700">Featured Video</h4>
-          <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-            <img
-              src={currentVideo.thumbnail || "/placeholder.svg"}
-              alt={currentVideo.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white hover:bg-opacity-20 h-8 w-8 p-0"
-                onClick={() => setIsPlaying(!isPlaying)}
+    
+      <CardContent className="p-4 pt-0 space-y-4 flex-1 overflow-y-auto widget-content">
+        {/* Featured Video Section - Shows first 2 videos */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium text-gray-700">Featured</h3>
+          <div className="grid grid-cols-1 gap-3">
+            {videos.slice(0, 2).map((video) => (
+              <div
+                key={video.id}
+                className="group cursor-pointer bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors"
+                onClick={() => handleVideoClick(video.videoId)}
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </Button>
-            </div>
-            <div className="absolute bottom-1 left-1 right-1">
-              <div className="bg-black bg-opacity-70 text-white p-1 rounded text-xs">
-                <div className="font-medium line-clamp-1">{currentVideo.title}</div>
-                <div className="text-gray-300 flex items-center gap-1 mt-0.5">
-                  <span className="truncate text-xs">{currentVideo.channelName}</span>
-                  <span className="flex-shrink-0">•</span>
-                  <span className="flex-shrink-0">{formatViews(currentVideo.views)} views</span>
-                </div>
-              </div>
-            </div>
-            {currentVideo.promoted && (
-              <Badge className="absolute top-1 right-1 bg-yellow-500 text-black text-xs">Promoted</Badge>
-            )}
-          </div>
-
-          {/* Carousel Controls */}
-          <div className="flex justify-center gap-1">
-            {videos.map((_, index) => (
-              <button
-                key={index}
-                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  index === currentCarouselIndex ? "bg-blue-500" : "bg-gray-300"
-                }`}
-                onClick={() => setCurrentCarouselIndex(index)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Video Grid */}
-        <div className="space-y-1 flex-1 overflow-hidden">
-          <h4 className="text-xs font-medium text-gray-700">More Videos</h4>
-          <div className="grid grid-cols-2 gap-1 overflow-y-auto max-h-32">
-            {filteredVideos.slice(0, 4).map((video) => (
-              <div key={video.id} className="group cursor-pointer">
-                <div className="relative bg-gray-100 rounded overflow-hidden aspect-video mb-1">
+                <div className="relative">
                   <img
-                    src={video.thumbnail || "/placeholder.svg"}
+                    src={video.thumbnailUrl ? `http://localhost:1337${video.thumbnailUrl}` : "https://via.placeholder.com/320x180/1f2937/ffffff?text=Pattaya+Video"}
                     alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    className="w-full h-32 object-cover"
                   />
-                  <div className="absolute bottom-0.5 right-0.5 bg-black bg-opacity-70 text-white text-xs px-1 rounded">
+                  <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="w-5 h-5 text-gray-800 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded">
                     {video.duration}
                   </div>
                   {video.promoted && (
-                    <Badge className="absolute top-0.5 left-0.5 bg-yellow-500 text-black text-xs">Promoted</Badge>
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-orange-500 text-white text-xs">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        Promoted
+                      </Badge>
+                    </div>
                   )}
                 </div>
-                <div className="space-y-0.5">
-                  <h5 className="text-xs font-medium line-clamp-1 leading-tight">{video.title}</h5>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span className="truncate">{formatViews(video.views)} views</span>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleLike(video.id)
-                        }}
-                        className="flex items-center gap-0.5 hover:text-blue-500"
-                      >
-                        <ThumbsUp className="w-2.5 h-2.5" />
-                        <span className="text-xs">{video.likes}</span>
-                      </button>
+                
+                <div className="p-3">
+                  <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                    {video.title}
+                  </h4>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                    <span className="font-medium text-gray-700">{video.channelName}</span>
+                    <span>{video.publishedAt}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      <span>{formatNumber(video.viewCount)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="w-3 h-3" />
+                      <span>{formatNumber(video.likeCount)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-3 h-3" />
+                      <span>{formatNumber(video.comments)}</span>
                     </div>
                   </div>
                 </div>
@@ -266,33 +217,16 @@ export function YouTubeWidget() {
           </div>
         </div>
 
-        {/* Analytics Summary */}
-        <div className="bg-gray-50 rounded p-2 space-y-1 flex-shrink-0">
-          <h4 className="text-xs font-medium text-gray-700">Video Analytics</h4>
-          <div className="grid grid-cols-3 gap-1 text-center">
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center">
-                <Eye className="w-3 h-3 text-blue-500" />
-              </div>
-              <div className="text-xs font-medium">{formatViews(videos.reduce((sum, v) => sum + v.views, 0))}</div>
-              <div className="text-xs text-gray-500">Total Views</div>
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center">
-                <Heart className="w-3 h-3 text-red-500" />
-              </div>
-              <div className="text-xs font-medium">{videos.reduce((sum, v) => sum + v.likes, 0)}</div>
-              <div className="text-xs text-gray-500">Total Likes</div>
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center justify-center">
-                <MessageCircle className="w-3 h-3 text-green-500" />
-              </div>
-              <div className="text-xs font-medium">{videos.length}</div>
-              <div className="text-xs text-gray-500">Videos</div>
-            </div>
-          </div>
-        </div>
+        {/* View All Button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full text-xs"
+          onClick={() => window.open('https://www.youtube.com/results?search_query=pattaya', '_blank')}
+        >
+          <ExternalLink className="w-3 h-3 mr-2" />
+          View All Pattaya Videos
+        </Button>
       </CardContent>
     </Card>
   )

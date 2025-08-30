@@ -42,6 +42,27 @@ interface WeatherData {
   source: string
 }
 
+interface StrapiWeather {
+  id: number
+  Location: string
+  Condition: string
+  Description: string
+  Icon: string
+  Temperature: number
+  FeelsLike: number
+  Humidity: number
+  Windspeed: number
+  Pressure: number
+  Visibility: number
+  UvIndex: number
+  LastUpdated: string
+  Source: string
+  IsActive: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function WeatherWidget() {
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -58,40 +79,50 @@ export function WeatherWidget() {
   const loadWeather = async () => {
     try {
       setError(null)
+      // Call Strapi API to get the most recent active weather data
       const response = await fetch("http://localhost:1337/api/weathers?filters[IsActive][$eq]=true&sort=LastUpdated:desc&pagination[limit]=1")
+      
       if (response.ok) {
         const data = await response.json()
+        
         if (data.data && data.data.length > 0) {
-          const weatherData = data.data[0]
-          setWeather({
+          const strapiWeather: StrapiWeather = data.data[0]
+          
+          // Transform Strapi data to match component interface
+          const transformedWeather: WeatherData = {
             current: {
-              temperature: weatherData.Temperature,
-              condition: weatherData.Condition,
-              description: weatherData.Description,
-              humidity: weatherData.Humidity,
-              windSpeed: weatherData.Windspeed,
-              pressure: weatherData.Pressure,
-              visibility: weatherData.Visibility,
-              uvIndex: weatherData.UvIndex,
-              feelsLike: weatherData.FeelsLike,
-              icon: weatherData.Icon,
+              temperature: strapiWeather.Temperature,
+              condition: strapiWeather.Condition,
+              description: strapiWeather.Description,
+              humidity: strapiWeather.Humidity,
+              windSpeed: strapiWeather.Windspeed,
+              pressure: strapiWeather.Pressure,
+              visibility: strapiWeather.Visibility,
+              uvIndex: strapiWeather.UvIndex,
+              feelsLike: strapiWeather.FeelsLike,
+              icon: strapiWeather.Icon,
             },
             forecast: [],
             airQuality: null,
-            location: weatherData.Location,
-            lastUpdated: weatherData.LastUpdated,
-            source: weatherData.Source,
-          })
+            location: strapiWeather.Location,
+            lastUpdated: strapiWeather.LastUpdated || strapiWeather.publishedAt,
+            source: strapiWeather.Source,
+          }
+          
+          setWeather(transformedWeather)
           setLastRefresh(new Date())
+          console.log('Weather data loaded from Strapi:', strapiWeather.Location, strapiWeather.Condition)
         } else {
-          throw new Error("No weather data available")
+          throw new Error("No active weather data available")
         }
       } else {
-        throw new Error("Failed to fetch weather")
+        console.error("Failed to fetch weather from Strapi:", response.status)
+        throw new Error("Failed to fetch weather data")
       }
     } catch (err) {
       console.error("Weather loading error:", err)
       setError("Unable to load weather data")
+      
       // Set fallback data
       setWeather({
         current: {

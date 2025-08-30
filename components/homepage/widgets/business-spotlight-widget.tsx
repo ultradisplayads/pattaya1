@@ -21,67 +21,181 @@ interface Business {
   tags: string[]
 }
 
+interface StrapiBusinessSpotlight {
+  id: number
+  Name: string
+  Category: string
+  Rating: number
+  Reviews: number
+  Location: string
+  Image?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  Description: string
+  Hours: string
+  Phone: string
+  Website: string
+  Featured: boolean
+  Deal: string
+  Tags: string[]
+  IsActive: boolean
+  Address: string
+  Email: string
+  SocialMedia: {
+    facebook?: string
+    instagram?: string
+    twitter?: string
+  }
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function BusinessSpotlightWidget() {
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [currentBusiness, setCurrentBusiness] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const featuredBusinesses: Business[] = [
-      {
-        id: "1",
-        name: "Ocean View Restaurant",
-        category: "Fine Dining",
-        rating: 4.8,
-        reviews: 324,
-        location: "Beach Road, Pattaya",
-        image: "/placeholder.svg?height=120&width=200&text=Restaurant",
-        description: "Authentic Thai cuisine with stunning ocean views. Fresh seafood daily.",
-        hours: "11:00 AM - 11:00 PM",
-        phone: "+66 38 123 456",
-        featured: true,
-        deal: "20% off dinner menu",
-        tags: ["Seafood", "Thai", "Ocean View"],
-      },
-      {
-        id: "2",
-        name: "Sunset Spa & Wellness",
-        category: "Health & Beauty",
-        rating: 4.9,
-        reviews: 189,
-        location: "Central Pattaya",
-        image: "/placeholder.svg?height=120&width=200&text=Spa",
-        description: "Traditional Thai massage and modern wellness treatments in luxury setting.",
-        hours: "9:00 AM - 10:00 PM",
-        phone: "+66 38 234 567",
-        featured: true,
-        deal: "Buy 2 get 1 free massage",
-        tags: ["Massage", "Wellness", "Luxury"],
-      },
-      {
-        id: "3",
-        name: "Adventure Dive Center",
-        category: "Water Sports",
-        rating: 4.7,
-        reviews: 156,
-        location: "Jomtien Beach",
-        image: "/placeholder.svg?height=120&width=200&text=Diving",
-        description: "Professional diving courses and underwater adventures for all levels.",
-        hours: "7:00 AM - 6:00 PM",
-        phone: "+66 38 345 678",
-        featured: true,
-        deal: "Free equipment rental",
-        tags: ["Diving", "Adventure", "Certified"],
-      },
-    ]
-    setBusinesses(featuredBusinesses)
-
-    // Auto-rotate businesses every 5 seconds
-    const interval = setInterval(() => {
-      setCurrentBusiness((prev) => (prev + 1) % featuredBusinesses.length)
-    }, 5000)
-
+    loadBusinessSpotlights()
+    const interval = setInterval(loadBusinessSpotlights, 300000) // Update every 5 minutes
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (businesses.length > 0) {
+      // Auto-rotate businesses every 5 seconds
+      const interval = setInterval(() => {
+        setCurrentBusiness((prev) => (prev + 1) % businesses.length)
+      }, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [businesses])
+
+  const loadBusinessSpotlights = async () => {
+    try {
+      setLoading(true)
+      console.log('Fetching business spotlights from Strapi...')
+      
+      const response = await fetch("http://localhost:1337/api/business-spotlights?populate=*&sort=Rating:desc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (data.data && data.data.length > 0) {
+          const transformedBusinesses: Business[] = data.data.map((strapiBusiness: StrapiBusinessSpotlight) => {
+            // Get image URL with fallback
+            let imageUrl = "/placeholder.svg?height=120&width=200&text=Business"
+            if (strapiBusiness.Image) {
+              imageUrl = `http://localhost:1337${strapiBusiness.Image.url}`
+            }
+
+            return {
+              id: strapiBusiness.id.toString(),
+              name: strapiBusiness.Name,
+              category: strapiBusiness.Category,
+              rating: strapiBusiness.Rating,
+              reviews: strapiBusiness.Reviews,
+              location: strapiBusiness.Location,
+              image: imageUrl,
+              description: strapiBusiness.Description,
+              hours: strapiBusiness.Hours,
+              phone: strapiBusiness.Phone,
+              featured: strapiBusiness.Featured,
+              deal: strapiBusiness.Deal,
+              tags: strapiBusiness.Tags || [],
+            }
+          })
+          
+          setBusinesses(transformedBusinesses)
+        } else {
+          setBusinesses(getFallbackBusinesses())
+        }
+      } else {
+        console.error("Failed to load business spotlights from Strapi:", response.status)
+        setBusinesses(getFallbackBusinesses())
+      }
+    } catch (error) {
+      console.error("Failed to load business spotlights:", error)
+      setBusinesses(getFallbackBusinesses())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getFallbackBusinesses = (): Business[] => [
+    {
+      id: "1",
+      name: "Ocean View Restaurant",
+      category: "Fine Dining",
+      rating: 4.8,
+      reviews: 324,
+      location: "Beach Road, Pattaya",
+      image: "/placeholder.svg?height=120&width=200&text=Restaurant",
+      description: "Authentic Thai cuisine with stunning ocean views. Fresh seafood daily.",
+      hours: "11:00 AM - 11:00 PM",
+      phone: "+66 38 123 456",
+      featured: true,
+      deal: "20% off dinner menu",
+      tags: ["Seafood", "Thai", "Ocean View"],
+    },
+    {
+      id: "2",
+      name: "Sunset Spa & Wellness",
+      category: "Health & Beauty",
+      rating: 4.9,
+      reviews: 189,
+      location: "Central Pattaya",
+      image: "/placeholder.svg?height=120&width=200&text=Spa",
+      description: "Traditional Thai massage and modern wellness treatments in luxury setting.",
+      hours: "9:00 AM - 10:00 PM",
+      phone: "+66 38 234 567",
+      featured: true,
+      deal: "Buy 2 get 1 free massage",
+      tags: ["Massage", "Wellness", "Luxury"],
+    },
+    {
+      id: "3",
+      name: "Adventure Dive Center",
+      category: "Water Sports",
+      rating: 4.7,
+      reviews: 156,
+      location: "Jomtien Beach",
+      image: "/placeholder.svg?height=120&width=200&text=Diving",
+      description: "Professional diving courses and underwater adventures for all levels.",
+      hours: "7:00 AM - 6:00 PM",
+      phone: "+66 38 345 678",
+      featured: true,
+      deal: "Free equipment rental",
+      tags: ["Diving", "Adventure", "Certified"],
+    },
+  ]
+
+  if (loading) {
+    return (
+      <Card className="h-full">
+        <CardContent className="p-4">
+          <div className="animate-pulse space-y-3">
+            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="h-24 bg-gray-100 rounded-lg"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (businesses.length === 0) return <div className="animate-pulse bg-gray-200 rounded-lg h-full"></div>
 

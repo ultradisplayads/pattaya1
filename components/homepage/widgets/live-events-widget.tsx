@@ -16,62 +16,142 @@ interface LiveEvent {
   image: string
 }
 
+interface StrapiLiveEvent {
+  id: number
+  Title: string
+  Location: string
+  Time: string
+  Attendees: number
+  Status: string
+  Category: string
+  Image?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  IsActive: boolean
+  Featured: boolean
+  Order: number
+  Description?: string
+  Tags?: string[]
+  StartTime?: string
+  EndTime?: string
+  LastUpdated?: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function LiveEventsWidget() {
   const [events, setEvents] = useState<LiveEvent[]>([])
   const [currentEvent, setCurrentEvent] = useState(0)
 
   useEffect(() => {
-    const liveEvents: LiveEvent[] = [
-      {
-        id: "1",
-        title: "Beach Volleyball Tournament",
-        location: "Jomtien Beach",
-        time: "Now - 8:00 PM",
-        attendees: 250,
-        status: "live",
-        category: "Sports",
-        image: "/placeholder.svg?height=100&width=150&text=Volleyball",
-      },
-      {
-        id: "2",
-        title: "Thai Cooking Workshop",
-        location: "Central Pattaya",
-        time: "Starting in 30 min",
-        attendees: 25,
-        status: "starting",
-        category: "Food",
-        image: "/placeholder.svg?height=100&width=150&text=Cooking",
-      },
-      {
-        id: "3",
-        title: "Live Jazz Performance",
-        location: "Rooftop Bar",
-        time: "8:00 PM - 11:00 PM",
-        attendees: 120,
-        status: "upcoming",
-        category: "Music",
-        image: "/placeholder.svg?height=100&width=150&text=Jazz",
-      },
-      {
-        id: "4",
-        title: "Night Market Opening",
-        location: "Walking Street",
-        time: "6:00 PM - 12:00 AM",
-        attendees: 1500,
-        status: "live",
-        category: "Shopping",
-        image: "/placeholder.svg?height=100&width=150&text=Market",
-      },
-    ]
-    setEvents(liveEvents)
-
-    // Auto-rotate events every 4 seconds
-    const interval = setInterval(() => {
-      setCurrentEvent((prev) => (prev + 1) % liveEvents.length)
-    }, 4000)
-
+    loadLiveEvents()
+    const interval = setInterval(loadLiveEvents, 180000) // Refresh every 3 minutes
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (events.length > 0) {
+      // Auto-rotate events every 4 seconds
+      const interval = setInterval(() => {
+        setCurrentEvent((prev) => (prev + 1) % events.length)
+      }, 4000)
+      return () => clearInterval(interval)
+    }
+  }, [events])
+
+  const loadLiveEvents = async () => {
+    try {
+      console.log('Fetching live events from Strapi...')
+      const response = await fetch("http://localhost:1337/api/live-events?populate=*&sort=Order:asc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (data.data && data.data.length > 0) {
+          const transformedEvents: LiveEvent[] = data.data.map((strapiEvent: StrapiLiveEvent) => {
+            // Get image URL with fallback
+            let imageUrl = "/placeholder.svg?height=100&width=150&text=Event"
+            if (strapiEvent.Image) {
+              imageUrl = `http://localhost:1337${strapiEvent.Image.url}`
+            }
+
+            return {
+              id: strapiEvent.id.toString(),
+              title: strapiEvent.Title,
+              location: strapiEvent.Location,
+              time: strapiEvent.Time,
+              attendees: strapiEvent.Attendees,
+              status: strapiEvent.Status as "live" | "starting" | "upcoming",
+              category: strapiEvent.Category,
+              image: imageUrl,
+            }
+          })
+
+          setEvents(transformedEvents)
+        } else {
+          setEvents(getFallbackLiveEvents())
+        }
+      } else {
+        console.error("Failed to load live events from Strapi:", response.status)
+        setEvents(getFallbackLiveEvents())
+      }
+    } catch (error) {
+      console.error("Failed to load live events:", error)
+      setEvents(getFallbackLiveEvents())
+    }
+  }
+
+  const getFallbackLiveEvents = (): LiveEvent[] => [
+    {
+      id: "1",
+      title: "Beach Volleyball Tournament",
+      location: "Jomtien Beach",
+      time: "Now - 8:00 PM",
+      attendees: 250,
+      status: "live",
+      category: "Sports",
+      image: "/placeholder.svg?height=100&width=150&text=Volleyball",
+    },
+    {
+      id: "2",
+      title: "Thai Cooking Workshop",
+      location: "Central Pattaya",
+      time: "Starting in 30 min",
+      attendees: 25,
+      status: "starting",
+      category: "Food",
+      image: "/placeholder.svg?height=100&width=150&text=Cooking",
+    },
+    {
+      id: "3",
+      title: "Live Jazz Performance",
+      location: "Rooftop Bar",
+      time: "8:00 PM - 11:00 PM",
+      attendees: 120,
+      status: "upcoming",
+      category: "Music",
+      image: "/placeholder.svg?height=100&width=150&text=Jazz",
+    },
+    {
+      id: "4",
+      title: "Night Market Opening",
+      location: "Walking Street",
+      time: "6:00 PM - 12:00 AM",
+      attendees: 1500,
+      status: "live",
+      category: "Shopping",
+      image: "/placeholder.svg?height=100&width=150&text=Market",
+    },
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
