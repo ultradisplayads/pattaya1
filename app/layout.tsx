@@ -18,7 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    //@ts-ignore
+    <html lang="en" webcrx="">
       <body className={inter.className}>
         <AuthProvider>{children}</AuthProvider>
       </body>

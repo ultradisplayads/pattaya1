@@ -21,6 +21,45 @@ interface Event {
   featured: boolean
 }
 
+interface StrapiEventCalendar {
+  id: number
+  Title: string
+  Date: string
+  Time: string
+  Location: string
+  Attendees: number
+  MaxAttendees?: number
+  Price: number
+  Category: string
+  Status: "confirmed" | "filling-fast" | "sold-out" | "free" | "cancelled" | "postponed"
+  Image?: {
+    id: number
+    name: string
+    url: string
+    formats?: {
+      thumbnail?: { url: string }
+      small?: { url: string }
+      medium?: { url: string }
+      large?: { url: string }
+    }
+  }
+  Featured: boolean
+  IsActive: boolean
+  Description: string
+  Organizer: string
+  ContactEmail: string
+  ContactPhone: string
+  Website: string
+  Tags: string[]
+  Duration: string
+  AgeRestriction: string
+  Accessibility: string
+  LastUpdated: string
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 interface EventsCalendarWidgetProps {
   isExpanded?: boolean
   onToggleExpand?: () => void
@@ -47,108 +86,105 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
 
   const loadEvents = async () => {
     try {
-      // Simulate API call - replace with actual events data
-      const mockEvents: Event[] = [
-        {
-          id: "1",
-          title: "Pattaya Music Festival 2024",
-          date: "2024-01-20",
-          time: "19:00",
-          location: "Pattaya Beach",
-          attendees: 2847,
-          maxAttendees: 5000,
-          price: 0,
-          category: "Music",
-          status: "free",
-          image: "/placeholder.svg?height=60&width=80&text=Music+Festival",
-          featured: true,
-        },
-        {
-          id: "2",
-          title: "Walking Street Night Market",
-          date: "2024-01-16",
-          time: "18:00",
-          location: "Walking Street",
-          attendees: 156,
-          maxAttendees: 200,
-          price: 0,
-          category: "Shopping",
-          status: "filling-fast",
-          image: "/placeholder.svg?height=60&width=80&text=Night+Market",
-          featured: false,
-        },
-        {
-          id: "3",
-          title: "Muay Thai Championship",
-          date: "2024-01-17",
-          time: "20:30",
-          location: "Max Muay Thai Stadium",
-          attendees: 890,
-          maxAttendees: 1000,
-          price: 1500,
-          category: "Sports",
-          status: "confirmed",
-          image: "/placeholder.svg?height=60&width=80&text=Muay+Thai",
-          featured: true,
-        },
-        {
-          id: "4",
-          title: "Floating Market Tour",
-          date: "2024-01-16",
-          time: "08:00",
-          location: "Damnoen Saduak",
-          attendees: 45,
-          maxAttendees: 50,
-          price: 800,
-          category: "Tourism",
-          status: "filling-fast",
-          image: "/placeholder.svg?height=60&width=80&text=Floating+Market",
-          featured: false,
-        },
-        {
-          id: "5",
-          title: "Cabaret Show Spectacular",
-          date: "2024-01-16",
-          time: "21:00",
-          location: "Alcazar Theatre",
-          attendees: 300,
-          maxAttendees: 300,
-          price: 1200,
-          category: "Entertainment",
-          status: "sold-out",
-          image: "/placeholder.svg?height=60&width=80&text=Cabaret+Show",
-          featured: false,
-        },
-        {
-          id: "6",
-          title: "Sunset Yacht Party",
-          date: "2024-01-18",
-          time: "17:00",
-          location: "Pattaya Marina",
-          attendees: 67,
-          maxAttendees: 80,
-          price: 2500,
-          category: "Nightlife",
-          status: "confirmed",
-          image: "/placeholder.svg?height=60&width=80&text=Yacht+Party",
-          featured: true,
-        },
-      ]
+      setLoading(true)
+      console.log('Fetching events from Strapi...')
+      
+      const response = await fetch("http://localhost:1337/api/event-calendars?populate=*&sort=Date:asc")
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        if (data.data && data.data.length > 0) {
+          const transformedEvents: Event[] = data.data.map((strapiEvent: StrapiEventCalendar) => {
+            // Get image URL with fallback
+            let imageUrl = "/placeholder.svg?height=60&width=80&text=Event"
+            if (strapiEvent.Image) {
+              imageUrl = `http://localhost:1337${strapiEvent.Image.url}`
+            }
 
-      // Sort by date and time
-      const sortedEvents = mockEvents.sort((a, b) => {
-        const dateA = new Date(`${a.date}T${a.time}`)
-        const dateB = new Date(`${b.date}T${b.time}`)
-        return dateA.getTime() - dateB.getTime()
-      })
+            return {
+              id: strapiEvent.id.toString(),
+              title: strapiEvent.Title,
+              date: strapiEvent.Date,
+              time: strapiEvent.Time,
+              location: strapiEvent.Location,
+              attendees: strapiEvent.Attendees,
+              maxAttendees: strapiEvent.MaxAttendees,
+              price: strapiEvent.Price,
+              category: strapiEvent.Category,
+              status: strapiEvent.Status,
+              image: imageUrl,
+              featured: strapiEvent.Featured,
+            }
+          })
 
-      setEvents(sortedEvents)
+          // Sort by date and time
+          const sortedEvents = transformedEvents.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`)
+            const dateB = new Date(`${b.date}T${b.time}`)
+            return dateA.getTime() - dateB.getTime()
+          })
+
+          setEvents(sortedEvents)
+        } else {
+          setEvents(getFallbackEvents())
+        }
+      } else {
+        console.error("Failed to load events from Strapi:", response.status)
+        setEvents(getFallbackEvents())
+      }
     } catch (error) {
       console.error("Failed to load events:", error)
+      setEvents(getFallbackEvents())
     } finally {
       setLoading(false)
     }
   }
+
+  const getFallbackEvents = (): Event[] => [
+    {
+      id: "1",
+      title: "Pattaya Music Festival 2024",
+      date: "2024-01-20",
+      time: "19:00",
+      location: "Pattaya Beach",
+      attendees: 2847,
+      maxAttendees: 5000,
+      price: 0,
+      category: "Music",
+      status: "free",
+      image: "/placeholder.svg?height=60&width=80&text=Music+Festival",
+      featured: true,
+    },
+    {
+      id: "2",
+      title: "Walking Street Night Market",
+      date: "2024-01-16",
+      time: "18:00",
+      location: "Walking Street",
+      attendees: 156,
+      maxAttendees: 200,
+      price: 0,
+      category: "Shopping",
+      status: "filling-fast",
+      image: "/placeholder.svg?height=60&width=80&text=Night+Market",
+      featured: false,
+    },
+    {
+      id: "3",
+      title: "Muay Thai Championship",
+      date: "2024-01-17",
+      time: "20:30",
+      location: "Max Muay Thai Stadium",
+      attendees: 890,
+      maxAttendees: 1000,
+      price: 1500,
+      category: "Sports",
+      status: "confirmed",
+      image: "/placeholder.svg?height=60&width=80&text=Muay+Thai",
+      featured: true,
+    },
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
