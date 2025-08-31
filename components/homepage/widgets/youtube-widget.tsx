@@ -13,6 +13,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface StrapiYouTubeVideo {
   id: number
@@ -44,7 +45,7 @@ export function YouTubeWidget() {
   const fetchVideos = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:1337/api/youtube-videos?populate=*")
+      const response = await fetch(buildApiUrl("youtube-videos?populate=*"))
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -101,13 +102,26 @@ export function YouTubeWidget() {
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="grid grid-cols-1 gap-3">
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="h-6 bg-gray-100 rounded-full w-32"></div>
+            <div className="h-4 bg-gray-100 rounded-full w-16"></div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-100 rounded-full w-20"></div>
+            <div className="space-y-4">
               {[...Array(2)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-100 rounded"></div>
+                <div key={i} className="space-y-3">
+                  <div className="h-32 bg-gray-100 rounded-xl"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
+                    <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
+                    <div className="h-3 bg-gray-100 rounded-full w-1/3"></div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -118,17 +132,19 @@ export function YouTubeWidget() {
 
   if (videos.length === 0) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-3 flex-shrink-0">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-              <Play className="w-4 h-4 text-white fill-current" />
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-red-500 rounded-xl flex items-center justify-center mr-3">
+                <Play className="w-4 h-4 text-white fill-current" />
+              </div>
+              <span>Featured Videos</span>
             </div>
-            <span>Featured Videos</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="text-center text-gray-500 py-8">
+        <CardContent className="px-6 pb-6">
+          <div className="text-center text-gray-500 py-8 font-medium">
             No videos available at the moment.
           </div>
         </CardContent>
@@ -137,49 +153,49 @@ export function YouTubeWidget() {
   }
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200 flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0">
-        <CardTitle className="text-lg font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden flex flex-col">
+      <CardHeader className="pb-3 px-6 pt-6 flex-shrink-0">
+        <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-red-500 rounded-xl flex items-center justify-center mr-3">
               <Play className="w-4 h-4 text-white fill-current" />
             </div>
             <span>Featured Videos</span>
           </div>
-          <Badge variant="secondary" className="text-xs">
+          <Badge className="text-xs font-medium bg-gray-50 text-gray-600 border-0">
             {videos.length} Videos
           </Badge>
         </CardTitle>
       </CardHeader>
     
-      <CardContent className="p-4 pt-0 space-y-4 flex-1 overflow-y-auto widget-content">
+      <CardContent className="px-6 pb-6 space-y-6 flex-1 overflow-y-auto widget-content">
         {/* Featured Video Section - Shows first 2 videos */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-700">Featured</h3>
-          <div className="grid grid-cols-1 gap-3">
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-gray-700">Featured</h3>
+          <div className="space-y-4">
             {videos.slice(0, 2).map((video) => (
               <div
                 key={video.id}
-                className="group cursor-pointer bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors"
+                className="group cursor-pointer bg-gray-50 rounded-xl overflow-hidden hover:bg-white border border-gray-100 hover:shadow-sm transition-all duration-200"
                 onClick={() => handleVideoClick(video.videoId)}
               >
                 <div className="relative">
                   <img
-                    src={video.thumbnailUrl ? `http://localhost:1337${video.thumbnailUrl}` : "https://via.placeholder.com/320x180/1f2937/ffffff?text=Pattaya+Video"}
+                    src={video.thumbnailUrl ? buildStrapiUrl(video.thumbnailUrl) : "https://via.placeholder.com/320x180/1f2937/ffffff?text=Pattaya+Video"}
                     alt={video.title}
                     className="w-full h-32 object-cover"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                    <div className="w-12 h-12 bg-white bg-opacity-90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 bg-white bg-opacity-95 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                       <Play className="w-5 h-5 text-gray-800 fill-current ml-0.5" />
                     </div>
                   </div>
-                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute bottom-3 right-3 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded-lg font-medium">
                     {video.duration}
                   </div>
                   {video.promoted && (
-                    <div className="absolute top-2 left-2">
-                      <Badge className="bg-orange-500 text-white text-xs">
+                    <div className="absolute top-3 left-3">
+                      <Badge className="bg-orange-500 text-white text-xs font-medium rounded-full border-0">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Promoted
                       </Badge>
@@ -187,26 +203,26 @@ export function YouTubeWidget() {
                   )}
                 </div>
                 
-                <div className="p-3">
-                  <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                <div className="p-4">
+                  <h4 className="font-semibold text-sm text-gray-900 line-clamp-2 mb-3 group-hover:text-red-600 transition-colors leading-tight">
                     {video.title}
                   </h4>
                   
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                     <span className="font-medium text-gray-700">{video.channelName}</span>
-                    <span>{video.publishedAt}</span>
+                    <span className="font-medium">{video.publishedAt}</span>
                   </div>
                   
                   <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 font-medium">
                       <Eye className="w-3 h-3" />
                       <span>{formatNumber(video.viewCount)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 font-medium">
                       <ThumbsUp className="w-3 h-3" />
                       <span>{formatNumber(video.likeCount)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 font-medium">
                       <MessageCircle className="w-3 h-3" />
                       <span>{formatNumber(video.comments)}</span>
                     </div>
@@ -221,7 +237,7 @@ export function YouTubeWidget() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full text-xs"
+          className="w-full text-xs font-medium bg-white border-gray-200 hover:bg-gray-50 transition-colors"
           onClick={() => window.open('https://www.youtube.com/results?search_query=pattaya', '_blank')}
         >
           <ExternalLink className="w-3 h-3 mr-2" />

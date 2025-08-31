@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { buildApiUrl } from "@/lib/strapi-config"
 
 interface TrafficRoute {
   id: string
@@ -110,8 +111,8 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
       console.log('Fetching traffic data from Strapi...')
       
       // Fetch traffic routes
-      const routesResponse = await fetch("http://localhost:1337/api/traffic-routes?populate=*&sort=Order:asc")
-      const incidentsResponse = await fetch("http://localhost:1337/api/traffic-incidents?populate=*&sort=Order:asc")
+      const routesResponse = await fetch(buildApiUrl("traffic-routes?populate=*&sort=Order:asc"))
+      const incidentsResponse = await fetch(buildApiUrl("traffic-incidents?populate=*&sort=Order:asc"))
       
       if (routesResponse.ok && incidentsResponse.ok) {
         const routesData = await routesResponse.json()
@@ -139,10 +140,10 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
           const transformedIncidents: TrafficIncident[] = incidentsData.data.map((strapiIncident: StrapiTrafficIncident) => ({
             id: strapiIncident.id.toString(),
             type: strapiIncident.Type as "accident" | "construction" | "event" | "weather",
-            location: strapiIncident.Location,
-            severity: strapiIncident.Severity as "low" | "medium" | "high",
             description: strapiIncident.Description,
             estimatedClearTime: strapiIncident.EstimatedClearTime,
+            location: strapiIncident.Location,
+            severity: strapiIncident.Severity as "low" | "medium" | "high",
           }))
           setIncidents(transformedIncidents)
         } else {
@@ -255,15 +256,15 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
   const getStatusColor = (status: string) => {
     switch (status) {
       case "clear":
-        return "bg-green-500 text-white"
+        return "bg-emerald-50 text-emerald-700 border-emerald-200"
       case "moderate":
-        return "bg-yellow-500 text-white"
+        return "bg-amber-50 text-amber-700 border-amber-200"
       case "heavy":
-        return "bg-red-500 text-white animate-pulse"
+        return "bg-red-50 text-red-700 border-red-200"
       case "blocked":
-        return "bg-red-700 text-white"
+        return "bg-red-100 text-red-800 border-red-300"
       default:
-        return "bg-gray-500 text-white"
+        return "bg-gray-50 text-gray-700 border-gray-200"
     }
   }
 
@@ -300,24 +301,24 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "low":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-amber-50 text-amber-700 border-amber-200"
       case "medium":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-50 text-orange-700 border-orange-200"
       case "high":
-        return "bg-red-100 text-red-800"
+        return "bg-red-50 text-red-700 border-red-200"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-50 text-gray-700 border-gray-200"
     }
   }
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0,0,0,0.1),0_1px_2px_-1px_rgb(0,0,0,0.1)] rounded-2xl">
+        <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded"></div>
+            <div className="h-5 bg-gray-100 rounded-lg w-32"></div>
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded"></div>
+              <div key={i} className="h-16 bg-gray-50 rounded-xl"></div>
             ))}
           </div>
         </CardContent>
@@ -330,79 +331,92 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
   const maxHeight = isExpanded ? "500px" : "280px"
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-green-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center justify-between bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0,0,0,0.1),0_1px_2px_-1px_rgb(0,0,0,0.1)] rounded-2xl overflow-hidden">
+      <CardHeader className="pb-4 px-6 pt-6">
+        <CardTitle className="text-[15px] font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
-            <Car className="h-4 w-4 mr-2 text-green-500" />
+            <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
             Traffic Conditions
           </div>
           <div className="flex items-center space-x-2">
-            <div className="flex items-center text-xs text-gray-500">
-              <Navigation className="h-3 w-3 mr-1" />
+            <div className="flex items-center text-[11px] text-gray-500 font-medium">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></div>
               Live
             </div>
             {onToggleExpand && (
-              <Button variant="ghost" size="sm" onClick={onToggleExpand} className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onToggleExpand} 
+                className="h-6 w-6 p-0 hover:bg-gray-100 rounded-lg transition-colors"
+              >
                 {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </Button>
             )}
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent className="px-6 pb-6">
         <div className="overflow-y-auto transition-all duration-300" style={{ maxHeight }}>
           {/* Major Routes */}
-          <div className="space-y-3 mb-4">
-            <h5 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Major Routes</h5>
+          <div className="space-y-3 mb-5">
+            <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Major Routes</h5>
             {displayRoutes.map((route, index) => (
               <div
                 key={route.id}
-                className="p-3 rounded-lg bg-white/70 hover:bg-white border border-gray-100 hover:shadow-sm transition-all duration-200 cursor-pointer"
+                className="p-4 rounded-xl bg-gray-50/50 hover:bg-gray-50 border border-gray-100/50 hover:border-gray-200 transition-all duration-200 cursor-pointer group"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className={`text-xs ${getStatusColor(route.status)}`}>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getStatusColor(route.status)}`}
+                    >
                       {getStatusIcon(route.status)}
                       <span className="ml-1 capitalize">{route.status}</span>
                     </Badge>
                     {route.incidents > 0 && (
-                      <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
+                      <Badge 
+                        variant="outline" 
+                        className="text-[10px] font-medium px-2 py-1 rounded-full bg-red-50 text-red-700 border-red-200"
+                      >
                         {route.incidents} incident{route.incidents > 1 ? "s" : ""}
                       </Badge>
                     )}
                   </div>
-                  <span className="text-xs text-gray-500">{route.distance}</span>
+                  <span className="text-[11px] text-gray-500 font-medium">{route.distance}</span>
                 </div>
 
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center space-x-1 text-xs">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-1.5 text-[12px]">
                     <MapPin className="w-3 h-3 text-gray-400" />
-                    <span className="font-medium truncate max-w-[80px]">{route.from}</span>
-                    <span className="text-gray-400">→</span>
-                    <span className="font-medium truncate max-w-[80px]">{route.to}</span>
+                    <span className="font-medium text-gray-900 truncate max-w-[80px]">{route.from}</span>
+                    <span className="text-gray-300">→</span>
+                    <span className="font-medium text-gray-900 truncate max-w-[80px]">{route.to}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Clock className="w-3 h-3 text-gray-400" />
                     <span
-                      className={
+                      className={`text-[12px] font-medium ${
                         route.delay > 0
-                          ? "text-red-600 font-semibold"
+                          ? "text-red-600"
                           : route.delay < 0
-                            ? "text-green-600 font-semibold"
-                            : "text-gray-600"
-                      }
+                            ? "text-emerald-600"
+                            : "text-gray-900"
+                      }`}
                     >
                       {route.currentTime}
                     </span>
-                    <span className="text-gray-400">({route.normalTime})</span>
+                    <span className="text-[11px] text-gray-400">({route.normalTime})</span>
                   </div>
                   {route.delay !== 0 && (
-                    <span className={`font-semibold ${route.delay > 0 ? "text-red-600" : "text-green-600"}`}>
+                    <span className={`text-[11px] font-semibold ${
+                      route.delay > 0 ? "text-red-600" : "text-emerald-600"
+                    }`}>
                       {route.delay > 0 ? "+" : ""}
                       {route.delay}m
                     </span>
@@ -414,30 +428,33 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
           {/* Traffic Incidents */}
           {displayIncidents.length > 0 && (
-            <div className="space-y-2">
-              <h5 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Active Incidents</h5>
+            <div className="space-y-3">
+              <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Active Incidents</h5>
               <div className="space-y-2">
                 {displayIncidents.map((incident, index) => (
                   <div
                     key={incident.id}
-                    className="p-2 rounded-lg bg-red-50 border border-red-100 hover:bg-red-100 transition-colors duration-200"
+                    className="p-3 rounded-xl bg-red-50/50 border border-red-100/50 hover:bg-red-50 transition-colors duration-200"
                     style={{ animationDelay: `${(index + 3) * 100}ms` }}
                   >
-                    <div className="flex items-start space-x-2">
-                      <span className="text-sm">{getIncidentIcon(incident.type)}</span>
+                    <div className="flex items-start space-x-3">
+                      <span className="text-sm mt-0.5">{getIncidentIcon(incident.type)}</span>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-gray-800 line-clamp-1 max-w-[120px]">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[12px] font-medium text-gray-900 line-clamp-1 max-w-[120px]">
                             {incident.location}
                           </span>
-                          <Badge variant="secondary" className={`text-xs ${getSeverityColor(incident.severity)}`}>
+                          <Badge 
+                            variant="outline" 
+                            className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getSeverityColor(incident.severity)}`}
+                          >
                             {incident.severity}
                           </Badge>
                         </div>
-                        <p className="text-xs text-gray-600 line-clamp-2 mb-1">{incident.description}</p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500 capitalize">{incident.type}</span>
-                          <span className="text-gray-500">Clear in {incident.estimatedClearTime}</span>
+                        <p className="text-[11px] text-gray-600 line-clamp-2 mb-2 leading-relaxed">{incident.description}</p>
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-gray-500 capitalize font-medium">{incident.type}</span>
+                          <span className="text-gray-500 font-medium">Clear in {incident.estimatedClearTime}</span>
                         </div>
                       </div>
                     </div>
@@ -449,10 +466,15 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
         </div>
 
         {/* Last Updated */}
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-          <span>Updated: {currentTime.toLocaleTimeString("en-US", { hour12: false })}</span>
-          <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={loadTrafficData}>
-            <Navigation className="h-3 w-3 mr-1" />
+        <div className="mt-5 pt-4 border-t border-gray-100/50 flex items-center justify-between text-[10px] text-gray-500">
+          <span className="font-medium">Updated: {currentTime.toLocaleTimeString("en-US", { hour12: false })}</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-6 text-[10px] font-medium hover:bg-gray-100 rounded-lg transition-colors" 
+            onClick={loadTrafficData}
+          >
+            <Navigation className="h-3 w-3 mr-1.5" />
             Refresh
           </Button>
         </div>

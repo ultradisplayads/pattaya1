@@ -15,7 +15,7 @@ import {
 } from "firebase/auth"
 import { auth, googleProvider, facebookProvider, appleProvider, lineProvider } from "@/lib/firebase"
 import { strapiAPI, type StrapiUser } from "@/lib/strapi-api"
-import { STRAPI_CONFIG } from "@/lib/firebase"
+import { STRAPI_CONFIG } from "@/lib/strapi-config"
 
 interface UserProfile {
   uid: string

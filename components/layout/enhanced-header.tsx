@@ -72,7 +72,7 @@ export function EnhancedHeader() {
       title: "Directory",
       icon: <MapPin className="w-4 h-4" />,
       href: "/directory",
-      color: "bg-gradient-to-br from-blue-500 to-blue-600",
+      color: "bg-blue-500",
       count: 1250,
     },
     {
@@ -80,7 +80,7 @@ export function EnhancedHeader() {
       title: "Events",
       icon: <Calendar className="w-4 h-4" />,
       href: "/events",
-      color: "bg-gradient-to-br from-green-500 to-green-600",
+      color: "bg-green-500",
       count: 45,
     },
     {
@@ -88,7 +88,7 @@ export function EnhancedHeader() {
       title: "Dining",
       icon: <Utensils className="w-4 h-4" />,
       href: "/restaurants",
-      color: "bg-gradient-to-br from-orange-500 to-orange-600",
+      color: "bg-orange-500",
       count: 320,
     },
     {
@@ -96,7 +96,7 @@ export function EnhancedHeader() {
       title: "Nightlife",
       icon: <Music className="w-4 h-4" />,
       href: "/nightlife",
-      color: "bg-gradient-to-br from-purple-500 to-purple-600",
+      color: "bg-purple-500",
       count: 180,
     },
     {
@@ -104,7 +104,7 @@ export function EnhancedHeader() {
       title: "Shopping",
       icon: <ShoppingBag className="w-4 h-4" />,
       href: "/shopping",
-      color: "bg-gradient-to-br from-pink-500 to-pink-600",
+      color: "bg-pink-500",
       count: 95,
     },
     {
@@ -112,7 +112,7 @@ export function EnhancedHeader() {
       title: "Beaches",
       icon: <Waves className="w-4 h-4" />,
       href: "/beaches",
-      color: "bg-gradient-to-br from-cyan-500 to-cyan-600",
+      color: "bg-cyan-500",
       count: 12,
     },
     {
@@ -120,7 +120,7 @@ export function EnhancedHeader() {
       title: "Forum",
       icon: <MessageSquare className="w-4 h-4" />,
       href: "/forum",
-      color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+      color: "bg-indigo-500",
       count: 890,
     },
     {
@@ -128,7 +128,7 @@ export function EnhancedHeader() {
       title: "Photos",
       icon: <Camera className="w-4 h-4" />,
       href: "/photos",
-      color: "bg-gradient-to-br from-red-500 to-red-600",
+      color: "bg-red-500",
       count: 2100,
     },
   ]
@@ -161,37 +161,37 @@ export function EnhancedHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-gray-100/50 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 font-sans antialiased">
+        <div className="container flex h-16 items-center justify-between px-6">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <a href="/" className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">P1</span>
+          <div className="flex items-center space-x-3">
+            <a href="/" className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center shadow-sm">
+                  <span className="text-white font-semibold text-sm">P1</span>
                 </div>
-                <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Pattaya1 Dashboard
+                <span className="font-semibold text-xl text-gray-900 tracking-tight">
+                  Pattaya1
                 </span>
               </div>
             </a>
           </div>
 
           {/* Quick Access Icons in Header */}
-          <div className="hidden lg:flex items-center gap-2 mx-8 flex-wrap">
+          <div className="hidden lg:flex items-center gap-3 mx-8 flex-wrap">
             {quickLinks.map((link, index) => (
               <a
                 key={link.id}
                 href={link.href}
-                className="group flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-all duration-300 hover:scale-105"
+                className="group flex flex-col items-center p-2 rounded-xl hover:bg-gray-50/80 transition-all duration-300 hover:scale-105"
                 title={`${link.title} (${link.count?.toLocaleString()})`}
               >
                 <div
-                  className={`${link.color} text-white p-2 rounded-lg group-hover:scale-110 transition-all duration-300 shadow-md`}
+                  className={`${link.color} text-white p-2.5 rounded-xl group-hover:scale-110 transition-all duration-300 shadow-sm`}
                 >
                   {link.icon}
                 </div>
-                <span className="text-xs font-medium text-center mt-1 group-hover:text-blue-600 transition-colors duration-200">
+                <span className="text-xs font-medium text-center mt-1.5 group-hover:text-blue-600 transition-colors duration-200 text-gray-600">
                   {link.title}
                 </span>
               </a>
@@ -203,11 +203,11 @@ export function EnhancedHeader() {
             {/* Search Bar */}
             <div className="hidden md:block">
               <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="search"
                   placeholder="Search..."
-                  className="pl-8 w-[200px] lg:w-[300px]"
+                  className="pl-10 w-[200px] lg:w-[300px] h-9 bg-gray-50/80 border-gray-200/50 rounded-xl focus:bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-300 transition-all duration-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -215,17 +215,17 @@ export function EnhancedHeader() {
             </div>
 
             {/* User Menu */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
               ) : user ? (
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-gray-50 transition-colors duration-200">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.displayName} />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-blue-50 text-blue-600 font-medium">
                             {(() => {
                               const fromNames = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.trim()
                               if (fromNames) return fromNames.toUpperCase()
@@ -242,66 +242,83 @@ export function EnhancedHeader() {
                           </AvatarFallback>
                         </Avatar>
                         {!user.emailVerified && (
-                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-3 w-3 p-0">
+                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-3 w-3 p-0 bg-red-500 text-white text-xs font-medium">
                             !
                           </Badge>
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                          <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <DropdownMenuContent className="w-56 border-gray-100/50 shadow-lg bg-white/95 backdrop-blur-sm rounded-xl" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal p-4">
+                        <div className="flex flex-col space-y-2">
+                          <p className="text-sm font-semibold leading-none text-gray-900">{user.displayName}</p>
+                          <p className="text-xs leading-none text-gray-500">{user.email}</p>
                           {!user.emailVerified && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs font-medium bg-red-50 text-red-600 border-red-200 w-fit">
                               Email not verified
                             </Badge>
                           )}
                         </div>
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
+                      <DropdownMenuSeparator className="bg-gray-100/50" />
+                      <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                        <User className="mr-3 h-4 w-4 text-gray-500" />
+                        <span className="text-gray-700 font-medium">Profile</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
+                      <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                        <Settings className="mr-3 h-4 w-4 text-gray-500" />
+                        <span className="text-gray-700 font-medium">Settings</span>
                       </DropdownMenuItem>
                       {user.role === "admin" && (
-                        <DropdownMenuItem>
-                          <Shield className="mr-2 h-4 w-4" />
-                          <span>Admin Panel</span>
+                        <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                          <Shield className="mr-3 h-4 w-4 text-gray-500" />
+                          <span className="text-gray-700 font-medium">Admin Panel</span>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                      <DropdownMenuSeparator className="bg-gray-100/50" />
+                      <DropdownMenuItem onClick={handleLogout} className="p-3 hover:bg-red-50/80 transition-colors duration-200">
+                        <LogOut className="mr-3 h-4 w-4 text-red-500" />
+                        <span className="text-red-600 font-medium">Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {/* Exit Admin Button */}
                   {user.role === "admin" && (
-                    <Button variant="destructive" size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8 px-3 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 font-medium rounded-lg transition-all duration-200"
+                    >
                       Exit Admin
                     </Button>
                   )}
                 </>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <Button variant="ghost" onClick={() => setIsLoginOpen(true)}>
+                <div className="flex items-center space-x-3">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setIsLoginOpen(true)}
+                    className="h-9 px-4 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium transition-all duration-200"
+                  >
                     Sign In
                   </Button>
-                  <Button onClick={() => setIsRegisterOpen(true)}>Sign Up</Button>
+                  <Button 
+                    onClick={() => setIsRegisterOpen(true)}
+                    className="h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-all duration-200 shadow-sm"
+                  >
+                    Sign Up
+                  </Button>
                 </div>
               )}
 
               {/* Menu Button for Mobile */}
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="md:hidden h-9 w-9 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                <Menu className="h-5 w-5 text-gray-600" />
               </Button>
             </div>
           </div>

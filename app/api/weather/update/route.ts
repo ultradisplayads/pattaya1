@@ -1,56 +1,61 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server"
+import { buildApiUrl } from "@/lib/strapi-config"
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    // Fetch weather data from OpenWeatherMap or your preferred service
-    const weatherResponse = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=Pattaya,TH&appid=${process.env.OPENWEATHER_API_KEY}&units=metric`
-    )
-    
-    if (!weatherResponse.ok) {
-      throw new Error('Failed to fetch weather from OpenWeatherMap')
+    const body = await request.json()
+    const { temperature, humidity, description, location } = body
+
+    // Validate required fields
+    if (!temperature || !description || !location) {
+      return NextResponse.json(
+        { error: "Missing required fields: temperature, description, location" },
+        { status: 400 }
+      )
     }
 
-    const weatherData = await weatherResponse.json()
-    
-    // Transform the data to match your Strapi schema
-    const transformedData = {
+    // Create weather data object
+    const weatherData = {
       data: {
-        location: "Pattaya, Thailand",
-        condition: weatherData.weather[0].main.toLowerCase(),
-        description: weatherData.weather[0].description,
-        icon: weatherData.weather[0].icon,
-        temperature: weatherData.main.temp,
-        feelsLike: weatherData.main.feels_like,
-        humidity: weatherData.main.humidity,
-        windspeed: weatherData.wind.speed,
-        pressure: weatherData.main.pressure,
-        visibility: weatherData.visibility / 1000, // Convert to km
-        uvIndex: 6, // You might need a separate API call for UV index
-        lastUpdated: new Date().toISOString(),
-        source: "OpenWeatherMap",
-        isActive: true
-      }
+        Temperature: temperature,
+        Humidity: humidity || null,
+        Description: description,
+        Location: location,
+        IsActive: true,
+        LastUpdated: new Date().toISOString(),
+      },
     }
 
-    // Update or create weather entry in Strapi
-    const strapiResponse = await fetch('http://localhost:1337/api/weathers', {
-      method: 'POST',
+    // Update weather in Strapi
+    const strapiResponse = await fetch(buildApiUrl('weathers'), {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
       },
-      body: JSON.stringify(transformedData)
+      body: JSON.stringify(weatherData),
     })
 
     if (!strapiResponse.ok) {
-      throw new Error('Failed to update weather in Strapi')
+      const errorData = await strapiResponse.json()
+      console.error("Strapi API error:", errorData)
+      return NextResponse.json(
+        { error: "Failed to update weather data in Strapi" },
+        { status: 500 }
+      )
     }
 
-    return NextResponse.json({ success: true, message: 'Weather updated successfully' })
+    const result = await strapiResponse.json()
+
+    return NextResponse.json({
+      success: true,
+      message: "Weather data updated successfully",
+      data: result,
+    })
   } catch (error) {
-    console.error('Weather update error:', error)
+    console.error("Weather update error:", error)
     return NextResponse.json(
-      { success: false, error: 'Failed to update weather' },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }

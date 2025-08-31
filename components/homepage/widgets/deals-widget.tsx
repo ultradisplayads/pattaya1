@@ -78,29 +78,29 @@ export function DealsWidget() {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "wellness":
-        return "bg-green-100 text-green-700"
+        return "bg-green-500/10 text-green-600 border-green-200"
       case "dining":
-        return "bg-orange-100 text-orange-700"
+        return "bg-orange-500/10 text-orange-600 border-orange-200"
       case "adventure":
-        return "bg-blue-100 text-blue-700"
+        return "bg-blue-500/10 text-blue-600 border-blue-200"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-500/10 text-gray-600 border-gray-200"
     }
   }
 
-  if (deals.length === 0) return <div className="animate-pulse bg-gray-200 rounded-lg h-full"></div>
+  if (deals.length === 0) return <div className="animate-pulse bg-gray-100 rounded-lg h-full"></div>
 
   const deal = deals[currentDeal]
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold flex items-center">
-          <Fire className="w-4 h-4 mr-2 text-red-500" />
-          Hot Deals
+    <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-6">
+        <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+          <span>Deals</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-3">
+      <CardContent className="pt-0 space-y-4">
         {/* Deal Image */}
         <div className="relative">
           <img
@@ -109,60 +109,64 @@ export function DealsWidget() {
             className="w-full h-16 object-cover rounded-lg"
           />
           <Badge
-            className={`absolute top-1 left-1 text-xs ${deal.urgent ? "bg-red-500 animate-pulse" : "bg-orange-500"} text-white`}
+            className={`absolute top-1 left-1 text-[11px] px-2 py-0.5 font-medium border rounded-full ${
+              deal.urgent ? "bg-red-500/10 text-red-600 border-red-200" : "bg-orange-500/10 text-orange-600 border-orange-200"
+            }`}
           >
             -{deal.discount}
           </Badge>
           {deal.urgent && (
-            <Badge className="absolute top-1 right-1 text-xs bg-red-600 text-white animate-pulse">URGENT</Badge>
+            <Badge className="absolute top-1 right-1 text-[11px] px-2 py-0.5 font-medium bg-red-500/10 text-red-600 border border-red-200 rounded-full">
+              Urgent
+            </Badge>
           )}
         </div>
 
         {/* Deal Info */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-semibold line-clamp-1">{deal.title}</h3>
-            <p className="text-xs text-gray-600">{deal.business}</p>
+            <h3 className="text-[15px] font-semibold text-gray-900 line-clamp-1">{deal.title}</h3>
+            <p className="text-[13px] text-gray-600">{deal.business}</p>
           </div>
 
           {/* Price */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg font-bold text-green-600">฿{deal.salePrice}</span>
-              <span className="text-xs text-gray-500 line-through">฿{deal.originalPrice}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-semibold text-green-600">฿{deal.salePrice}</span>
+              <span className="text-[11px] text-gray-400 line-through">฿{deal.originalPrice}</span>
             </div>
-            <Badge variant="secondary" className={`text-xs ${getCategoryColor(deal.category)}`}>
+            <Badge className={`text-[11px] px-2 py-0.5 font-medium border rounded-full ${getCategoryColor(deal.category)}`}>
               {deal.category}
             </Badge>
           </div>
 
           {/* Details */}
-          <div className="space-y-1 text-xs text-gray-600">
-            <div className="flex items-center space-x-1">
+          <div className="space-y-1.5 text-[11px] text-gray-500">
+            <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3" />
               <span className="line-clamp-1">{deal.location}</span>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
               <span className={deal.urgent ? "text-red-600 font-medium" : ""}>{deal.timeLeft} left</span>
             </div>
           </div>
 
           {/* Action Button */}
-          <button className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs py-2 rounded-lg hover:from-red-600 hover:to-orange-600 transition-all duration-200 flex items-center justify-center space-x-1">
-            <Tag className="w-3 h-3" />
+          <button className="w-full bg-orange-500/10 text-orange-600 text-[13px] py-2 rounded-lg hover:bg-orange-500/20 transition-all duration-200 flex items-center justify-center gap-1.5 border border-orange-200 font-medium">
+            <Tag className="w-3.5 h-3.5" />
             <span>Claim Deal</span>
           </button>
         </div>
 
         {/* Navigation dots */}
-        <div className="flex justify-center space-x-1">
+        <div className="flex justify-center gap-1">
           {deals.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentDeal(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                index === currentDeal ? "bg-red-500" : "bg-gray-300"
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                index === currentDeal ? "bg-orange-500" : "bg-gray-200"
               }`}
             />
           ))}

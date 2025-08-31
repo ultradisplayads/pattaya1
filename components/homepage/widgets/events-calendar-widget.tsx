@@ -5,6 +5,7 @@ import { Calendar, Clock, MapPin, Users, ExternalLink, Star, DollarSign, Chevron
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface Event {
   id: string
@@ -89,7 +90,7 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
       setLoading(true)
       console.log('Fetching events from Strapi...')
       
-      const response = await fetch("http://localhost:1337/api/event-calendars?populate=*&sort=Date:asc")
+      const response = await fetch(buildApiUrl("event-calendars?populate=*&sort=Date:asc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -99,7 +100,7 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=60&width=80&text=Event"
             if (strapiEvent.Image) {
-              imageUrl = `http://localhost:1337${strapiEvent.Image.url}`
+              imageUrl = buildStrapiUrl(strapiEvent.Image.url)
             }
 
             return {
@@ -191,7 +192,7 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
       case "confirmed":
         return "bg-green-500 text-white"
       case "filling-fast":
-        return "bg-orange-500 text-white animate-pulse"
+        return "bg-orange-500 text-white"
       case "sold-out":
         return "bg-red-500 text-white"
       case "free":
@@ -203,14 +204,14 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      Music: "bg-purple-100 text-purple-800",
-      Sports: "bg-red-100 text-red-800",
-      Tourism: "bg-blue-100 text-blue-800",
-      Entertainment: "bg-pink-100 text-pink-800",
-      Nightlife: "bg-indigo-100 text-indigo-800",
-      Shopping: "bg-green-100 text-green-800",
+      Music: "bg-purple-50 text-purple-700 border-purple-200",
+      Sports: "bg-red-50 text-red-700 border-red-200",
+      Tourism: "bg-blue-50 text-blue-700 border-blue-200",
+      Entertainment: "bg-pink-50 text-pink-700 border-pink-200",
+      Nightlife: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      Shopping: "bg-green-50 text-green-700 border-green-200",
     }
-    return colors[category as keyof typeof colors] || "bg-gray-100 text-gray-800"
+    return colors[category as keyof typeof colors] || "bg-gray-50 text-gray-700 border-gray-200"
   }
 
   const formatTimeUntil = (date: string, time: string) => {
@@ -238,12 +239,24 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="h-5 bg-gray-100 rounded-full w-32"></div>
+            <div className="h-4 bg-gray-100 rounded-full w-16"></div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded"></div>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-20 bg-gray-100 rounded"></div>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex space-x-4">
+                <div className="w-16 h-12 bg-gray-100 rounded-lg"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
+                  <div className="h-3 bg-gray-100 rounded-full w-1/3"></div>
+                </div>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -255,16 +268,16 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
   const maxHeight = isExpanded ? "600px" : "320px"
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center justify-between bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="pb-3 px-6 pt-6">
+        <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2 text-blue-500" />
+            <Calendar className="h-4 w-4 mr-3 text-blue-500" />
             Events Calendar
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center text-xs text-gray-500">
-              <Clock className="h-3 w-3 mr-1" />
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center text-xs text-gray-500 font-medium">
+              <Clock className="h-3 w-3 mr-2" />
               {currentTime.toLocaleTimeString("en-US", {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -272,76 +285,85 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
               })}
             </div>
             {onToggleExpand && (
-              <Button variant="ghost" size="sm" onClick={onToggleExpand} className="h-6 w-6 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onToggleExpand} 
+                className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </Button>
             )}
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="space-y-3 overflow-y-auto transition-all duration-300" style={{ maxHeight }}>
+      <CardContent className="px-6 pb-6">
+        <div className="space-y-4 overflow-y-auto transition-all duration-300" style={{ maxHeight }}>
           {displayEvents.map((event, index) => (
             <div
               key={event.id}
-              className={`p-3 rounded-lg transition-all duration-200 cursor-pointer group border ${
+              className={`p-4 rounded-xl transition-all duration-200 cursor-pointer group border ${
                 event.featured
-                  ? "bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 hover:shadow-md"
-                  : "bg-white/70 hover:bg-white border-gray-100 hover:shadow-sm"
+                  ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md"
+                  : "bg-gray-50 hover:bg-white border-gray-100 hover:shadow-sm"
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="flex space-x-3">
+              <div className="flex space-x-4">
                 <div className="flex-shrink-0">
                   <img
                     src={event.image || "/placeholder.svg"}
                     alt={event.title}
-                    className="w-16 h-12 rounded object-cover group-hover:scale-105 transition-transform duration-200"
+                    className="w-16 h-12 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200"
                   />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-1">
-                    <h4 className="font-semibold text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {event.title}
-                      {event.featured && <Star className="inline w-3 h-3 ml-1 text-yellow-500 fill-current" />}
+                      {event.featured && <Star className="inline w-3 h-3 ml-2 text-yellow-500 fill-current" />}
                     </h4>
-                    <Badge variant="secondary" className={`text-xs ml-2 ${getStatusColor(event.status)}`}>
+                    <Badge className={`text-xs font-medium rounded-full border-0 ${getStatusColor(event.status)}`}>
                       {event.status.replace("-", " ")}
                     </Badge>
                   </div>
 
-                  <div className="flex items-center space-x-3 text-xs text-gray-600 mb-2">
-                    <div className="flex items-center">
-                      <Clock className="w-3 h-3 mr-1" />
+                  <div className="flex items-center space-x-4 text-xs text-gray-600 mb-3">
+                    <div className="flex items-center font-medium">
+                      <Clock className="w-3 h-3 mr-2" />
                       <span className="font-mono">{formatTimeUntil(event.date, event.time)}</span>
                     </div>
-                    <div className="flex items-center">
-                      <MapPin className="w-3 h-3 mr-1" />
+                    <div className="flex items-center font-medium">
+                      <MapPin className="w-3 h-3 mr-2" />
                       <span className="truncate max-w-[120px]">{event.location}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="secondary" className={`text-xs ${getCategoryColor(event.category)}`}>
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="outline" className={`text-xs font-medium border ${getCategoryColor(event.category)}`}>
                         {event.category}
                       </Badge>
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Users className="w-3 h-3 mr-1" />
+                      <div className="flex items-center text-xs text-gray-500 font-medium">
+                        <Users className="w-3 h-3 mr-2" />
                         <span>{event.attendees}</span>
                         {event.maxAttendees && <span>/{event.maxAttendees}</span>}
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
                       <div className="flex items-center text-xs font-semibold">
-                        <DollarSign className="w-3 h-3 mr-1" />
+                        <DollarSign className="w-3 h-3 mr-2" />
                         <span className={event.price === 0 ? "text-green-600" : "text-gray-700"}>
                           {formatPrice(event.price)}
                         </span>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full transition-colors"
+                      >
                         <ExternalLink className="h-3 w-3" />
                       </Button>
                     </div>
@@ -349,7 +371,7 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
 
                   {/* Attendance progress bar */}
                   {event.maxAttendees && (
-                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
+                    <div className="mt-3 w-full bg-gray-100 rounded-full h-1">
                       <div
                         className={`h-1 rounded-full transition-all duration-500 ${
                           event.attendees / event.maxAttendees > 0.8
@@ -369,9 +391,13 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
         </div>
 
         {!isExpanded && (
-          <div className="mt-4 text-center">
-            <Button variant="outline" size="sm" className="text-xs bg-transparent">
-              <Calendar className="h-3 w-3 mr-1" />
+          <div className="mt-6 text-center">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs font-medium bg-white border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <Calendar className="h-3 w-3 mr-2" />
               View Full Calendar
             </Button>
           </div>

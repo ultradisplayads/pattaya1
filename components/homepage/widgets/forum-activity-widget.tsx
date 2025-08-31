@@ -5,6 +5,7 @@ import { MessageSquare, Users, TrendingUp, Clock, Eye, ThumbsUp, MessageCircle }
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { buildApiUrl } from "@/lib/strapi-config"
 
 interface StrapiForumActivity {
   id: number
@@ -67,7 +68,7 @@ export function ForumActivityWidget() {
     try {
       setLoading(true)
       console.log('Fetching forum activities from Strapi...')
-      const response = await fetch("http://localhost:1337/api/forum-activities?populate=*&sort=LastActivity:desc")
+      const response = await fetch(buildApiUrl("forum-activities?populate=*&sort=LastActivity:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -154,15 +155,15 @@ export function ForumActivityWidget() {
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      Nightlife: "bg-purple-100 text-purple-800",
-      "Visa & Legal": "bg-blue-100 text-blue-800",
-      Transportation: "bg-green-100 text-green-800",
-      Events: "bg-orange-100 text-orange-800",
-      Living: "bg-indigo-100 text-indigo-800",
-      "Food & Dining": "bg-red-100 text-red-800",
-      Accommodation: "bg-yellow-100 text-yellow-800",
+      Nightlife: "bg-purple-50 text-purple-700 border-purple-200",
+      "Visa & Legal": "bg-blue-50 text-blue-700 border-blue-200",
+      Transportation: "bg-green-50 text-green-700 border-green-200",
+      Events: "bg-orange-50 text-orange-700 border-orange-200",
+      Living: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      "Food & Dining": "bg-red-50 text-red-700 border-red-200",
+      Accommodation: "bg-yellow-50 text-yellow-700 border-yellow-200",
     }
-    return colors[category] || "bg-gray-100 text-gray-800"
+    return colors[category] || "bg-gray-50 text-gray-700 border-gray-200"
   }
 
   const formatNumber = (num: number) => {
@@ -174,12 +175,28 @@ export function ForumActivityWidget() {
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <div className="flex items-center justify-between">
+            <div className="h-5 bg-gray-100 rounded-full w-32"></div>
+            <div className="h-4 bg-gray-100 rounded-full w-12"></div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-gray-200 rounded"></div>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded"></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-16 bg-gray-100 rounded-xl"></div>
+              <div className="h-16 bg-gray-100 rounded-xl"></div>
+            </div>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex space-x-3">
+                <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
+                  <div className="h-3 bg-gray-100 rounded-full w-1/3"></div>
+                </div>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -188,82 +205,82 @@ export function ForumActivityWidget() {
   }
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-indigo-50">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="pb-3 px-6 pt-6">
+        <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
-            <MessageSquare className="h-4 w-4 mr-2 text-indigo-500" />
+            <MessageSquare className="h-4 w-4 mr-3 text-indigo-500" />
             Forum Activity
           </div>
-          <Badge variant="secondary" className="bg-indigo-500 text-white animate-pulse">
-            <Users className="h-3 w-3 mr-1" />
+          <Badge className="bg-indigo-500 text-white text-xs font-medium rounded-full border-0">
+            <Users className="h-3 w-3 mr-2" />
             {stats.activeUsers}
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
+      <CardContent className="px-6 pb-6">
         {/* Forum Stats */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-white/70 rounded-lg p-2 text-center">
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
             <div className="text-lg font-bold text-indigo-600">{formatNumber(stats.totalPosts)}</div>
-            <div className="text-xs text-gray-600">Total Posts</div>
+            <div className="text-xs text-gray-600 font-medium">Total Posts</div>
           </div>
-          <div className="bg-white/70 rounded-lg p-2 text-center">
+          <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
             <div className="text-lg font-bold text-green-600">{stats.newPostsToday}</div>
-            <div className="text-xs text-gray-600">Today</div>
+            <div className="text-xs text-gray-600 font-medium">Today</div>
           </div>
         </div>
 
         {/* Recent Posts */}
-        <div className="space-y-3 max-h-64 overflow-y-auto">
+        <div className="space-y-4 max-h-64 overflow-y-auto">
           {posts.map((post, index) => (
             <div
               key={post.id}
-              className="p-3 rounded-lg bg-white/70 hover:bg-white border border-gray-100 hover:shadow-sm transition-all duration-200 cursor-pointer group"
+              className="p-4 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:shadow-sm transition-all duration-200 cursor-pointer group"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="flex space-x-3">
-                <Avatar className="h-8 w-8 flex-shrink-0">
+              <div className="flex space-x-4">
+                <Avatar className="h-8 w-8 flex-shrink-0 ring-1 ring-gray-100">
                   <AvatarImage src={post.AuthorAvatar?.url || "/placeholder.svg"} alt={post.AuthorName} />
-                  <AvatarFallback className="text-xs">{post.AuthorName.slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback className="text-xs font-medium">{post.AuthorName.slice(0, 2)}</AvatarFallback>
                 </Avatar>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-1">
-                    <h4 className="font-medium text-sm line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
                       {post.IsPinned && "📌 "}
                       {post.Title}
-                      {post.IsHot && <TrendingUp className="inline w-3 h-3 ml-1 text-red-500 flex-shrink-0" />}
+                      {post.IsHot && <TrendingUp className="inline w-3 h-3 ml-2 text-red-500 flex-shrink-0" />}
                     </h4>
                   </div>
 
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Badge variant="secondary" className={`text-xs ${getCategoryColor(post.Category)}`}>
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Badge variant="outline" className={`text-xs font-medium border ${getCategoryColor(post.Category)}`}>
                       {post.Category}
                     </Badge>
-                    <span className="text-xs text-gray-500 truncate">by {post.AuthorName}</span>
-                    <Badge variant="outline" className="text-xs">
+                    <span className="text-xs text-gray-500 font-medium truncate">by {post.AuthorName}</span>
+                    <Badge variant="outline" className="text-xs font-medium bg-gray-50 text-gray-700 border-gray-200">
                       {post.AuthorReputation}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center">
-                        <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center font-medium">
+                        <MessageCircle className="w-3 h-3 mr-2 flex-shrink-0" />
                         <span>{post.Replies}</span>
                       </div>
-                      <div className="flex items-center">
-                        <Eye className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <div className="flex items-center font-medium">
+                        <Eye className="w-3 h-3 mr-2 flex-shrink-0" />
                         <span>{formatNumber(post.Views)}</span>
                       </div>
-                      <div className="flex items-center">
-                        <ThumbsUp className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <div className="flex items-center font-medium">
+                        <ThumbsUp className="w-3 h-3 mr-2 flex-shrink-0" />
                         <span>{post.Likes}</span>
                       </div>
                     </div>
-                    <div className="flex items-center flex-shrink-0">
-                      <Clock className="w-3 h-3 mr-1" />
+                    <div className="flex items-center flex-shrink-0 font-medium">
+                      <Clock className="w-3 h-3 mr-2" />
                       <span className="truncate">{formatTimeAgo(post.LastActivity)}</span>
                     </div>
                   </div>
@@ -273,8 +290,8 @@ export function ForumActivityWidget() {
           ))}
         </div>
 
-        <div className="mt-4 text-center">
-          <button className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+        <div className="mt-6 text-center">
+          <button className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
             View All Forum Activity →
           </button>
         </div>

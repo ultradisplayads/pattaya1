@@ -404,11 +404,92 @@
   flex-direction: column;
 }
 
+/* New Widget Grid Container Styles */
+.widget-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-auto-rows: minmax(250px, auto);
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+  align-items: start;
+  justify-items: stretch;
+}
+
+.widget-item {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.widget-item > * {
+  height: 100%;
+  width: 100%;
+}
+
+/* Ensure all Card components in widgets fill their containers */
+.widget-item .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.widget-item .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Prevent content overflow in widgets */
+.widget-item .card-header {
+  flex-shrink: 0;
+}
+
+.widget-item .card-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Ensure all widget content is properly contained */
+.widget-item * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Specific widget sizing for the new layout */
+.widget-item.widget-small {
+  min-height: 200px;
+  max-height: 350px;
+}
+
+.widget-item.widget-medium {
+  min-height: 300px;
+  max-height: 400px;
+}
+
+.widget-item.widget-large {
+  min-height: 400px;
+  max-height: 500px;
+}
+
+.widget-item.widget-xlarge {
+  min-height: 300px;
+  max-height: 400px;
+  grid-column: 1 / -1;
+}
+
 /* Enhanced Responsive Design - Auto-filling */
 @media (max-width: 1400px) {
   .filled-widget-grid,
   .compact-widget-grid,
-  .enhanced-widget-grid {
+  .enhanced-widget-grid,
+  .widget-grid-container {
     max-width: 1200px;
     gap: 1.25rem;
   }
@@ -421,7 +502,8 @@
     gap: 1rem;
   }
 
-  .enhanced-widget-grid {
+  .enhanced-widget-grid,
+  .widget-grid-container {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
   }
@@ -442,7 +524,8 @@
     gap: 0.875rem;
   }
 
-  .enhanced-widget-grid {
+  .enhanced-widget-grid,
+  .widget-grid-container {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 0.875rem;
   }
@@ -466,7 +549,8 @@
     padding-bottom: 6rem;
   }
 
-  .enhanced-widget-grid {
+  .enhanced-widget-grid,
+  .widget-grid-container {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 0.75rem;
     padding: 0 0.75rem;
@@ -500,11 +584,40 @@
   .widget-xlarge {
     max-height: 300px;
   }
+
+  /* Mobile adjustments for new widget items */
+  .widget-item.widget-small {
+    min-height: 160px;
+    max-height: 180px;
+  }
+
+  .widget-item.widget-medium {
+    min-height: 160px;
+    max-height: 200px;
+  }
+
+  .widget-item.widget-large {
+    min-height: 160px;
+    max-height: 250px;
+  }
+
+  .widget-item.widget-xlarge {
+    min-height: 160px;
+    max-height: 300px;
+  }
 }
 
 @media (max-width: 480px) {
   .filled-widget-grid,
   .compact-widget-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+    padding-bottom: 7rem;
+  }
+
+  .enhanced-widget-grid,
+  .widget-grid-container {
     grid-template-columns: 1fr;
     gap: 0.5rem;
     padding: 0 0.5rem;
@@ -533,6 +646,27 @@
   }
 
   .widget-xlarge {
+    max-height: 350px;
+  }
+
+  /* Mobile adjustments for new widget items */
+  .widget-item.widget-small {
+    min-height: 140px;
+    max-height: 300px;
+  }
+
+  .widget-item.widget-medium {
+    min-height: 140px;
+    max-height: 350px;
+  }
+
+  .widget-item.widget-large {
+    min-height: 140px;
+    max-height: 400px;
+  }
+
+  .widget-item.widget-xlarge {
+    min-height: 140px;
     max-height: 350px;
   }
 }
@@ -593,23 +727,32 @@
   width: 4px;
 }
 
-/* Social feed scrollbar styling */
+/* Social feed scrollbar styling - Apple Design */
 .social-feed-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .social-feed-scroll::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+  background: transparent;
+  border-radius: 4px;
 }
 
 .social-feed-scroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .social-feed-scroll::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(0, 0, 0, 0.2);
+  background-clip: content-box;
+}
+
+/* Firefox scrollbar styling */
+.social-feed-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
 
 .widget-content::-webkit-scrollbar-track {

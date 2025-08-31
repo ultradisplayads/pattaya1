@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider } from "firebase/auth"
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
@@ -10,14 +11,19 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef123456",
 }
 
-// Strapi configuration
-export const STRAPI_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337",
-  apiUrl: process.env.NEXT_PUBLIC_STRAPI_URL ? `${process.env.NEXT_PUBLIC_STRAPI_URL}/api` : "http://localhost:1337/api",
-}
-
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
+export const db = getFirestore(app)
+
+// Connect to emulators in development
+if (process.env.NODE_ENV === "development") {
+  try {
+    connectAuthEmulator(auth, "http://localhost:9099")
+    connectFirestoreEmulator(db, "localhost", 8080)
+  } catch (error) {
+    console.log("Emulators already connected")
+  }
+}
 
 // Auth providers
 export const googleProvider = new GoogleAuthProvider()

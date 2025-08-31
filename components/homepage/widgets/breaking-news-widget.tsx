@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AlertTriangle, Clock, ExternalLink, Zap, ChevronLeft, ChevronRight } from "lucide-react"
+import { Clock, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { buildApiUrl } from "@/lib/strapi-config"
 
 interface BreakingNews {
   id: number
@@ -80,7 +81,8 @@ export function BreakingNewsWidget() {
 
   const loadBreakingNews = async () => {
     try {
-      const response = await fetch("http://localhost:1337/api/breaking-news-plural?sort=PublishedTimestamp:desc&pagination[limit]=10")
+      setLoading(true)
+      const response = await fetch(buildApiUrl("breaking-news-plural?sort=PublishedTimestamp:desc&pagination[limit]=10"))
       if (response.ok) {
         const data: StrapiResponse<BreakingNews> = await response.json()
         setNews(data.data || [])
@@ -98,7 +100,7 @@ export function BreakingNewsWidget() {
 
   const loadAdvertisements = async () => {
     try {
-      const response = await fetch("http://localhost:1337/api/advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc&pagination[limit]=5")
+      const response = await fetch(buildApiUrl("advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc&pagination[limit]=5"))
       if (response.ok) {
         const data: StrapiResponse<Advertisement> = await response.json()
         setAdvertisements(data.data || [])
@@ -118,13 +120,13 @@ export function BreakingNewsWidget() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-sm"
+        return "bg-red-500/10 text-red-600 border-red-200"
       case "high":
-        return "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm"
+        return "bg-orange-500/10 text-orange-600 border-orange-200"
       case "medium":
-        return "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm"
+        return "bg-amber-500/10 text-amber-600 border-amber-200"
       default:
-        return "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-sm"
+        return "bg-gray-500/10 text-gray-600 border-gray-200"
     }
   }
 
@@ -153,18 +155,18 @@ export function BreakingNewsWidget() {
 
   if (loading) {
     return (
-      <Card className="top-row-widget bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-3">
-            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full animate-pulse shadow-sm"></div>
-            <span className="tracking-wide">BREAKING NEWS</span>
+      <Card className="top-row-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="font-medium">Breaking News</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="h-6 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md animate-pulse"></div>
-            <div className="h-5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md w-4/5 animate-pulse"></div>
-            <div className="h-5 bg-gradient-to-r from-slate-200 to-slate-300 rounded-md w-3/5 animate-pulse"></div>
+          <div className="space-y-3">
+            <div className="h-5 bg-gray-100 rounded-md animate-pulse"></div>
+            <div className="h-4 bg-gray-100 rounded-md w-4/5 animate-pulse"></div>
+            <div className="h-4 bg-gray-100 rounded-md w-3/5 animate-pulse"></div>
           </div>
         </CardContent>
       </Card>
@@ -173,17 +175,17 @@ export function BreakingNewsWidget() {
 
   if (!currentItem) {
     return (
-      <Card className="top-row-widget bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-sm font-semibold text-slate-800 flex items-center gap-3">
-            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-sm"></div>
-            <span className="tracking-wide">BREAKING NEWS</span>
+      <Card className="top-row-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+            <span className="font-medium">Breaking News</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-12">
-            <div className="w-12 h-12 bg-gradient-to-r from-slate-200 to-slate-300 rounded-full mx-auto mb-4 animate-pulse"></div>
-            <p className="text-sm text-slate-500 font-medium">No news available</p>
+          <div className="text-center py-8">
+            <div className="w-8 h-8 bg-gray-100 rounded-full mx-auto mb-3 animate-pulse"></div>
+            <p className="text-sm text-gray-500 font-medium">No news available</p>
           </div>
         </CardContent>
       </Card>
@@ -191,43 +193,43 @@ export function BreakingNewsWidget() {
   }
 
   return (
-    <Card className="top-row-widget breaking-news-widget bg-white/90 backdrop-blur-sm border border-slate-200/60 shadow-xl hover:shadow-2xl transition-all duration-300">
-      <CardHeader className="pb-4">
+    <Card className="top-row-widget breaking-news-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-3 tracking-wide">
-            <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-sm"></div>
-            <span>BREAKING NEWS</span>
-            {            allItems.some(item => 
+          <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+            <span className="font-medium">Breaking News</span>
+            {allItems.some(item => 
               "Title" in item && 
               !("Sponsor" in item) && 
               (item as BreakingNews).IsBreaking
             ) && (
-              <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-3 py-1 font-bold shadow-sm">
-                LIVE
+              <Badge className="bg-red-500/10 text-red-600 text-[11px] px-2 py-0.5 font-medium border border-red-200 rounded-full">
+                Live
               </Badge>
             )}
           </CardTitle>
           
           {allItems.length > 1 && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={goToPrevious} 
-                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+                className="h-7 w-7 p-0 hover:bg-gray-100/80 transition-colors duration-200 rounded-full"
               >
-                <ChevronLeft className="w-4 h-4 text-slate-600" />
+                <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
               </Button>
-              <span className="text-xs text-slate-500 px-2 py-1 bg-slate-100/60 rounded-full font-medium min-w-[3rem] text-center">
+              <span className="text-[11px] text-gray-400 px-2 py-1 bg-gray-50 rounded-full font-medium min-w-[2.5rem] text-center">
                 {currentIndex + 1}/{allItems.length}
               </span>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={goToNext} 
-                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+                className="h-7 w-7 p-0 hover:bg-gray-100/80 transition-colors duration-200 rounded-full"
               >
-                <ChevronRight className="w-4 h-4 text-slate-600" />
+                <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
               </Button>
             </div>
           )}
@@ -238,49 +240,48 @@ export function BreakingNewsWidget() {
         {isAdvertisement ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold px-3 py-1 shadow-sm">
-                SPONSORED
+              <Badge className="bg-blue-500/10 text-blue-600 text-[11px] px-2 py-0.5 font-medium border border-blue-200 rounded-full">
+                Sponsored
               </Badge>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => window.open((currentItem as Advertisement).attributes.URL, "_blank")}
-                className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+                className="h-7 w-7 p-0 hover:bg-gray-100/80 transition-colors duration-200 rounded-full"
               >
-                <ExternalLink className="w-4 h-4 text-slate-600" />
+                <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
               </Button>
             </div>
             
             <div>
-              <h4 className="text-sm font-bold text-slate-900 leading-tight mb-3">
+              <h4 className="text-[15px] font-semibold text-gray-900 leading-tight mb-2">
                 {(currentItem as Advertisement).attributes.Tiltle}
               </h4>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+              <p className="text-[13px] text-gray-600 leading-relaxed">
                 {(currentItem as Advertisement).attributes.Content}
               </p>
             </div>
             
-            <div className="text-xs text-slate-500 pt-3 border-t border-slate-200/60 font-medium">
-              Sponsored by <span className="font-bold text-slate-700">{(currentItem as Advertisement).attributes.Sponsor}</span>
+            <div className="text-[11px] text-gray-400 pt-3 border-t border-gray-100 font-medium">
+              Sponsored by <span className="font-semibold text-gray-600">{(currentItem as Advertisement).attributes.Sponsor}</span>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                              <Badge className={`text-xs font-bold px-3 py-1 ${getSeverityColor((currentItem as BreakingNews).Severity)}`}>
-                {(currentItem as BreakingNews).Category}
-              </Badge>
-              {(currentItem as BreakingNews).IsBreaking && (
-                  <Badge className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold px-3 py-1 shadow-sm">
-                    <Zap className="w-3 h-3 mr-1" />
-                    BREAKING
+              <div className="flex items-center gap-2">
+                <Badge className={`text-[11px] px-2 py-0.5 font-medium border rounded-full ${getSeverityColor((currentItem as BreakingNews).Severity)}`}>
+                  {(currentItem as BreakingNews).Category}
+                </Badge>
+                {(currentItem as BreakingNews).IsBreaking && (
+                  <Badge className="bg-red-500/10 text-red-600 text-[11px] px-2 py-0.5 font-medium border border-red-200 rounded-full">
+                    Breaking
                   </Badge>
                 )}
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400 font-medium">
                   <Clock className="w-3 h-3" />
                   <span>{formatTimeAgo((currentItem as BreakingNews).PublishedTimestamp)}</span>
                 </div>
@@ -288,24 +289,24 @@ export function BreakingNewsWidget() {
                   variant="ghost"
                   size="sm"
                   onClick={() => window.open((currentItem as BreakingNews).URL, "_blank")}
-                  className="h-8 w-8 p-0 hover:bg-slate-100/80 transition-colors duration-200 rounded-full"
+                  className="h-7 w-7 p-0 hover:bg-gray-100/80 transition-colors duration-200 rounded-full"
                 >
-                  <ExternalLink className="w-4 h-4 text-slate-600" />
+                  <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
                 </Button>
               </div>
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-slate-900 leading-tight mb-3">
+              <h4 className="text-[15px] font-semibold text-gray-900 leading-tight mb-2">
                 {(currentItem as BreakingNews).Title}
               </h4>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">
+              <p className="text-[13px] text-gray-600 leading-relaxed">
                 {(currentItem as BreakingNews).Summary}
               </p>
             </div>
 
-            <div className="text-xs text-slate-500 pt-3 border-t border-slate-200/60 font-medium">
-              Source: <span className="font-bold text-slate-700">{(currentItem as BreakingNews).Source}</span>
+            <div className="text-[11px] text-gray-400 pt-3 border-t border-gray-100 font-medium">
+              Source: <span className="font-semibold text-gray-600">{(currentItem as BreakingNews).Source}</span>
             </div>
           </div>
         )}

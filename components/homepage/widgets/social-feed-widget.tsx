@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MessageCircle, Repeat2, Share, MapPin, CheckCircle, ExternalLink } from "lucide-react"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface SocialPost {
   id: string
@@ -82,7 +83,7 @@ export function SocialFeedWidget() {
       console.log('Fetching social media posts from Strapi...')
       
       // Call Strapi API to get social media posts sorted by timestamp
-      const response = await fetch("http://localhost:1337/api/social-media-posts?populate=*&sort=Timestamp:desc")
+      const response = await fetch(buildApiUrl("social-media-posts?populate=*&sort=Timestamp:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -94,13 +95,13 @@ export function SocialFeedWidget() {
             // Get avatar URL with fallback
             let avatarUrl = "/placeholder.svg?height=40&width=40"
             if (strapiPost.Avatar) {
-              avatarUrl = `http://localhost:1337${strapiPost.Avatar.url}`
+              avatarUrl = buildStrapiUrl(strapiPost.Avatar.url)
             }
 
             // Get image URL with fallback
             let imageUrl = undefined
             if (strapiPost.Image) {
-              imageUrl = `http://localhost:1337${strapiPost.Image.url}`
+              imageUrl = buildStrapiUrl(strapiPost.Image.url)
             }
 
             return {
@@ -227,20 +228,18 @@ export function SocialFeedWidget() {
     },
   ]
 
-
-
   const getPlatformColor = (platform: string) => {
     switch (platform) {
       case "twitter":
-        return "bg-slate-900 text-white"
+        return "bg-black text-white"
       case "threads":
-        return "bg-neutral-900 text-white"
+        return "bg-black text-white"
       case "instagram":
-        return "bg-gradient-to-r from-slate-800 to-slate-600 text-white"
+        return "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
       case "bluesky":
-        return "bg-sky-700 text-white"
+        return "bg-blue-500 text-white"
       default:
-        return "bg-slate-700 text-white"
+        return "bg-gray-600 text-white"
     }
   }
 
@@ -262,31 +261,31 @@ export function SocialFeedWidget() {
   // Show loading state while fetching data
   if (loading) {
     return (
-      <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-3"></div>
               Social Feed
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="animate-pulse space-y-4">
+        <CardContent className="px-6 pb-6">
+          <div className="animate-pulse space-y-6">
             <div className="flex items-center justify-between">
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-              <div className="h-4 bg-gray-200 rounded w-4"></div>
+              <div className="h-4 bg-gray-100 rounded-full w-20"></div>
+              <div className="h-4 bg-gray-100 rounded-full w-4"></div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gray-100 rounded-full"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-3 bg-gray-200 rounded w-24"></div>
-                <div className="h-3 bg-gray-200 rounded w-32"></div>
+                <div className="h-4 bg-gray-100 rounded-full w-24"></div>
+                <div className="h-3 bg-gray-100 rounded-full w-32"></div>
               </div>
             </div>
             <div className="space-y-2">
-              <div className="h-3 bg-gray-200 rounded w-full"></div>
-              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-100 rounded-full w-full"></div>
+              <div className="h-3 bg-gray-100 rounded-full w-3/4"></div>
             </div>
           </div>
         </CardContent>
@@ -297,18 +296,18 @@ export function SocialFeedWidget() {
   // Check if we have posts and current post exists
   if (!socialPosts || socialPosts.length === 0) {
     return (
-      <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+      <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 px-6 pt-6">
+          <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-3"></div>
               Social Feed
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
+        <CardContent className="px-6 pb-6">
           <div className="flex items-center justify-center h-32">
-            <p className="text-gray-500 text-sm">No social media posts available</p>
+            <p className="text-gray-400 text-sm font-medium">No social media posts available</p>
           </div>
         </CardContent>
       </Card>
@@ -316,57 +315,57 @@ export function SocialFeedWidget() {
   }
 
   return (
-    <Card className="h-full bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg overflow-hidden">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
+    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="pb-3 px-6 pt-6">
+        <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-3"></div>
             Social Feed
           </div>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs font-medium bg-gray-50 text-gray-600 border-0">
             {socialPosts.length} posts
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="space-y-4 max-h-80 overflow-y-auto social-feed-scroll">
+      <CardContent className="px-6 pb-6">
+        <div className="space-y-6 max-h-80 overflow-y-auto social-feed-scroll">
           {socialPosts.map((post) => (
-            <div key={post.id} className="border-b border-gray-100 pb-4 last:border-b-0">
+            <div key={post.id} className="border-b border-gray-50 pb-6 last:border-b-0 last:pb-0">
               {/* Platform Badge */}
-              <div className="flex items-center justify-between mb-3">
-                <Badge className={`${getPlatformColor(post.platform)} px-2 py-1 text-xs font-medium`}>
+              <div className="flex items-center justify-between mb-4">
+                <Badge className={`${getPlatformColor(post.platform)} px-3 py-1 text-xs font-medium rounded-full border-0`}>
                   {getPlatformIcon(post.platform)} {post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
                 </Badge>
-                <a href="#" className="text-gray-400">
+                <button className="text-gray-300 hover:text-gray-500 transition-colors">
                   <ExternalLink className="w-4 h-4" />
-                </a>
+                </button>
               </div>
 
               {/* Author Info */}
-              <div className="flex items-center mb-3">
+              <div className="flex items-center mb-4">
                 <img
                   src={post.avatar || "/placeholder.svg"}
                   alt={post.author}
-                  className="w-8 h-8 rounded-full mr-3 ring-2 ring-blue-200 flex-shrink-0"
+                  className="w-10 h-10 rounded-full mr-4 ring-1 ring-gray-100 flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center">
-                    <span className="font-medium text-sm text-gray-900 truncate">{post.author}</span>
+                    <span className="font-semibold text-sm text-gray-900 truncate">{post.author}</span>
                     {post.verified && <CheckCircle className="w-3 h-3 text-blue-500 ml-1 flex-shrink-0" />}
                   </div>
-                  <span className="text-xs text-gray-500 truncate block">{post.handle}</span>
+                  <span className="text-xs text-gray-500 truncate block font-medium">{post.handle}</span>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0">{post.timestamp}</span>
+                <span className="text-xs text-gray-400 flex-shrink-0 font-medium">{post.timestamp}</span>
               </div>
 
               {/* Content */}
-              <p className="text-sm text-gray-700 mb-3 leading-relaxed line-clamp-2">{post.content}</p>
+              <p className="text-sm text-gray-700 mb-4 leading-relaxed line-clamp-2 font-medium">{post.content}</p>
 
               {/* Location */}
               {post.location && (
-                <div className="flex items-center mb-3 text-xs text-gray-500">
-                  <MapPin className="w-3 h-3 mr-1 text-red-400 flex-shrink-0" />
-                  <span className="truncate">{post.location}</span>
+                <div className="flex items-center mb-4 text-xs text-gray-500">
+                  <MapPin className="w-3 h-3 mr-2 text-red-400 flex-shrink-0" />
+                  <span className="truncate font-medium">{post.location}</span>
                 </div>
               )}
 
@@ -375,42 +374,44 @@ export function SocialFeedWidget() {
                 <img
                   src={post.image || "/placeholder.svg"}
                   alt="Post content"
-                  className="w-full h-16 object-cover rounded-lg mb-3"
+                  className="w-full h-20 object-cover rounded-xl mb-4"
                 />
               )}
 
               {/* Hashtags */}
-              <div className="flex flex-wrap gap-1 mb-3">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {post.hashtags.slice(0, 3).map((tag, index) => (
                   <span
                     key={index}
-                    className="text-xs text-blue-600 cursor-pointer truncate"
+                    className="text-xs text-blue-600 cursor-pointer truncate font-medium hover:text-blue-700 transition-colors"
                   >
                     {tag}
                   </span>
                 ))}
                 {post.hashtags.length > 3 && (
-                  <span className="text-xs text-gray-500">+{post.hashtags.length - 3} more</span>
+                  <span className="text-xs text-gray-400 font-medium">+{post.hashtags.length - 3} more</span>
                 )}
               </div>
 
               {/* Engagement */}
               <div className="flex items-center justify-between text-xs text-gray-500">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center cursor-pointer">
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center cursor-pointer hover:text-red-500 transition-colors">
                     <Heart className="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span>{post.likes}</span>
+                    <span className="font-medium">{post.likes}</span>
                   </div>
-                  <div className="flex items-center cursor-pointer">
+                  <div className="flex items-center cursor-pointer hover:text-blue-500 transition-colors">
                     <MessageCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span>{post.comments}</span>
+                    <span className="font-medium">{post.comments}</span>
                   </div>
-                  <div className="flex items-center cursor-pointer">
+                  <div className="flex items-center cursor-pointer hover:text-green-500 transition-colors">
                     <Repeat2 className="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span>{post.shares}</span>
+                    <span className="font-medium">{post.shares}</span>
                   </div>
                 </div>
-                <Share className="w-3 h-3 cursor-pointer flex-shrink-0" />
+                <button className="hover:text-gray-700 transition-colors">
+                  <Share className="w-3 h-3 flex-shrink-0" />
+                </button>
               </div>
             </div>
           ))}

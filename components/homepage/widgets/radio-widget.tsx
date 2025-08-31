@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface RadioStation {
   id: string
@@ -100,7 +101,7 @@ export function RadioWidget() {
       console.log('Fetching radio stations from Strapi...')
       
       // Call Strapi API to get radio stations with populated media
-      const response = await fetch("http://localhost:1337/api/radio-stations?populate=*&sort=Listeners:desc")
+      const response = await fetch(buildApiUrl("radio-stations?populate=*&sort=Listeners:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -112,7 +113,7 @@ export function RadioWidget() {
             // Get logo URL with fallback
             let logoUrl = "/placeholder.svg?height=40&width=40&text=RF"
             if (strapiStation.Logo) {
-              logoUrl = `http://localhost:1337${strapiStation.Logo.url}`
+              logoUrl = buildStrapiUrl(strapiStation.Logo.url)
             }
 
             return {
@@ -353,36 +354,29 @@ export function RadioWidget() {
 
   if (loading) {
     return (
-      <Card className="top-row-widget bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
-        <CardHeader className="pb-3">
+      <Card className="top-row-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm">
+        <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Radio className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-sm font-semibold text-gray-800">Live Radio</CardTitle>
-                <p className="text-xs text-gray-500">Pattaya's Finest Stations</p>
-              </div>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></div>
+              <div className="h-4 bg-gray-100 rounded w-16 animate-pulse"></div>
             </div>
-            <div className="animate-pulse">
-              <div className="w-12 h-6 bg-gray-200 rounded-full"></div>
-            </div>
+            <div className="w-8 h-4 bg-gray-100 rounded animate-pulse"></div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="animate-pulse space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+          <div className="animate-pulse space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-100 rounded w-1/2"></div>
               </div>
             </div>
-            <div className="flex justify-center space-x-4">
-              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-              <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+            <div className="flex justify-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-100 rounded-full"></div>
+              <div className="w-12 h-12 bg-gray-100 rounded-full"></div>
             </div>
           </div>
         </CardContent>
@@ -391,74 +385,64 @@ export function RadioWidget() {
   }
 
   return (
-    <Card className="top-row-widget bg-gradient-to-br from-blue-50 via-white to-purple-50 border-0 shadow-xl overflow-hidden">
-      <CardHeader className="pb-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <Card className="top-row-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-              <Radio className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-sm font-bold">Live Radio</CardTitle>
-              <p className="text-xs text-blue-100">Pattaya's Finest Stations</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+            <span className="text-[15px] font-medium text-gray-900">Radio</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge className="bg-red-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-              LIVE
+          <div className="flex items-center gap-2">
+            <Badge className="bg-purple-500/10 text-purple-600 text-[11px] px-2 py-0.5 font-medium border border-purple-200 rounded-full">
+              Live
             </Badge>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={loadStations} 
-              className="h-7 w-7 p-0 hover:bg-white/20 rounded-full transition-colors text-white" 
+              className="h-7 w-7 p-0 hover:bg-gray-100/80 rounded-full transition-colors" 
               disabled={loading}
             >
-              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${loading ? "animate-spin" : ""}`} />
             </Button>
-            <Switch 
-              checked={darkMode} 
-              onCheckedChange={setDarkMode} 
-              className="scale-75 data-[state=checked]:bg-white/20" 
-            />
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 space-y-4">
+      <CardContent className="pt-0 space-y-4">
         {/* Current Station Display */}
         {currentStation && (
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center space-x-4">
+          <div className="bg-gray-50/50 rounded-lg p-4">
+            <div className="flex items-center gap-4">
               <div className="relative">
                 <img
                   src={currentStation.logo || "/placeholder.svg"}
                   alt={currentStation.name}
-                  className="w-16 h-16 rounded-xl object-cover shadow-md"
+                  className="w-12 h-12 rounded-lg object-cover"
                 />
                 {currentStation.featured && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
-                    <Star className="w-3 h-3 text-white fill-white" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                    <Star className="w-2 h-2 text-white fill-white" />
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-2 mb-1">
-                  <h3 className="font-bold text-gray-900 text-lg truncate">{currentStation.name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-gray-900 text-[15px] truncate">{currentStation.name}</h3>
                 </div>
-                <div className="flex items-center space-x-3 text-sm text-gray-600 mb-2">
-                  <span className="font-mono font-semibold text-blue-600">{currentStation.frequency} FM</span>
-                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                  <span className="bg-gray-100 px-2 py-1 rounded-full text-xs font-medium">
+                <div className="flex items-center gap-2 text-[11px] text-gray-600 mb-2">
+                  <span className="font-mono font-medium text-purple-600">{currentStation.frequency} FM</span>
+                  <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                  <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] font-medium">
                     {currentStation.genre}
                   </span>
                 </div>
-                <div className="flex items-center space-x-4 text-xs text-gray-500">
-                  <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                  <div className="flex items-center gap-1">
                     <Users className="w-3 h-3" />
                     <span>{currentStation.listeners.toLocaleString()} listeners</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <Music className="w-3 h-3" />
                     <span className="truncate max-w-32">{currentStation.nowPlaying}</span>
                   </div>
@@ -469,14 +453,14 @@ export function RadioWidget() {
         )}
 
         {/* Main Controls */}
-        <div className="flex items-center justify-center space-x-4">
+        <div className="flex items-center justify-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => currentStation && playStation(currentStation)}
-            className="h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            className="h-12 w-12 rounded-full bg-purple-500 hover:bg-purple-600 text-white shadow-sm hover:shadow-md transition-all duration-200"
           >
-            {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
           </Button>
           
           <div className="relative">
@@ -486,9 +470,9 @@ export function RadioWidget() {
               onClick={toggleMute}
               onMouseEnter={() => setShowVolumeSlider(true)}
               onMouseLeave={() => setShowVolumeSlider(false)}
-              className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700"
+              className="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </Button>
             
             {showVolumeSlider && (
@@ -500,7 +484,7 @@ export function RadioWidget() {
                   step={1}
                   className="w-20"
                 />
-                <p className="text-xs text-center text-gray-500 mt-1">{volume[0]}%</p>
+                <p className="text-[11px] text-center text-gray-500 mt-1">{volume[0]}%</p>
               </div>
             )}
           </div>
@@ -510,13 +494,13 @@ export function RadioWidget() {
               variant="ghost"
               size="sm"
               onClick={() => toggleFavorite(currentStation.id)}
-              className={`h-10 w-10 rounded-full transition-all duration-200 ${
+              className={`h-8 w-8 rounded-full transition-all duration-200 ${
                 favorites.includes(currentStation.id)
                   ? "bg-red-50 text-red-500 hover:bg-red-100"
                   : "bg-gray-100 text-gray-400 hover:bg-gray-200"
               }`}
             >
-              <Heart className={`w-4 h-4 ${favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
+              <Heart className={`w-3.5 h-3.5 ${favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
             </Button>
           )}
         </div>
@@ -525,18 +509,18 @@ export function RadioWidget() {
 
         {/* Station Selector */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Quick Select:</span>
-            <div className="flex space-x-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-gray-700">Quick Select:</span>
+            <div className="flex gap-1">
               {stations.slice(0, 3).map((station) => (
                 <Button
                   key={station.id}
                   variant="ghost"
                   size="sm"
                   onClick={() => playStation(station)}
-                  className={`h-8 px-3 rounded-full text-xs transition-all duration-200 ${
+                  className={`h-7 px-2 rounded-full text-[11px] transition-all duration-200 ${
                     currentStation?.id === station.id
-                      ? "bg-blue-100 text-blue-700 font-medium"
+                      ? "bg-purple-100 text-purple-700 font-medium"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -546,10 +530,10 @@ export function RadioWidget() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             {/* Error indicator */}
             {error && (
-              <div className="flex items-center space-x-1 text-xs text-amber-600">
+              <div className="flex items-center gap-1 text-[11px] text-amber-600">
                 <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
                 <span className="font-medium">Connection issue</span>
               </div>
@@ -558,16 +542,16 @@ export function RadioWidget() {
             {/* All Stations Menu */}
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 px-3 rounded-full text-xs">
+              <Button variant="outline" size="sm" className="h-7 px-2 rounded-full text-[11px]">
                 <MoreVertical className="w-3 h-3 mr-1" />
                 All Stations
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
               <div className="p-3">
-                <div className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-between">
+                <div className="text-[13px] font-semibold text-gray-700 mb-3 flex items-center justify-between">
                   <span>All Stations ({stations.length})</span>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-[11px]">
                     {favorites.length} Favorites
                   </Badge>
                 </div>
@@ -577,39 +561,39 @@ export function RadioWidget() {
                       key={station.id}
                       className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                         currentStation?.id === station.id
-                          ? "bg-blue-50 border border-blue-200"
+                          ? "bg-purple-50 border border-purple-200"
                           : "hover:bg-gray-50"
                       }`}
                       onClick={() => playStation(station)}
                     >
-                      <div className="flex items-center space-x-3 w-full">
+                      <div className="flex items-center gap-3 w-full">
                         <div className="relative">
                           <img
                             src={station.logo || "/placeholder.svg"}
                             alt={station.name}
-                            className="w-10 h-10 rounded-lg object-cover"
+                            className="w-8 h-8 rounded-lg object-cover"
                           />
                           {station.featured && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
-                              <Star className="w-2 h-2 text-white fill-white" />
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                              <Star className="w-1.5 h-1.5 text-white fill-white" />
                             </div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <p className="font-medium text-sm truncate">{station.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-[13px] truncate">{station.name}</p>
                             {station.isLive && (
-                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                             )}
                           </div>
-                          <div className="flex items-center space-x-2 text-xs text-gray-500 mt-1">
-                            <span className="font-mono font-semibold text-blue-600">{station.frequency} FM</span>
+                          <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1">
+                            <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
                             <span>•</span>
                             <span>{station.genre}</span>
                             <span>•</span>
                             <span>{station.listeners.toLocaleString()} listeners</span>
                           </div>
-                          <p className="text-xs text-gray-400 truncate mt-1">{station.nowPlaying}</p>
+                          <p className="text-[11px] text-gray-400 truncate mt-1">{station.nowPlaying}</p>
                         </div>
                         <Button
                           variant="ghost"
@@ -618,13 +602,13 @@ export function RadioWidget() {
                             e.stopPropagation()
                             toggleFavorite(station.id)
                           }}
-                          className={`h-6 w-6 p-0 rounded-full ${
+                          className={`h-5 w-5 p-0 rounded-full ${
                             favorites.includes(station.id)
                               ? "text-red-500 hover:bg-red-50"
                               : "text-gray-400 hover:bg-gray-100"
                           }`}
                         >
-                          <Heart className={`w-3 h-3 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
+                          <Heart className={`w-2.5 h-2.5 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
                         </Button>
                       </div>
                     </DropdownMenuItem>

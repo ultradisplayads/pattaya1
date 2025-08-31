@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Camera, Heart, MessageCircle, Eye, User } from "lucide-react"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface StrapiPhotoGallery {
   id: number
@@ -71,7 +72,7 @@ export function PhotoGalleryWidget() {
     try {
       setLoading(true)
       console.log('Fetching photo galleries from Strapi...')
-      const response = await fetch("http://localhost:1337/api/photo-galleries?populate=*&sort=LastUpdated:desc")
+      const response = await fetch(buildApiUrl("photo-galleries?populate=*&sort=LastUpdated:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -105,28 +106,28 @@ export function PhotoGalleryWidget() {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "landscape":
-        return "bg-green-100 text-green-700"
+        return "bg-green-50 text-green-700"
       case "food":
-        return "bg-orange-100 text-orange-700"
+        return "bg-orange-50 text-orange-700"
       case "culture":
-        return "bg-purple-100 text-purple-700"
+        return "bg-purple-50 text-purple-700"
       case "nightlife":
-        return "bg-pink-100 text-pink-700"
+        return "bg-pink-50 text-pink-700"
       default:
-        return "bg-gray-100 text-gray-700"
+        return "bg-gray-50 text-gray-700"
     }
   }
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="h-24 bg-gray-100 rounded"></div>
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-5 bg-gray-100 rounded-full w-28"></div>
+            <div className="h-24 bg-gray-50 rounded-2xl"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-100 rounded-full"></div>
+              <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
             </div>
           </div>
         </CardContent>
@@ -136,16 +137,16 @@ export function PhotoGalleryWidget() {
 
   if (photos.length === 0) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center">
-            <Camera className="w-4 h-4 mr-2" />
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardHeader className="pb-4 px-6 pt-6">
+          <CardTitle className="text-base font-medium text-gray-900 flex items-center">
+            <Camera className="w-4 h-4 mr-2 text-gray-600" />
             Photo Gallery
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <div className="text-center text-gray-500 py-8">
-            No photos available at the moment.
+        <CardContent className="px-6 pb-6">
+          <div className="text-center text-gray-400 py-12">
+            <p className="text-sm font-medium">No photos available</p>
           </div>
         </CardContent>
       </Card>
@@ -155,71 +156,76 @@ export function PhotoGalleryWidget() {
   const photo = photos[currentPhoto]
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold flex items-center">
-          <Camera className="w-4 h-4 mr-2" />
-          Photo Gallery
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-4 px-6 pt-6">
+        <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
+          <div className="flex items-center">
+            <Camera className="w-4 h-4 mr-2 text-gray-600" />
+            Photo Gallery
+          </div>
+          <span className="text-xs text-gray-400 font-medium">
+            {photos.length} photos
+          </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-3">
+      <CardContent className="px-6 pb-6 space-y-4">
         {/* Photo */}
         <div className="relative">
           <img
-            src={photo.Image ? `http://localhost:1337${photo.Image.url}` : "/placeholder.svg"}
+            src={photo.Image ? buildStrapiUrl(photo.Image.url) : "/placeholder.svg"}
             alt={photo.Title}
-            className="w-full h-24 object-cover rounded-lg"
+            className="w-full h-24 object-cover rounded-2xl shadow-sm"
           />
-          <Badge variant="secondary" className={`absolute top-2 left-2 text-xs ${getCategoryColor(photo.Category)}`}>
+          <Badge className={`absolute top-3 left-3 text-xs ${getCategoryColor(photo.Category)} border-0 font-medium`}>
             {photo.Category}
           </Badge>
-          <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full font-medium">
             {currentPhoto + 1}/{photos.length}
           </div>
         </div>
 
         {/* Photo Info */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-semibold line-clamp-1">{photo.Title}</h3>
-            <div className="flex items-center justify-between text-xs text-gray-600">
+            <h3 className="text-sm font-medium text-gray-900 line-clamp-1 leading-tight">{photo.Title}</h3>
+            <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
               <div className="flex items-center space-x-1 min-w-0">
                 <User className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{photo.Author}</span>
+                <span className="truncate font-medium">{photo.Author}</span>
               </div>
-              <span className="flex-shrink-0">{photo.TimeAgo}</span>
+              <span className="flex-shrink-0 font-medium">{photo.TimeAgo}</span>
             </div>
           </div>
 
-          <p className="text-xs text-gray-600 truncate">📍 {photo.Location}</p>
+          <p className="text-xs text-gray-500 font-medium">📍 {photo.Location}</p>
 
           {/* Stats */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
-                <Heart className="w-3 h-3 text-red-500 flex-shrink-0" />
-                <span>{photo.Likes}</span>
+                <Heart className="w-3 h-3 text-red-400 flex-shrink-0" />
+                <span className="font-medium">{photo.Likes}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <MessageCircle className="w-3 h-3 flex-shrink-0" />
-                <span>{photo.Comments}</span>
+                <span className="font-medium">{photo.Comments}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="w-3 h-3 flex-shrink-0" />
-                <span>{photo.Views}</span>
+                <span className="font-medium">{photo.Views}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Navigation dots */}
-        <div className="flex justify-center space-x-1">
+        <div className="flex justify-center space-x-2">
           {photos.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentPhoto(index)}
               className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                index === currentPhoto ? "bg-blue-500" : "bg-gray-300"
+                index === currentPhoto ? "bg-gray-600" : "bg-gray-200"
               }`}
             />
           ))}
