@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Import all widgets
 import { EnhancedBreakingNewsWidget } from "./widgets/enhanced-breaking-news-widget"
-import { WeatherWidget } from "./widgets/weather-widget"
+import { EnhancedWeatherWidget } from "../widgets/enhanced-weather-widget"
 import { RadioWidget } from "./widgets/radio-widget"
 import { YouTubeWidget } from "./widgets/youtube-widget"
 import { LiveEventsWidget } from "./widgets/live-events-widget"
@@ -289,7 +289,7 @@ export function ModularHomepage() {
   const getWidgetComponent = (widgetId: string) => {
     const componentMap: { [key: string]: any } = {
       "breaking-news": EnhancedBreakingNewsWidget,
-      weather: WeatherWidget,
+      weather: EnhancedWeatherWidget,
       radio: RadioWidget,
       "google-reviews": GoogleReviewsWidget,
       "news-hero": NewsHeroWidget,
@@ -461,7 +461,7 @@ export function ModularHomepage() {
             <EnhancedBreakingNewsWidget />
           </div>
           <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <WeatherWidget />
+            <EnhancedWeatherWidget />
           </div>
           <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
             <RadioWidget />
