@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface RadioStation {
@@ -132,6 +133,7 @@ export function RadioWidget({ className }: { className?: string }) {
   })
   const [globalSponsorship, setGlobalSponsorship] = useState<GlobalSponsorship | null>(null)
   const [globalSponsorshipLoading, setGlobalSponsorshipLoading] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [isPlayingPreRollAd, setIsPlayingPreRollAd] = useState(false)
   const [preRollAdProgress, setPreRollAdProgress] = useState(0)
   const [logoLoadingStates, setLogoLoadingStates] = useState<Record<string, boolean>>({})
@@ -708,6 +710,17 @@ export function RadioWidget({ className }: { className?: string }) {
     }
   }
 
+  const handleWidgetClick = (e: React.MouseEvent) => {
+    // Don't expand if clicking on buttons or interactive elements
+    const target = e.target as HTMLElement
+    if (target.closest('button') || target.closest('input') || target.closest('a') || target.closest('[role="button"]')) {
+      return
+    }
+    
+    // Expand the widget
+    setIsExpanded(true)
+  }
+
   const refreshStations = () => {
     loadStations()
   }
@@ -1101,10 +1114,11 @@ export function RadioWidget({ className }: { className?: string }) {
   }
 
   return (
-    <Card 
-      className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative"
-      onClick={handleUserInteraction}
-    >
+    <>
+      <Card 
+        className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
+        onClick={handleWidgetClick}
+      >
       {/* Global Sponsorship Banner - At the very top */}
       {globalSponsorshipLoading && (
         <div className="w-full p-3 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20">
@@ -1586,5 +1600,200 @@ export function RadioWidget({ className }: { className?: string }) {
         </div>
       )}
     </Card>
+
+    {/* Expanded Radio Widget Modal */}
+    <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Radio className="h-5 w-5 text-blue-600" />
+            Radio Stations
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(false)}
+              className="ml-auto h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Current Station Info */}
+          {currentStation && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={currentStation.logo || "/placeholder.svg"}
+                    alt={currentStation.name}
+                    className="w-16 h-16 rounded-lg object-cover"
+                    onLoad={() => handleLogoLoad(currentStation.id)}
+                    onError={(e) => {
+                      handleLogoError(currentStation.id, currentStation.name)
+                      const target = e.target as HTMLImageElement
+                      target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
+                    }}
+                  />
+                  {currentStation.featured && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                      <Star className="w-2 h-2 text-white fill-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900">{currentStation.name}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                    <span className="font-mono font-medium text-purple-600">{currentStation.frequency} FM</span>
+                    <span>•</span>
+                    <span>{currentStation.genre}</span>
+                    <span>•</span>
+                    <span>{currentStation.listeners.toLocaleString()} listeners</span>
+                  </div>
+                  <p className="text-sm text-gray-700">{currentStation.nowPlaying}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => currentStation && playStation(currentStation)}
+                    disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
+                    className="h-12 w-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => currentStation && toggleFavorite(currentStation.id)}
+                    className={`h-10 w-10 rounded-full ${
+                      currentStation && favorites.includes(currentStation.id)
+                        ? "text-red-500 hover:bg-red-50"
+                        : "text-gray-400 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 ${currentStation && favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Volume Control */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <Volume2 className="h-5 w-5 text-gray-600" />
+              <div className="flex-1">
+                <Slider
+                  value={volume}
+                  onValueChange={setVolume}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+              <span className="text-sm font-medium text-gray-600 min-w-[3rem]">{volume[0]}%</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMuted(!isMuted)}
+                className="h-8 w-8 p-0"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* All Stations List */}
+          <div className="space-y-3">
+            <h4 className="text-lg font-semibold text-gray-900">All Stations</h4>
+            <div className="grid gap-3 max-h-96 overflow-y-auto">
+              {stations.map((station) => (
+                <div
+                  key={station.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:bg-gray-50 ${
+                    currentStation?.id === station.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
+                  }`}
+                  onClick={() => playStation(station)}
+                >
+                  <div className="relative">
+                    <img
+                      src={station.logo || "/placeholder.svg"}
+                      alt={station.name}
+                      className="w-12 h-12 rounded-lg object-cover"
+                      onLoad={() => handleLogoLoad(station.id)}
+                      onError={(e) => {
+                        handleLogoError(station.id, station.name)
+                        const target = e.target as HTMLImageElement
+                        target.src = "/placeholder.svg?height=48&width=48&text=" + station.name.charAt(0)
+                      }}
+                    />
+                    {station.featured && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                        <Star className="w-1.5 h-1.5 text-white fill-white" />
+                      </div>
+                    )}
+                    {station.isLive && (
+                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h5 className="font-medium text-gray-900 truncate">{station.name}</h5>
+                      {station.isSponsored && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                          SPONSORED
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                      <span>•</span>
+                      <span>{station.genre}</span>
+                      <span>•</span>
+                      <span>{station.listeners.toLocaleString()} listeners</span>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate">{station.nowPlaying}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {station.website && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(station.website, '_blank')
+                        }}
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleFavorite(station.id)
+                      }}
+                      className={`h-8 w-8 p-0 rounded-full ${
+                        favorites.includes(station.id)
+                          ? "text-red-500 hover:bg-red-50"
+                          : "text-gray-400 hover:bg-gray-100"
+                      }`}
+                    >
+                      <Heart className={`w-4 h-4 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }
