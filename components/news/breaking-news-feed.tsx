@@ -2,11 +2,12 @@
 
 import { useNews } from '@/hooks/use-news';
 import { BreakingNewsCard } from './breaking-news-card';
+import { SponsoredPost } from './sponsored-post';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, ExternalLink, Clock, AlertTriangle, Pin, Newspaper } from "lucide-react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface BreakingNewsFeedProps {
   showRefreshButton?: boolean;
@@ -21,14 +22,35 @@ export function BreakingNewsFeed({
 }: BreakingNewsFeedProps) {
   const { articles, loading, error, fetchLiveNews, pinArticle, unpinArticle, voteArticle, fetchNews } = useNews();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [feedData, setFeedData] = useState<any[]>([]);
 
-  const displayArticles = maxArticles ? articles.slice(0, maxArticles) : articles;
-  const pinnedArticles = displayArticles.filter(article => article.isPinned);
-  const regularArticles = displayArticles.filter(article => !article.isPinned);
+  // Fetch mixed content from /api/breaking-news/live
+  useEffect(() => {
+    const fetchMixedFeed = async () => {
+      try {
+        const response = await fetch('/api/breaking-news/live');
+        const result = await response.json();
+        // Handle new API structure with data and meta fields
+        setFeedData(result.data || result || []);
+      } catch (error) {
+        console.error('Failed to fetch mixed feed:', error);
+        setFeedData(articles); // Fallback to regular articles
+      }
+    };
+
+    fetchMixedFeed();
+  }, [articles]);
+
+  const displayArticles = maxArticles ? feedData.slice(0, maxArticles) : feedData;
+  const pinnedArticles = displayArticles.filter(item => item.isPinned);
+  const regularArticles = displayArticles.filter(item => !item.isPinned);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
+      const response = await fetch('/api/breaking-news/live');
+      const result = await response.json();
+      setFeedData(result.data || result || []);
       await fetchLiveNews();
     } finally {
       setIsRefreshing(false);
@@ -48,7 +70,7 @@ export function BreakingNewsFeed({
     await voteArticle(id, type);
   };
 
-  if (loading && articles.length === 0) {
+  if (loading && feedData.length === 0) {
     return (
       <Card className={className}>
         <CardContent className="flex items-center justify-center py-8">
@@ -61,7 +83,7 @@ export function BreakingNewsFeed({
     );
   }
 
-  if (error && articles.length === 0) {
+  if (error && feedData.length === 0) {
     return (
       <Card className={className}>
         <CardContent className="flex flex-col items-center justify-center py-8 gap-4">
@@ -84,8 +106,8 @@ export function BreakingNewsFeed({
         <div className="flex items-center gap-2">
           <Newspaper className="h-5 w-5" />
           <h2 className="text-xl font-semibold">Breaking News</h2>
-          {articles.length > 0 && (
-            <Badge variant="secondary">{articles.length} articles</Badge>
+          {feedData.length > 0 && (
+            <Badge variant="secondary">{feedData.length} articles</Badge>
           )}
         </div>
         
@@ -120,7 +142,7 @@ export function BreakingNewsFeed({
         </Card>
       )}
 
-      {articles.length === 0 ? (
+      {feedData.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Newspaper className="h-12 w-12 text-muted-foreground mb-4" />
@@ -143,16 +165,30 @@ export function BreakingNewsFeed({
                 <Pin className="h-4 w-4" />
                 Pinned Articles
               </h3>
-              {pinnedArticles.map((article) => (
-                <BreakingNewsCard
-                  key={article.id}
-                  article={article}
-                  onPin={pinArticle}
-                  onUnpin={unpinArticle}
-                  onUpvote={(id) => handleVote(id, 'upvote')}
-                  onDownvote={(id) => handleVote(id, 'downvote')}
-                  showActions={showRefreshButton}
-                />
+              {pinnedArticles.map((item) => (
+                <div key={item.id}>
+                  {item.type === 'sponsored' ? (
+                    <SponsoredPost post={{
+                      id: item.id,
+                      type: 'sponsored',
+                      title: item.title,
+                      summary: item.summary,
+                      url: item.url,
+                      sponsorName: item.sponsorName || 'Sponsored',
+                      publishedAt: item.timestamp,
+                      category: item.category
+                    }} />
+                  ) : (
+                    <BreakingNewsCard
+                      article={item}
+                      onPin={pinArticle}
+                      onUnpin={unpinArticle}
+                      onUpvote={(id) => handleVote(id, 'upvote')}
+                      onDownvote={(id) => handleVote(id, 'downvote')}
+                      showActions={showRefreshButton}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -163,16 +199,30 @@ export function BreakingNewsFeed({
               {pinnedArticles.length > 0 && (
                 <h3 className="text-lg font-medium">Latest News</h3>
               )}
-              {regularArticles.map((article) => (
-                <BreakingNewsCard
-                  key={article.id}
-                  article={article}
-                  onPin={pinArticle}
-                  onUnpin={unpinArticle}
-                  onUpvote={(id) => handleVote(id, 'upvote')}
-                  onDownvote={(id) => handleVote(id, 'downvote')}
-                  showActions={showRefreshButton}
-                />
+              {regularArticles.map((item) => (
+                <div key={item.id}>
+                  {item.type === 'sponsored' ? (
+                    <SponsoredPost post={{
+                      id: item.id,
+                      type: 'sponsored',
+                      title: item.title,
+                      summary: item.summary,
+                      url: item.url,
+                      sponsorName: item.sponsorName || 'Sponsored',
+                      publishedAt: item.timestamp,
+                      category: item.category
+                    }} />
+                  ) : (
+                    <BreakingNewsCard
+                      article={item}
+                      onPin={pinArticle}
+                      onUnpin={unpinArticle}
+                      onUpvote={(id) => handleVote(id, 'upvote')}
+                      onDownvote={(id) => handleVote(id, 'downvote')}
+                      showActions={showRefreshButton}
+                    />
+                  )}
+                </div>
               ))}
             </div>
           )}

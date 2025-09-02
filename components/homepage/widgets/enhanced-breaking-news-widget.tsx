@@ -69,34 +69,50 @@ export function EnhancedBreakingNewsWidget() {
       const response = await fetch(apiUrl)
       console.log('[Widget] Response status:', response.status, response.ok)
       if (response.ok) {
-        const data = await response.json()
+        const result = await response.json()
+        const data = result.data || result // Handle both old and new API formats
         
         if (data && data.length > 0) {
           console.log('[Widget] API returned', data.length, 'news items')
           // Transform the API response to match our interface
-          const transformedNews = data.map((item: any) => ({
-            id: parseInt(item.id),
-            Title: item.title,
-            Summary: item.summary,
-            Description: item.summary,
-            URL: item.url,
-            ImageURL: item.imageUrl,
-            PublishedAt: item.timestamp,
-            PublishedTimestamp: item.timestamp,
-            apiSource: item.source,
-            Source: item.source,
-            Category: item.category,
-            Severity: item.severity as "low" | "medium" | "high" | "critical",
-            IsBreaking: item.isBreaking,
-            upvotes: 0,
-            downvotes: 0,
-            isPinned: false,
-            moderationStatus: 'approved' as const,
-            isHidden: false,
-            createdAt: item.timestamp,
-            updatedAt: item.timestamp,
-            publishedAt: item.timestamp
-          }));
+          const transformedNews = data.map((item: any) => {
+            const baseItem = {
+              id: parseInt(item.id),
+              Title: item.title,
+              Summary: item.summary,
+              Description: item.summary,
+              URL: item.url,
+              ImageURL: item.imageUrl,
+              PublishedAt: item.timestamp,
+              PublishedTimestamp: item.timestamp,
+              apiSource: item.source,
+              Source: item.source,
+              Category: item.category,
+              Severity: item.severity as "low" | "medium" | "high" | "critical",
+              IsBreaking: item.isBreaking,
+              upvotes: 0,
+              downvotes: 0,
+              isPinned: false,
+              moderationStatus: 'approved' as const,
+              isHidden: false,
+              createdAt: item.timestamp,
+              updatedAt: item.timestamp,
+              publishedAt: item.timestamp
+            };
+
+            // Preserve sponsored post metadata
+            if (item.type === 'sponsored') {
+              return {
+                ...baseItem,
+                type: item.type,
+                sponsorName: item.sponsorName,
+                sponsorLogo: item.sponsorLogo,
+                displayPosition: item.displayPosition
+              };
+            }
+
+            return baseItem;
+          });
           
           // Check if we have new data by comparing with existing news
           const hasNewContent = news.length === 0 || 
@@ -295,13 +311,13 @@ export function EnhancedBreakingNewsWidget() {
   }
 
   const allItems = useMemo(() => {
-    const combined = [...news, ...advertisements]
-    console.log('[Widget] All items combined:', combined.length, 'news:', news.length, 'ads:', advertisements.length)
-    return combined
-  }, [news, advertisements])
+    // Use the unified news array that now contains both news and sponsored content
+    console.log('[Widget] All items from unified feed:', news.length, 'items')
+    return news
+  }, [news])
 
   const currentItem = allItems[currentIndex]
-  const isAdvertisement = currentItem && 'Sponsor' in currentItem
+  const isAdvertisement = currentItem && ((currentItem as any).type === 'sponsored' || 'Sponsor' in currentItem)
   
   console.log('[Widget] Current state - allItems:', allItems.length, 'currentIndex:', currentIndex, 'currentItem:', (currentItem as any)?.Title || (currentItem as any)?.Tiltle || 'none')
 
@@ -343,7 +359,7 @@ export function EnhancedBreakingNewsWidget() {
 
   const handleItemClick = () => {
     if (currentItem) {
-      const url = isAdvertisement ? (currentItem as StrapiAdvertisement).URL : (currentItem as StrapiBreakingNews).URL
+      const url = (currentItem as any).URL
       window.open(url, "_blank")
     }
   }
@@ -421,15 +437,17 @@ export function EnhancedBreakingNewsWidget() {
         {isAdvertisement ? (
           <div className="space-y-3">
             <div className="flex items-start justify-between">
-              <Badge className="bg-blue-50 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5">
-                SPONSORED
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs font-medium rounded-full px-2 py-0.5">
+                  {(currentItem as any).sponsorName || 'Sponsored'}
+                </Badge>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
-                  window.open((currentItem as StrapiAdvertisement).URL, "_blank")
+                  window.open((currentItem as any).URL, "_blank")
                 }}
                 className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
               >
@@ -438,22 +456,22 @@ export function EnhancedBreakingNewsWidget() {
             </div>
 
             <div className="flex space-x-3">
-              {(currentItem as StrapiAdvertisement).Image && (
+              {(currentItem as any).ImageURL && (
                 <img
-                  src={buildStrapiUrl((currentItem as StrapiAdvertisement).Image!.url)}
-                  alt={(currentItem as StrapiAdvertisement).Tiltle}
+                  src={(currentItem as any).ImageURL}
+                  alt={(currentItem as any).Title}
                   className="w-16 h-12 rounded-xl object-cover flex-shrink-0 shadow-sm"
                 />
               )}
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 leading-tight">
-                  {(currentItem as StrapiAdvertisement).Tiltle}
+                  {(currentItem as any).Title}
                 </h4>
                 <p className="text-xs text-gray-600 line-clamp-2 mb-2 leading-relaxed">
-                  {(currentItem as StrapiAdvertisement).Content}
+                  {(currentItem as any).Summary}
                 </p>
                 <div className="text-xs text-gray-500 font-medium">
-                  by <span className="text-gray-700">{(currentItem as StrapiAdvertisement).Sponsor}</span>
+                  by <span className="text-gray-700">{(currentItem as any).sponsorName || 'Sponsor'}</span>
                 </div>
               </div>
             </div>

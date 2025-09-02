@@ -73,10 +73,10 @@ export function SponsoredPost({ post, onImpression, onClick }: SponsoredPostProp
                   className="w-6 h-6 rounded-full object-cover border border-gray-200"
                 />
               )}
-              <span className="text-sm font-medium text-blue-600">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium">
                 {post.sponsorName}
-              </span>
-              <Badge className="sponsored-badge">
+              </Badge>
+              <Badge className="sponsored-badge bg-orange-100 text-orange-700 border-orange-200">
                 Sponsored
               </Badge>
             </div>
