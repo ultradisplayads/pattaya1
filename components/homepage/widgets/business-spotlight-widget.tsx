@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Clock, Phone, ExternalLink, Heart } from "lucide-react"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface Business {
   id: string
@@ -86,7 +87,7 @@ export function BusinessSpotlightWidget() {
       setLoading(true)
       console.log('Fetching business spotlights from Strapi...')
       
-      const response = await fetch("http://localhost:1337/api/business-spotlights?populate=*&sort=Rating:desc")
+      const response = await fetch(buildApiUrl("business-spotlights?populate=*&sort=Rating:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -96,7 +97,7 @@ export function BusinessSpotlightWidget() {
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=120&width=200&text=Business"
             if (strapiBusiness.Image) {
-              imageUrl = `http://localhost:1337${strapiBusiness.Image.url}`
+              imageUrl = buildStrapiUrl(strapiBusiness.Image.url)
             }
 
             return {
@@ -182,14 +183,14 @@ export function BusinessSpotlightWidget() {
 
   if (loading) {
     return (
-      <Card className="h-full">
+      <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-sm">
         <CardContent className="p-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-6 bg-gray-200 rounded"></div>
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-gray-100 rounded"></div>
             <div className="h-24 bg-gray-100 rounded-lg"></div>
             <div className="space-y-2">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-100 rounded"></div>
+              <div className="h-3 bg-gray-100 rounded w-3/4"></div>
             </div>
           </div>
         </CardContent>
@@ -197,19 +198,22 @@ export function BusinessSpotlightWidget() {
     )
   }
 
-  if (businesses.length === 0) return <div className="animate-pulse bg-gray-200 rounded-lg h-full"></div>
+  if (businesses.length === 0) return <div className="animate-pulse bg-gray-100 rounded-lg h-full"></div>
 
   const business = businesses[currentBusiness]
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold flex items-center justify-between">
-          <span>Business Spotlight</span>
+    <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+            <span>Business Spotlight</span>
+          </div>
           <Heart className="w-4 h-4 text-red-500" />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-3">
+      <CardContent className="pt-0 space-y-2">
         {/* Business Image */}
         <div className="relative">
           <img
@@ -218,74 +222,80 @@ export function BusinessSpotlightWidget() {
             className="w-full h-24 object-cover rounded-lg"
           />
           {business.featured && (
-            <Badge className="absolute top-2 left-2 text-xs bg-yellow-500 text-white">FEATURED</Badge>
+            <Badge className="absolute top-2 left-2 text-[11px] px-2 py-0.5 font-medium bg-amber-500/10 text-amber-600 border border-amber-200 rounded-full">
+              Featured
+            </Badge>
           )}
-          {business.deal && <Badge className="absolute top-2 right-2 text-xs bg-red-500 text-white">DEAL</Badge>}
+          {business.deal && (
+            <Badge className="absolute top-2 right-2 text-[11px] px-2 py-0.5 font-medium bg-red-500/10 text-red-600 border border-red-200 rounded-full">
+              Deal
+            </Badge>
+          )}
         </div>
 
         {/* Business Info */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold line-clamp-1">{business.name}</h3>
-              <p className="text-xs text-gray-600">{business.category}</p>
+              <h3 className="text-[15px] font-semibold text-gray-900 line-clamp-1">{business.name}</h3>
+              <p className="text-[13px] text-gray-600">{business.category}</p>
             </div>
-            <div className="flex items-center space-x-1 text-xs">
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+            <div className="flex items-center gap-1 text-[11px]">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
               <span className="font-medium">{business.rating}</span>
               <span className="text-gray-500">({business.reviews})</span>
             </div>
           </div>
 
-          <p className="text-xs text-gray-700 line-clamp-2">{business.description}</p>
+          <p className="text-[13px] text-gray-600 line-clamp-1">{business.description}</p>
 
           {/* Deal */}
           {business.deal && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-2">
-              <p className="text-xs font-medium text-red-700">🎉 {business.deal}</p>
+            <div className="bg-red-50/50 border border-red-100 rounded-lg p-1.5">
+              <p className="text-[13px] font-medium text-red-600">🎉 {business.deal}</p>
             </div>
           )}
 
           {/* Tags */}
           <div className="flex flex-wrap gap-1">
-            {business.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
+            {business.tags.slice(0, 2).map((tag, index) => (
+              <Badge key={index} className="text-[11px] px-2 py-0.5 font-medium bg-gray-100 text-gray-600 border border-gray-200 rounded-full">
                 {tag}
               </Badge>
             ))}
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-1 text-xs text-gray-600">
-            <div className="flex items-center space-x-1">
+          <div className="space-y-0.5 text-[11px] text-gray-500">
+            <div className="flex items-center gap-1.5">
               <MapPin className="w-3 h-3" />
               <span className="line-clamp-1">{business.location}</span>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
               <span>{business.hours}</span>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center gap-1.5">
               <Phone className="w-3 h-3" />
               <span>{business.phone}</span>
             </div>
           </div>
 
           {/* Action Button */}
-          <button className="w-full bg-blue-600 text-white text-xs py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+          <button className="w-full bg-emerald-500/10 text-emerald-600 text-[13px] py-1.5 rounded-lg hover:bg-emerald-500/20 transition-all duration-200 flex items-center justify-center gap-1.5 border border-emerald-200 font-medium">
             <span>View Details</span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Navigation dots */}
-        <div className="flex justify-center space-x-1">
+        <div className="flex justify-center gap-1">
           {businesses.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentBusiness(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                index === currentBusiness ? "bg-blue-500" : "bg-gray-300"
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                index === currentBusiness ? "bg-emerald-500" : "bg-gray-200"
               }`}
             />
           ))}

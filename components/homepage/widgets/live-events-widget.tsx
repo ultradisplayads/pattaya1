@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, Clock, Zap } from "lucide-react"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface LiveEvent {
   id: string
@@ -51,6 +52,7 @@ interface StrapiLiveEvent {
 export function LiveEventsWidget() {
   const [events, setEvents] = useState<LiveEvent[]>([])
   const [currentEvent, setCurrentEvent] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadLiveEvents()
@@ -70,8 +72,8 @@ export function LiveEventsWidget() {
 
   const loadLiveEvents = async () => {
     try {
-      console.log('Fetching live events from Strapi...')
-      const response = await fetch("http://localhost:1337/api/live-events?populate=*&sort=Order:asc")
+      setLoading(true)
+      const response = await fetch(buildApiUrl("live-events?populate=*&sort=Order:asc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -81,7 +83,7 @@ export function LiveEventsWidget() {
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=100&width=150&text=Event"
             if (strapiEvent.Image) {
-              imageUrl = `http://localhost:1337${strapiEvent.Image.url}`
+              imageUrl = buildStrapiUrl(strapiEvent.Image.url)
             }
 
             return {
@@ -107,6 +109,8 @@ export function LiveEventsWidget() {
     } catch (error) {
       console.error("Failed to load live events:", error)
       setEvents(getFallbackLiveEvents())
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -156,13 +160,13 @@ export function LiveEventsWidget() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "live":
-        return "bg-red-500 text-white"
+        return "bg-red-500/90 backdrop-blur-sm"
       case "starting":
-        return "bg-orange-500 text-white"
+        return "bg-orange-500/90 backdrop-blur-sm"
       case "upcoming":
-        return "bg-blue-500 text-white"
+        return "bg-blue-500/90 backdrop-blur-sm"
       default:
-        return "bg-gray-500 text-white"
+        return "bg-gray-500/90 backdrop-blur-sm"
     }
   }
 
@@ -179,62 +183,77 @@ export function LiveEventsWidget() {
     }
   }
 
-  if (events.length === 0) return <div className="animate-pulse bg-gray-200 rounded-lg h-full"></div>
+  if (loading) return <div className="animate-pulse bg-gray-200 rounded-lg h-full"></div>
 
   const event = events[currentEvent]
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold flex items-center">
-          <Zap className="w-4 h-4 mr-2 text-yellow-500" />
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out">
+      <CardHeader className="pb-3 px-5 pt-5">
+        <CardTitle className="text-[15px] font-semibold text-gray-900 flex items-center tracking-tight">
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2.5 animate-pulse"></div>
           Live Events
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 pt-0 space-y-3">
+      <CardContent className="px-5 pb-5 space-y-4">
         {/* Event Image */}
-        <div className="relative">
+        <div className="relative overflow-hidden rounded-2xl">
           <img
             src={event.image || "/placeholder.svg"}
             alt={event.title}
-            className="w-full h-20 object-cover rounded-lg"
+            className="w-full h-20 object-cover"
           />
-          <Badge className={`absolute top-2 left-2 text-xs ${getStatusColor(event.status)} animate-pulse`}>
-            {getStatusText(event.status)}
-          </Badge>
-          <Badge variant="secondary" className="absolute top-2 right-2 text-xs">
-            {event.category}
-          </Badge>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          
+          {/* Status Badge */}
+          <div className={`absolute top-3 left-3 px-2.5 py-1 rounded-full ${getStatusColor(event.status)}`}>
+            <span className="text-[10px] font-semibold text-white tracking-wide">
+              {getStatusText(event.status)}
+            </span>
+          </div>
+          
+          {/* Category Badge */}
+          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm">
+            <span className="text-[10px] font-medium text-gray-700 tracking-wide">
+              {event.category}
+            </span>
+          </div>
         </div>
 
         {/* Event Details */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold line-clamp-2 leading-tight">{event.title}</h3>
+        <div className="space-y-3">
+          <h3 className="text-[14px] font-semibold text-gray-900 leading-tight tracking-tight line-clamp-2">
+            {event.title}
+          </h3>
 
-          <div className="space-y-1 text-xs text-gray-600">
-            <div className="flex items-center space-x-1">
-              <MapPin className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{event.location}</span>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[12px] text-gray-600 font-medium truncate">{event.location}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{event.time}</span>
+            <div className="flex items-center space-x-2">
+              <Clock className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[12px] text-gray-600 font-medium truncate">{event.time}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Users className="w-3 h-3 flex-shrink-0" />
-              <span className="truncate">{event.attendees.toLocaleString()} attending</span>
+            <div className="flex items-center space-x-2">
+              <Users className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+              <span className="text-[12px] text-gray-600 font-medium truncate">
+                {event.attendees.toLocaleString()} attending
+              </span>
             </div>
           </div>
         </div>
 
         {/* Navigation dots */}
-        <div className="flex justify-center space-x-1">
+        <div className="flex justify-center space-x-1.5 pt-1">
           {events.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentEvent(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                index === currentEvent ? "bg-blue-500" : "bg-gray-300"
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ease-out ${
+                index === currentEvent 
+                  ? "bg-gray-900 scale-125" 
+                  : "bg-gray-300 hover:bg-gray-400"
               }`}
             />
           ))}

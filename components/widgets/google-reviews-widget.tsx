@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { buildApiUrl } from "@/lib/strapi-config"
 
 interface GoogleReview {
   id: string
@@ -94,7 +95,7 @@ export function GoogleReviewsWidget() {
       setLoading(true)
       console.log('Fetching Google reviews from Strapi...')
       
-      const response = await fetch("http://localhost:1337/api/google-reviews?populate=*&sort=ReviewTime:desc")
+      const response = await fetch(buildApiUrl("google-reviews?populate=*&sort=ReviewTime:desc"))
       
       if (response.ok) {
         const data = await response.json()

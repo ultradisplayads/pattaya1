@@ -1,6 +1,6 @@
 "use client"
 
-import { WeatherWidget } from "./weather-widget"
+import { EnhancedWeatherWidget } from "./enhanced-weather-widget"
 import { EventsMarquee } from "./events-marquee"
 import { NewsCarousel } from "./news-carousel"
 import { HappeningNow } from "./happening-now"
@@ -36,7 +36,7 @@ export function WidgetGrid({ theme }: WidgetGridProps) {
           <NewsCarousel theme={theme} />
         </div>
         <div>
-          <WeatherWidget theme={theme} />
+          <EnhancedWeatherWidget />
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Save, Undo, Redo, Grid, Eye, EyeOff } from "lucide-react"
+import { Save, Undo, Redo, Grid, Eye, EyeOff, RotateCcw, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
@@ -9,7 +9,7 @@ import { ResizableWidgetWrapper } from "./resizable-widget-wrapper"
 import type { WidgetDimensions } from "@/lib/widget-resize"
 
 // Import all widgets
-import { WeatherWidget } from "./widgets/weather-widget"
+import { EnhancedWeatherWidget } from "../widgets/enhanced-weather-widget"
 import { LiveEventsWidget } from "./widgets/live-events-widget"
 import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { QuickLinksWidget } from "./widgets/quick-links-widget"
@@ -34,7 +34,7 @@ interface Widget {
 }
 
 const widgetComponents = {
-  weather: WeatherWidget,
+        weather: EnhancedWeatherWidget,
   liveEvents: LiveEventsWidget,
   newsHero: NewsHeroWidget,
   quickLinks: QuickLinksWidget,
@@ -236,41 +236,77 @@ export function WysiwygHomepage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* WYSIWYG Toolbar */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-gray-800">Pattaya1 WYSIWYG Editor</h1>
-            <div className="flex items-center space-x-2">
-              <Switch checked={isEditMode} onCheckedChange={setIsEditMode} id="edit-mode" />
-              <label htmlFor="edit-mode" className="text-sm font-medium">
+    <div className="min-h-screen bg-[#fafafa] font-sans antialiased">
+      {/* Apple-style WYSIWYG Toolbar */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
+        <div className="flex items-center justify-between px-8 py-4">
+          <div className="flex items-center space-x-6">
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Pattaya1 Editor</h1>
+            <div className="flex items-center space-x-3">
+              <Switch 
+                checked={isEditMode} 
+                onCheckedChange={setIsEditMode} 
+                id="edit-mode"
+                className="data-[state=checked]:bg-blue-500"
+              />
+              <label htmlFor="edit-mode" className="text-sm font-medium text-gray-700">
                 Edit Mode
               </label>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {isEditMode && (
               <>
-                <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={undo} 
+                  disabled={historyIndex <= 0}
+                  className="h-9 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 disabled:opacity-40"
+                >
                   <Undo className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={redo} disabled={historyIndex >= history.length - 1}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={redo} 
+                  disabled={historyIndex >= history.length - 1}
+                  className="h-9 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 disabled:opacity-40"
+                >
                   <Redo className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowGrid(!showGrid)}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowGrid(!showGrid)}
+                  className={`h-9 px-3 ${showGrid ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
+                >
                   <Grid className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={autoArrange}>
-                  Auto Arrange
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={autoArrange}
+                  className="h-9 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  <LayoutGrid className="w-4 h-4" />
                 </Button>
-                <Button variant="outline" size="sm" onClick={resetLayout}>
-                  Reset
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={resetLayout}
+                  className="h-9 px-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  <RotateCcw className="w-4 h-4" />
                 </Button>
               </>
             )}
-            <Button variant="default" size="sm">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="h-9 px-4 bg-blue-500 hover:bg-blue-600 text-white font-medium shadow-sm"
+            >
               <Save className="w-4 h-4 mr-2" />
               Save Layout
             </Button>
@@ -279,35 +315,44 @@ export function WysiwygHomepage() {
 
         {/* Widget Controls */}
         {isEditMode && (
-          <div className="border-t border-gray-200 px-6 py-2">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium">Grid Size:</span>
+          <div className="border-t border-gray-100/50 px-8 py-3 bg-white/40">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-gray-700">Grid Size</span>
                 <Slider
                   value={[gridSize]}
                   onValueChange={(value) => setGridSize(value[0])}
                   max={24}
                   min={8}
                   step={4}
-                  className="w-20"
+                  className="w-24"
                 />
-                <span className="text-xs text-gray-500">{gridSize}px</span>
+                <span className="text-xs text-gray-500 font-medium">{gridSize}px</span>
               </div>
 
-              <div className="flex items-center space-x-4">
-                {widgets.map((widget) => (
-                  <div key={widget.id} className="flex items-center space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleWidgetVisibility(widget.id)}
-                      className="h-6 px-2"
-                    >
-                      {widget.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                    </Button>
-                    <span className="text-xs">{widgetTitles[widget.type as keyof typeof widgetTitles]}</span>
-                  </div>
-                ))}
+              <div className="flex items-center space-x-6">
+                <span className="text-sm font-medium text-gray-700">Widgets</span>
+                <div className="flex items-center space-x-4">
+                  {widgets.map((widget) => (
+                    <div key={widget.id} className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleWidgetVisibility(widget.id)}
+                        className={`h-7 px-2 rounded-full transition-all duration-200 ${
+                          widget.visible 
+                            ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
+                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {widget.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </Button>
+                      <span className="text-xs font-medium text-gray-600">
+                        {widgetTitles[widget.type as keyof typeof widgetTitles]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -316,13 +361,13 @@ export function WysiwygHomepage() {
 
       {/* Canvas */}
       <div
-        className="relative overflow-auto"
+        className="relative overflow-auto bg-[#fafafa]"
         style={{
           minHeight: `${canvasHeight}px`,
           backgroundImage: showGrid
             ? `
-            linear-gradient(to right, #e5e7eb 1px, transparent 1px),
-            linear-gradient(to bottom, #e5e7eb 1px, transparent 1px)
+            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
           `
             : "none",
           backgroundSize: showGrid ? `${gridSize}px ${gridSize}px` : "auto",
@@ -345,7 +390,7 @@ export function WysiwygHomepage() {
                 onMove={(position) => handleWidgetMove(widget.id, position)}
                 isEditMode={isEditMode}
                 title={widget.title}
-                className="shadow-lg hover:shadow-xl transition-shadow duration-200"
+                className="shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_0_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out bg-white rounded-2xl border border-gray-100/50"
               >
                 <WidgetComponent />
               </ResizableWidgetWrapper>
@@ -354,8 +399,8 @@ export function WysiwygHomepage() {
 
         {/* Canvas Size Indicator */}
         {isEditMode && (
-          <div className="absolute bottom-4 right-4 bg-black bg-opacity-75 text-white text-xs px-3 py-2 rounded">
-            Canvas: {canvasWidth} × {canvasHeight}
+          <div className="absolute bottom-6 right-6 bg-black/70 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full font-medium">
+            {canvasWidth} × {canvasHeight}
           </div>
         )}
       </div>

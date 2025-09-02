@@ -24,6 +24,7 @@ import {
   Flame,
 } from "lucide-react"
 import Image from "next/image"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface Deal {
   id: string
@@ -136,7 +137,7 @@ export function EnhancedHotDealsWidget() {
       console.log('Fetching deals from Strapi...')
       
       // Call Strapi API to get deals with populated relations
-      const response = await fetch("http://localhost:1337/api/deals?populate=*")
+      const response = await fetch(buildApiUrl("deals?populate=*"))
       
       if (response.ok) {
         const data = await response.json()
@@ -156,7 +157,7 @@ export function EnhancedHotDealsWidget() {
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=200&width=300&text=Deal"
             if (strapiDeal.images?.data && strapiDeal.images.data.length > 0) {
-              imageUrl = `http://localhost:1337${strapiDeal.images.data[0].attributes.url}`
+              imageUrl = buildStrapiUrl(strapiDeal.images.data[0].attributes.url)
             }
 
             // Get vendor info with fallback
@@ -170,7 +171,7 @@ export function EnhancedHotDealsWidget() {
             // Get vendor logo
             let vendorImage = "/placeholder.svg?height=40&width=40"
             if (strapiDeal.business?.data?.attributes?.logo?.data?.attributes?.url) {
-              vendorImage = `http://localhost:1337${strapiDeal.business.data.attributes.logo.data.attributes.url}`
+              vendorImage = buildStrapiUrl(strapiDeal.business.data.attributes.logo.data.attributes.url)
             }
 
             // Determine category from business or use default
@@ -401,19 +402,19 @@ export function EnhancedHotDealsWidget() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "hotel":
-        return <MapPin className="w-4 h-4" />
+        return <MapPin className="w-3.5 h-3.5" />
       case "restaurant":
-        return <DollarSign className="w-4 h-4" />
+        return <DollarSign className="w-3.5 h-3.5" />
       case "activity":
-        return <Zap className="w-4 h-4" />
+        return <Zap className="w-3.5 h-3.5" />
       case "spa":
-        return <Heart className="w-4 h-4" />
+        return <Heart className="w-3.5 h-3.5" />
       case "tour":
-        return <Calendar className="w-4 h-4" />
+        return <Calendar className="w-3.5 h-3.5" />
       case "nightlife":
-        return <TrendingUp className="w-4 h-4" />
+        return <TrendingUp className="w-3.5 h-3.5" />
       default:
-        return <Star className="w-4 h-4" />
+        return <Star className="w-3.5 h-3.5" />
     }
   }
 
@@ -423,18 +424,18 @@ export function EnhancedHotDealsWidget() {
 
   if (isLoading) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Hot Deals</CardTitle>
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+        <CardHeader className="pb-3 px-5 pt-5">
+          <CardTitle className="text-[15px] font-semibold text-gray-900 tracking-tight">Hot Deals</CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0">
+        <CardContent className="px-5 pb-5">
           <div className="space-y-4">
             {[1, 2].map((i) => (
               <div key={i} className="animate-pulse">
-                <div className="h-32 bg-gray-200 rounded-lg mb-3"></div>
+                <div className="h-32 bg-gray-100 rounded-2xl mb-3"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-100 rounded-full w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded-full w-1/2"></div>
                 </div>
               </div>
             ))}
@@ -445,28 +446,28 @@ export function EnhancedHotDealsWidget() {
   }
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200 flex flex-col">
-      <CardHeader className="pb-3 flex-shrink-0">
-        <CardTitle className="text-lg font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Flame className="w-4 h-4 text-white" />
-            </div>
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out flex flex-col">
+      <CardHeader className="pb-3 px-5 pt-5 flex-shrink-0">
+        <CardTitle className="text-[15px] font-semibold text-gray-900 flex items-center justify-between tracking-tight">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
             <span>Hot Deals</span>
           </div>
-          <Badge variant="destructive" className="text-xs">
-            {deals.filter(d => d.isFlashDeal).length} Flash Deals
-          </Badge>
+          <div className="px-2.5 py-1 rounded-full bg-red-500/90 backdrop-blur-sm">
+            <span className="text-[10px] font-semibold text-white tracking-wide">
+              {deals.filter(d => d.isFlashDeal).length} Flash
+            </span>
+          </div>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-4 pt-0 space-y-4 flex-1 overflow-y-auto widget-content">
+      <CardContent className="px-5 pb-5 space-y-4 flex-1 overflow-y-auto">
         {/* Category Tabs */}
         <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full flex-shrink-0">
-          <TabsList className="grid w-full grid-cols-3 h-8">
-            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-            <TabsTrigger value="hotel" className="text-xs">Hotels</TabsTrigger>
-            <TabsTrigger value="activity" className="text-xs">Activities</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 h-8 bg-gray-50/50 backdrop-blur-sm border-0">
+            <TabsTrigger value="all" className="text-[11px] font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-600 rounded-lg transition-all duration-200">All</TabsTrigger>
+            <TabsTrigger value="hotel" className="text-[11px] font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-600 rounded-lg transition-all duration-200">Hotels</TabsTrigger>
+            <TabsTrigger value="activity" className="text-[11px] font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-600 rounded-lg transition-all duration-200">Activities</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -474,7 +475,7 @@ export function EnhancedHotDealsWidget() {
         <div className="space-y-4 pt-2 flex-1 overflow-y-auto">
           {filteredDeals.slice(0, 3).map((deal) => (
             <div key={deal.id} className="group cursor-pointer">
-              <div className="bg-gray-50 rounded-lg overflow-hidden hover:bg-gray-100 transition-colors">
+              <div className="bg-gray-50/30 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-gray-50/50 transition-all duration-300 ease-out border border-gray-100/50">
                 {/* Deal Image */}
                 <div className="relative">
                   <img
@@ -483,22 +484,29 @@ export function EnhancedHotDealsWidget() {
                     className="w-full h-32 object-cover"
                   />
                   
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                  
                   {/* Flash Deal Badge */}
                   {deal.isFlashDeal && (
-                    <div className="absolute top-2 left-2">
-                      <Badge className="bg-red-500 text-white text-xs animate-pulse">
-                        <Timer className="w-3 h-3 mr-1" />
-                        Flash Deal
-                      </Badge>
+                    <div className="absolute top-3 left-3">
+                      <div className="px-2.5 py-1 rounded-full bg-red-500/90 backdrop-blur-sm">
+                        <span className="text-[10px] font-semibold text-white tracking-wide flex items-center">
+                          <Timer className="w-3 h-3 mr-1" />
+                          Flash
+                        </span>
+                      </div>
                     </div>
                   )}
 
                   {/* Discount Badge */}
-                  <div className="absolute top-2 right-2">
-                    <Badge className="bg-green-500 text-white text-xs">
-                      <Percent className="w-3 h-3 mr-1" />
-                      {deal.discountPercentage}% OFF
-                    </Badge>
+                  <div className="absolute top-3 right-3">
+                    <div className="px-2.5 py-1 rounded-full bg-green-500/90 backdrop-blur-sm">
+                      <span className="text-[10px] font-semibold text-white tracking-wide flex items-center">
+                        <Percent className="w-3 h-3 mr-1" />
+                        {deal.discountPercentage}%
+                      </span>
+                    </div>
                   </div>
 
                   {/* Favorite Button */}
@@ -507,46 +515,46 @@ export function EnhancedHotDealsWidget() {
                       e.stopPropagation()
                       toggleFavorite(deal.id)
                     }}
-                    className="absolute top-2 right-12 p-1 bg-white bg-opacity-80 rounded-full hover:bg-opacity-100 transition-all"
+                    className="absolute top-3 right-16 p-1.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-200 shadow-sm"
                   >
                     <Heart 
-                      className={`w-4 h-4 ${favorites.has(deal.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
+                      className={`w-3.5 h-3.5 ${favorites.has(deal.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
                     />
                   </button>
 
                   {/* Time Left for Flash Deals */}
                   {deal.isFlashDeal && deal.timeLeft && (
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <div className="bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded text-center">
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <div className="bg-black/80 backdrop-blur-sm text-white text-[10px] px-3 py-1.5 rounded-full text-center">
                         <Clock className="w-3 h-3 inline mr-1" />
-                        Ends in: {formatTimeLeft(deal.timeLeft)}
+                        Ends: {formatTimeLeft(deal.timeLeft)}
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Deal Content */}
-                <div className="p-3 space-y-3">
+                <div className="p-4 space-y-3">
                   {/* Title and Category */}
                   <div>
-                    <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
+                    <h3 className="font-semibold text-[13px] text-gray-900 line-clamp-2 mb-2 leading-tight tracking-tight group-hover:text-blue-600 transition-colors">
                       {deal.title}
                     </h3>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-[11px] text-gray-500">
                       {getCategoryIcon(deal.category)}
-                      <span className="capitalize">{deal.category}</span>
-                      <span>•</span>
+                      <span className="capitalize font-medium">{deal.category}</span>
+                      <span className="text-gray-300">•</span>
                       <MapPin className="w-3 h-3" />
-                      <span>{deal.location}</span>
+                      <span className="font-medium">{deal.location}</span>
                     </div>
                   </div>
 
                   {/* Pricing */}
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-green-600">
+                    <span className="text-[16px] font-bold text-green-600 tracking-tight">
                       {formatPrice(deal.discountedPrice)}
                     </span>
-                    <span className="text-sm text-gray-500 line-through">
+                    <span className="text-[12px] text-gray-400 line-through font-medium">
                       {formatPrice(deal.originalPrice)}
                     </span>
                   </div>
@@ -556,15 +564,15 @@ export function EnhancedHotDealsWidget() {
                     <img
                       src={deal.vendor.image}
                       alt={deal.vendor.name}
-                      className="w-6 h-6 rounded-full"
+                      className="w-6 h-6 rounded-full ring-1 ring-gray-100"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 truncate">
+                      <p className="text-[11px] font-semibold text-gray-900 truncate">
                         {deal.vendor.name}
                       </p>
                       <div className="flex items-center gap-1">
                         <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                        <span className="text-xs text-gray-500">
+                        <span className="text-[10px] text-gray-500 font-medium">
                           {deal.vendor.rating} ({deal.vendor.reviewCount})
                         </span>
                       </div>
@@ -572,34 +580,38 @@ export function EnhancedHotDealsWidget() {
                   </div>
 
                   {/* Highlights */}
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {deal.highlights.slice(0, 2).map((highlight, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        {highlight}
-                      </Badge>
+                      <div key={index} className="px-2 py-1 rounded-full bg-blue-50/80 backdrop-blur-sm">
+                        <span className="text-[10px] font-medium text-blue-700 flex items-center">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          {highlight}
+                        </span>
+                      </div>
                     ))}
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px] text-gray-500 font-medium">
                       <span>{deal.soldCount} sold</span>
                       <span>{deal.maxQuantity - deal.soldCount} left</span>
                     </div>
-                    <Progress 
-                      value={(deal.soldCount / deal.maxQuantity) * 100} 
-                      className="h-1"
-                    />
+                    <div className="w-full bg-gray-100 rounded-full h-1 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-green-400 to-green-500 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${(deal.soldCount / deal.maxQuantity) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button size="sm" className="flex-1 text-xs">
-                      <ExternalLink className="w-3 h-3 mr-1" />
+                  <div className="flex gap-2 pt-1">
+                    <Button size="sm" className="flex-1 text-[11px] font-semibold bg-blue-600 hover:bg-blue-700 border-0 h-8 rounded-xl transition-all duration-200">
+                      <ExternalLink className="w-3 h-3 mr-1.5" />
                       View Deal
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs">
+                    <Button size="sm" variant="outline" className="text-[11px] font-semibold h-8 w-8 p-0 rounded-xl border-gray-200 hover:bg-gray-50 transition-all duration-200">
                       <Share2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -613,7 +625,7 @@ export function EnhancedHotDealsWidget() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full text-xs"
+          className="w-full text-[11px] font-semibold h-8 rounded-xl border-gray-200 hover:bg-gray-50 transition-all duration-200"
           onClick={() => window.open('/deals', '_blank')}
         >
           <ExternalLink className="w-3 h-3 mr-2" />

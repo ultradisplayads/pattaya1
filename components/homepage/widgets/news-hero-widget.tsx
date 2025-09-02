@@ -5,6 +5,7 @@ import { Newspaper, ExternalLink, Clock, TrendingUp, RefreshCw, ChevronLeft, Che
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface NewsArticle {
   id: string
@@ -71,7 +72,7 @@ export function NewsHeroWidget() {
       console.log('Fetching news articles from Strapi...')
       
       // Call Strapi API to get news articles with populated media
-      const response = await fetch("http://localhost:1337/api/news-articles?populate=*&sort=PublishedTimestamp:desc")
+      const response = await fetch(buildApiUrl("news-articles?populate=*&sort=PublishedTimestamp:desc"))
       
       if (response.ok) {
         const data = await response.json()
@@ -83,7 +84,7 @@ export function NewsHeroWidget() {
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=300&width=450&text=News"
             if (strapiArticle.Image) {
-              imageUrl = `http://localhost:1337${strapiArticle.Image.url}`
+              imageUrl = buildStrapiUrl(strapiArticle.Image.url)
             }
 
             return {
@@ -175,15 +176,15 @@ export function NewsHeroWidget() {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "tourism":
-        return "bg-blue-50 text-blue-700 border-blue-200"
+        return "bg-blue-50 text-blue-700"
       case "culture":
-        return "bg-purple-50 text-purple-700 border-purple-200"
+        return "bg-purple-50 text-purple-700"
       case "environment":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200"
+        return "bg-emerald-50 text-emerald-700"
       case "business":
-        return "bg-amber-50 text-amber-700 border-amber-200"
+        return "bg-amber-50 text-amber-700"
       default:
-        return "bg-slate-50 text-slate-700 border-slate-200"
+        return "bg-gray-50 text-gray-700"
     }
   }
 
@@ -197,18 +198,18 @@ export function NewsHeroWidget() {
 
   if (loading) {
     return (
-      <Card className="h-full bg-white border-0 shadow-sm">
-        <CardContent className="p-4">
-          <div className="animate-pulse space-y-4">
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_0_rgba(0,0,0,0.06)] rounded-2xl">
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-6">
             <div className="flex items-center justify-between">
-              <div className="h-5 bg-slate-200 rounded w-24"></div>
-              <div className="h-5 bg-slate-200 rounded w-5"></div>
+              <div className="h-5 bg-gray-200 rounded-full w-24"></div>
+              <div className="h-5 bg-gray-200 rounded-full w-5"></div>
             </div>
-            <div className="h-40 bg-slate-100 rounded-lg"></div>
-            <div className="space-y-2">
-              <div className="h-3 bg-slate-200 rounded w-20"></div>
-              <div className="h-4 bg-slate-200 rounded w-full"></div>
-              <div className="h-3 bg-slate-200 rounded w-3/4"></div>
+            <div className="h-32 bg-gray-100 rounded-xl"></div>
+            <div className="space-y-3">
+              <div className="h-3 bg-gray-200 rounded-full w-20"></div>
+              <div className="h-4 bg-gray-200 rounded-full w-full"></div>
+              <div className="h-3 bg-gray-200 rounded-full w-3/4"></div>
             </div>
           </div>
         </CardContent>
@@ -221,72 +222,75 @@ export function NewsHeroWidget() {
   const currentArticle = articles[currentIndex]
 
   return (
-    <Card className="h-full bg-white border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center justify-between text-sm font-medium text-slate-900">
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center">
-              <Newspaper className="h-3 w-3 text-white" />
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_0_rgba(0,0,0,0.06)] rounded-2xl hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] transition-all duration-300">
+      <CardHeader className="pb-4 px-6 pt-6">
+        <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 tracking-tight">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+              <Newspaper className="h-4 w-4 text-white" />
             </div>
             <span>Latest News</span>
-            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs font-medium">
-              Live
-            </Badge>
+            <div className="flex items-center space-x-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-red-600">Live</span>
+            </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={loadNews}
             disabled={loading}
-            className="h-6 w-6 hover:bg-slate-100"
+            className="h-8 w-8 hover:bg-gray-100 rounded-xl transition-colors"
           >
-            <RefreshCw className={`h-3 w-3 text-slate-500 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 text-gray-500 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="px-6 pb-6 space-y-6">
         {/* Main Article */}
         <div className="relative group">
           <div
             className="cursor-pointer transition-all duration-300"
             onClick={() => window.open(currentArticle.url, "_blank")}
           >
-            <div className="relative mb-3 overflow-hidden rounded-lg">
+            <div className="relative mb-4 overflow-hidden rounded-xl">
               <img
                 src={currentArticle.image || "/placeholder.svg"}
                 alt={currentArticle.title}
-                className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-32 object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
               {currentArticle.trending && (
-                <Badge className="absolute top-2 left-2 bg-white/90 text-slate-900 border-0 shadow-sm text-xs">
-                  <TrendingUp className="h-2 w-2 mr-1" />
-                  Trending
-                </Badge>
+                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-sm">
+                  <div className="flex items-center space-x-1">
+                    <TrendingUp className="h-3 w-3 text-orange-500" />
+                    <span className="text-xs font-semibold text-gray-900">Trending</span>
+                  </div>
+                </div>
               )}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Badge variant="outline" className={`text-xs font-medium ${getCategoryColor(currentArticle.category)}`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(currentArticle.category)}`}>
                   {currentArticle.category}
-                </Badge>
-                <div className="flex items-center space-x-1 text-xs text-slate-500">
-                  <Clock className="h-2 w-2" />
+                </span>
+                <div className="flex items-center space-x-1 text-xs text-gray-500 font-medium">
+                  <Clock className="h-3 w-3" />
                   <span>{formatTimeAgo(currentArticle.timestamp)}</span>
                 </div>
               </div>
 
-              <h3 className="font-semibold text-slate-900 text-sm leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors">
+              <h3 className="font-bold text-gray-900 text-base leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors tracking-tight">
                 {currentArticle.title}
               </h3>
 
-              <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">{currentArticle.summary}</p>
+              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed font-medium">{currentArticle.summary}</p>
 
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-slate-700 font-medium">{currentArticle.source}</span>
-                <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-500 transition-colors" />
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-sm text-gray-700 font-semibold">{currentArticle.source}</span>
+                <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
               </div>
             </div>
           </div>
@@ -294,34 +298,34 @@ export function NewsHeroWidget() {
 
         {/* Navigation Controls */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
               onClick={prevArticle}
-              className="h-6 w-6 p-0 hover:bg-slate-50"
+              className="h-8 w-8 p-0 hover:bg-gray-50 rounded-lg border-gray-200"
             >
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={nextArticle}
-              className="h-6 w-6 p-0 hover:bg-slate-50"
+              className="h-8 w-8 p-0 hover:bg-gray-50 rounded-lg border-gray-200"
             >
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1.5">
             {articles.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                className={`transition-all duration-300 rounded-full ${
                   index === currentIndex 
-                    ? "bg-blue-500 w-4" 
-                    : "bg-slate-300 hover:bg-slate-400"
+                    ? "w-6 h-1.5 bg-blue-500" 
+                    : "w-1.5 h-1.5 bg-gray-300 hover:bg-gray-400"
                 }`}
               />
             ))}
@@ -329,23 +333,23 @@ export function NewsHeroWidget() {
         </div>
 
         {/* Quick Headlines */}
-        <div className="space-y-1.5">
-          <h4 className="text-xs font-medium text-slate-900">More Headlines</h4>
-          <div className="space-y-1">
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-900 tracking-tight">More Headlines</h4>
+          <div className="space-y-2">
             {articles
               .filter((_, index) => index !== currentIndex)
               .slice(0, 2)
               .map((article) => (
                 <div
                   key={article.id}
-                  className="p-2 bg-slate-50 rounded-md cursor-pointer hover:bg-slate-100 transition-colors group"
+                  className="p-3 bg-gray-50/50 rounded-xl cursor-pointer hover:bg-gray-100/50 transition-all duration-200 group border border-gray-100"
                   onClick={() => window.open(article.url, "_blank")}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-800 font-medium line-clamp-1 flex-1 group-hover:text-blue-600 transition-colors">
+                    <span className="text-sm text-gray-800 font-semibold line-clamp-1 flex-1 group-hover:text-blue-600 transition-colors tracking-tight">
                       {article.title}
                     </span>
-                    <span className="text-xs text-slate-500 ml-2 flex-shrink-0">
+                    <span className="text-xs text-gray-500 ml-3 flex-shrink-0 font-medium">
                       {formatTimeAgo(article.timestamp)}
                     </span>
                   </div>

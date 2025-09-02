@@ -104,7 +104,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Directory",
       icon: <MapPin className="w-4 h-4" />,
       href: "/directory",
-      color: "bg-gradient-to-br from-blue-500 to-blue-600",
+      color: "bg-blue-500",
       count: 1250,
     },
     {
@@ -112,7 +112,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Events",
       icon: <Calendar className="w-4 h-4" />,
       href: "/events",
-      color: "bg-gradient-to-br from-green-500 to-green-600",
+      color: "bg-green-500",
       count: 45,
     },
     {
@@ -120,7 +120,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Dining",
       icon: <Utensils className="w-4 h-4" />,
       href: "/restaurants",
-      color: "bg-gradient-to-br from-orange-500 to-orange-600",
+      color: "bg-orange-500",
       count: 320,
     },
     {
@@ -128,7 +128,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Nightlife",
       icon: <Music className="w-4 h-4" />,
       href: "/nightlife",
-      color: "bg-gradient-to-br from-purple-500 to-purple-600",
+      color: "bg-purple-500",
       count: 180,
     },
     {
@@ -136,7 +136,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Shopping",
       icon: <ShoppingBag className="w-4 h-4" />,
       href: "/shopping",
-      color: "bg-gradient-to-br from-pink-500 to-pink-600",
+      color: "bg-pink-500",
       count: 95,
     },
     {
@@ -144,7 +144,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Beaches",
       icon: <Waves className="w-4 h-4" />,
       href: "/beaches",
-      color: "bg-gradient-to-br from-cyan-500 to-cyan-600",
+      color: "bg-cyan-500",
       count: 12,
     },
     {
@@ -152,7 +152,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Forum",
       icon: <MessageSquare className="w-4 h-4" />,
       href: "/forum",
-      color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+      color: "bg-indigo-500",
       count: 890,
     },
     {
@@ -160,7 +160,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       title: "Photos",
       icon: <Camera className="w-4 h-4" />,
       href: "/photos",
-      color: "bg-gradient-to-br from-red-500 to-red-600",
+      color: "bg-red-500",
       count: 2100,
     },
   ]
@@ -215,30 +215,30 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
   return (
     <>
       <header
-        className={`sticky top-0 z-[var(--z-header)] w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-300 ${
+        className={`sticky top-0 z-[var(--z-header)] w-full border-b backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-all duration-300 font-sans antialiased ${
           isPrimary
-            ? "bg-white/95 border-amber-200/50"
-            : "bg-gradient-to-r from-purple-900/95 to-pink-900/95 border-pink-500/30"
+            ? "bg-white/80 border-gray-100/50"
+            : "bg-gray-900/80 border-gray-700/50"
         }`}
       >
-        <div className="container flex h-16 items-center justify-between px-4">
+        <div className="container flex h-16 items-center justify-between px-6">
           {/* Logo */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <a href="/" className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <a href="/" className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shadow-sm ${
                     isPrimary
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600"
-                      : "bg-gradient-to-r from-pink-500 to-purple-500"
+                      ? "bg-blue-500"
+                      : "bg-purple-500"
                   }`}
                 >
-                  <span className="text-white font-bold text-sm">P1</span>
+                  <span className="text-white font-semibold text-sm">P1</span>
                 </div>
                 <span
-                  className={`font-bold text-xl ${
+                  className={`font-semibold text-xl tracking-tight ${
                     isPrimary
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                      ? "text-gray-900"
                       : "text-white"
                   }`}
                 >
@@ -255,39 +255,47 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className={`flex items-center space-x-1 ${
-                    isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
+                  className={`flex items-center space-x-2 h-9 px-4 font-medium transition-all duration-200 ${
+                    isPrimary 
+                      ? "text-gray-600 hover:text-gray-900 hover:bg-gray-50" 
+                      : "text-gray-300 hover:text-white hover:bg-gray-800/50"
                   }`}
                 >
                   <span>Menu</span>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuLabel>Navigation</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleMegaMenuOpen("directory")}>
-                  <MapPin className="mr-2 h-4 w-4" />
-                  <span>Directory</span>
+              <DropdownMenuContent align="start" className="w-56 border-gray-100/50 shadow-lg bg-white/95 backdrop-blur-sm rounded-xl">
+                <DropdownMenuLabel className="font-semibold text-gray-900 p-4">Navigation</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-100/50" />
+                <DropdownMenuItem 
+                  onClick={() => handleMegaMenuOpen("directory")}
+                  className="p-3 hover:bg-gray-50/80 transition-colors duration-200"
+                >
+                  <MapPin className="mr-3 h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Directory</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleMegaMenuOpen("business")}>
-                  <Shield className="mr-2 h-4 w-4" />
-                  <span>Business</span>
+                <DropdownMenuItem 
+                  onClick={() => handleMegaMenuOpen("business")}
+                  className="p-3 hover:bg-gray-50/80 transition-colors duration-200"
+                >
+                  <Shield className="mr-3 h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Business</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <span>Events</span>
-                  <Badge variant="secondary" className="ml-auto bg-red-500 text-white text-xs">
+                <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                  <Calendar className="mr-3 h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Events</span>
+                  <Badge variant="secondary" className="ml-auto bg-red-500 text-white text-xs font-medium">
                     Live
                   </Badge>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  <span>Forum</span>
+                <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                  <MessageSquare className="mr-3 h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Forum</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Camera className="mr-2 h-4 w-4" />
-                  <span>Blog</span>
+                <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                  <Camera className="mr-3 h-4 w-4 text-gray-500" />
+                  <span className="text-gray-700 font-medium">Blog</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -297,30 +305,32 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className={`flex items-center space-x-1 ${
-                    isPrimary ? "hover:bg-amber-50 hover:text-amber-700" : "text-white hover:bg-purple-800"
+                  className={`flex items-center space-x-2 h-9 px-4 font-medium transition-all duration-200 ${
+                    isPrimary 
+                      ? "text-gray-600 hover:text-gray-900 hover:bg-gray-50" 
+                      : "text-gray-300 hover:text-white hover:bg-gray-800/50"
                   }`}
                 >
                   <span>Quick Access</span>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
-                <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <div className="grid grid-cols-2 gap-1 p-2">
+              <DropdownMenuContent align="start" className="w-64 border-gray-100/50 shadow-lg bg-white/95 backdrop-blur-sm rounded-xl">
+                <DropdownMenuLabel className="font-semibold text-gray-900 p-4">Quick Access</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-gray-100/50" />
+                <div className="grid grid-cols-2 gap-2 p-3">
                   {quickLinks.map((link) => (
                     <DropdownMenuItem key={link.id} asChild>
                       <a
                         href={link.href}
-                        className="flex items-center space-x-2 p-2 rounded hover:bg-gray-100"
+                        className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50/80 transition-all duration-200"
                       >
-                        <div className={`${link.color} text-white p-1 rounded`}>
+                        <div className={`${link.color} text-white p-2 rounded-xl shadow-sm`}>
                           {link.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm">{link.title}</div>
-                          <div className="text-xs text-gray-500">{link.count?.toLocaleString()} items</div>
+                          <div className="font-semibold text-sm text-gray-900">{link.title}</div>
+                          <div className="text-xs text-gray-500 font-medium">{link.count?.toLocaleString()} items</div>
                         </div>
                       </a>
                     </DropdownMenuItem>
@@ -336,17 +346,17 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
             <div className="hidden md:block">
               <form onSubmit={handleSearch} className="relative">
                 <Search
-                  className={`absolute left-2.5 top-2.5 h-4 w-4 ${
-                    isPrimary ? "text-muted-foreground" : "text-purple-300"
+                  className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                    isPrimary ? "text-gray-400" : "text-gray-400"
                   }`}
                 />
                 <Input
                   type="search"
                   placeholder="Search businesses, events..."
-                  className={`pl-8 w-[200px] lg:w-[250px] ${
+                  className={`pl-10 w-[200px] lg:w-[250px] h-9 rounded-xl transition-all duration-200 ${
                     isPrimary
-                      ? "border-amber-200 focus:border-amber-400"
-                      : "border-pink-500/30 bg-purple-800/50 text-white placeholder:text-purple-300"
+                      ? "bg-gray-50/80 border-gray-200/50 focus:bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-300"
+                      : "bg-gray-800/50 border-gray-700/50 text-white placeholder:text-gray-400 focus:bg-gray-800 focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
                   }`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -355,17 +365,17 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
             </div>
 
             {/* User Menu */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {loading ? (
                 <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
               ) : user ? (
                 <>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full hover:bg-gray-50 transition-colors duration-200">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.displayName} />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-blue-50 text-blue-600 font-medium">
                             {(() => {
                               const fromNames = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.trim()
                               if (fromNames) return fromNames.toUpperCase()
@@ -382,68 +392,78 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
                           </AvatarFallback>
                         </Avatar>
                         {!user.emailVerified && (
-                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-3 w-3 p-0">
+                          <Badge variant="destructive" className="absolute -top-1 -right-1 h-3 w-3 p-0 bg-red-500 text-white text-xs font-medium">
                             !
                           </Badge>
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                      <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                          <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <DropdownMenuContent className="w-56 border-gray-100/50 shadow-lg bg-white/95 backdrop-blur-sm rounded-xl" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal p-4">
+                        <div className="flex flex-col space-y-2">
+                          <p className="text-sm font-semibold leading-none text-gray-900">{user.displayName}</p>
+                          <p className="text-xs leading-none text-gray-500">{user.email}</p>
                           {!user.emailVerified && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs font-medium bg-red-50 text-red-600 border-red-200 w-fit">
                               Email not verified
                             </Badge>
                           )}
                         </div>
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
+                      <DropdownMenuSeparator className="bg-gray-100/50" />
+                      <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                        <User className="mr-3 h-4 w-4 text-gray-500" />
+                        <span className="text-gray-700 font-medium">Profile</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
+                      <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                        <Settings className="mr-3 h-4 w-4 text-gray-500" />
+                        <span className="text-gray-700 font-medium">Settings</span>
                       </DropdownMenuItem>
                       {user.role === "admin" && (
-                        <DropdownMenuItem>
-                          <Shield className="mr-2 h-4 w-4" />
-                          <span>Admin Panel</span>
+                        <DropdownMenuItem className="p-3 hover:bg-gray-50/80 transition-colors duration-200">
+                          <Shield className="mr-3 h-4 w-4 text-gray-500" />
+                          <span className="text-gray-700 font-medium">Admin Panel</span>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Log out</span>
+                      <DropdownMenuSeparator className="bg-gray-100/50" />
+                      <DropdownMenuItem onClick={handleLogout} className="p-3 hover:bg-red-50/80 transition-colors duration-200">
+                        <LogOut className="mr-3 h-4 w-4 text-red-500" />
+                        <span className="text-red-600 font-medium">Log out</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   {/* Exit Admin Button */}
                   {user.role === "admin" && (
-                    <Button variant="destructive" size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8 px-3 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700 font-medium rounded-lg transition-all duration-200"
+                    >
                       Exit Admin
                     </Button>
                   )}
                 </>
               ) : (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <Button
                     variant="ghost"
                     onClick={() => setIsLoginOpen(true)}
-                    className={isPrimary ? "" : "text-white hover:bg-purple-800"}
+                    className={`h-9 px-4 font-medium transition-all duration-200 ${
+                      isPrimary 
+                        ? "text-gray-600 hover:text-gray-900 hover:bg-gray-50" 
+                        : "text-gray-300 hover:text-white hover:bg-gray-800/50"
+                    }`}
                   >
                     Sign In
                   </Button>
                   <Button
                     onClick={() => setIsRegisterOpen(true)}
-                    className={
-                      isPrimary ? "bg-amber-600 hover:bg-amber-700" : "bg-pink-600 hover:bg-pink-700 text-white"
-                    }
+                    className={`h-9 px-4 font-medium rounded-lg transition-all duration-200 shadow-sm ${
+                      isPrimary 
+                        ? "bg-blue-500 hover:bg-blue-600 text-white" 
+                        : "bg-purple-500 hover:bg-purple-600 text-white"
+                    }`}
                   >
                     Sign Up
                   </Button>
@@ -454,7 +474,11 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`lg:hidden ${isPrimary ? "" : "text-white hover:bg-purple-800"}`}
+                className={`lg:hidden h-9 w-9 rounded-lg transition-colors duration-200 ${
+                  isPrimary 
+                    ? "hover:bg-gray-50" 
+                    : "text-gray-300 hover:text-white hover:bg-gray-800/50"
+                }`}
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="h-5 w-5" />

@@ -23,6 +23,7 @@ import {
   Zap
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { buildApiUrl } from "@/lib/strapi-config"
 
 interface StrapiQuickLink {
   id: number
@@ -48,7 +49,7 @@ export function QuickLinksWidget() {
   const loadQuickLinks = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:1337/api/quick-links?populate=*")
+      const response = await fetch(buildApiUrl("quick-links?populate=*"))
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -136,13 +137,13 @@ export function QuickLinksWidget() {
 
   if (loading) {
     return (
-      <Card className="h-full">
-        <CardContent className="p-4">
-          <div className="animate-pulse space-y-3">
-            <div className="h-6 bg-gray-200 rounded"></div>
-            <div className="grid grid-cols-2 gap-2">
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-5 bg-gray-100 rounded-full w-24"></div>
+            <div className="grid grid-cols-2 gap-3">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded"></div>
+                <div key={i} className="h-16 bg-gray-50 rounded-2xl"></div>
               ))}
             </div>
           </div>
@@ -153,16 +154,15 @@ export function QuickLinksWidget() {
 
   if (quickLinks.length === 0) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-2 flex-shrink-0">
-          <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardHeader className="pb-4 px-6 pt-6">
+          <CardTitle className="text-base font-medium text-gray-900">
             Quick Access
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-4 pt-0 flex-1 overflow-y-auto widget-content">
-          <div className="text-center text-gray-500 py-8">
-            No quick links available at the moment.
+        <CardContent className="px-6 pb-6">
+          <div className="text-center text-gray-400 py-12">
+            <p className="text-sm font-medium">No quick links available</p>
           </div>
         </CardContent>
       </Card>
@@ -170,39 +170,36 @@ export function QuickLinksWidget() {
   }
 
   return (
-    <Card className="h-full hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg flex flex-col">
-      <CardHeader className="pb-2 flex-shrink-0">
-        <CardTitle className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-            Quick Access
-          </div>
-          <span className="text-xs text-gray-500 font-normal">
-            {quickLinks.length} Links
+    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+      <CardHeader className="pb-4 px-6 pt-6">
+        <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
+          <span>Quick Access</span>
+          <span className="text-xs text-gray-400 font-normal">
+            {quickLinks.length}
           </span>
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="p-4 pt-0 flex-1 overflow-y-auto widget-content">
-        {/* Grid layout with enhanced animations */}
-        <div className="grid grid-cols-2 gap-2">
+      <CardContent className="px-6 pb-6 flex-1 overflow-y-auto">
+        {/* Grid layout with Apple-style design */}
+        <div className="grid grid-cols-2 gap-3">
           {quickLinks.map((link, index) => (
             <a
               key={link.id}
               href={link.href}
-              className="group flex flex-col items-center p-2 rounded-lg hover:bg-white/80 transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-gray-200"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="group relative flex flex-col items-center p-4 rounded-2xl bg-gray-50/50 hover:bg-white transition-all duration-200 hover:shadow-sm border border-transparent hover:border-gray-100"
+              style={{ animationDelay: `${index * 30}ms` }}
             >
               <div
-                className={`${link.color} group-hover:bg-gradient-to-br group-hover:${link.hoverColor} text-white p-2 rounded-lg mb-1 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg group-hover:shadow-xl`}
+                className={`${link.color} text-white p-3 rounded-2xl mb-3 transition-all duration-200 group-hover:scale-105 shadow-sm`}
               >
                 {getIconComponent(link.icon)}
               </div>
-              <span className="text-xs font-medium text-center line-clamp-1 group-hover:text-blue-600 transition-colors duration-200">
+              <span className="text-xs font-medium text-gray-700 text-center leading-tight group-hover:text-gray-900 transition-colors duration-200">
                 {link.title}
               </span>
               {link.count && (
-                <span className="text-xs text-gray-500 mt-1 group-hover:text-blue-500 transition-colors duration-200 font-mono">
+                <span className="text-xs text-gray-400 mt-1 font-medium">
                   {formatCount(animatedCounts[link.id.toString()] || 0)}
                 </span>
               )}
@@ -210,14 +207,14 @@ export function QuickLinksWidget() {
           ))}
         </div>
 
-        {/* Quick Categories Section */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <h4 className="text-xs font-medium text-gray-700 mb-2">Quick Categories</h4>
-          <div className="flex flex-wrap gap-1">
+        {/* Categories section with refined styling */}
+        <div className="mt-6 pt-4 border-t border-gray-100">
+          <h4 className="text-xs font-medium text-gray-600 mb-3">Categories</h4>
+          <div className="flex flex-wrap gap-2">
             {Array.from(new Set(quickLinks.map(link => link.category))).map((category) => (
               <span
                 key={category}
-                className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full hover:bg-blue-100 hover:text-blue-600 transition-colors cursor-pointer"
+                className="text-xs px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors cursor-pointer font-medium"
               >
                 {category}
               </span>

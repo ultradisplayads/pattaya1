@@ -1,4 +1,4 @@
-import { STRAPI_CONFIG } from "./firebase"
+import { STRAPI_CONFIG } from "./strapi-config"
 
 export interface StrapiUser {
   id: number

@@ -5,6 +5,7 @@ import { AlertTriangle, Clock, ExternalLink, Zap, ChevronLeft, ChevronRight, New
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 
 interface StrapiBreakingNews {
   id: number
@@ -70,8 +71,8 @@ export function EnhancedBreakingNewsWidget() {
 
   const loadBreakingNews = async () => {
     try {
-      // Call Strapi API directly
-      const response = await fetch("http://localhost:1337/api/breaking-news-plural?sort=PublishedTimestamp:desc")
+      setLoading(true)
+      const response = await fetch(buildApiUrl("breaking-news-plural?sort=PublishedTimestamp:desc"))
       if (response.ok) {
         const data = await response.json()
         
@@ -87,12 +88,14 @@ export function EnhancedBreakingNewsWidget() {
     } catch (error) {
       console.error("Failed to load breaking news from Strapi:", error)
       setNews([])
+    } finally {
+      setLoading(false)
     }
   }
 
   const loadAdvertisements = async () => {
     try {
-      const response = await fetch("http://localhost:1337/api/advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc")
+      const response = await fetch(buildApiUrl("advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc"))
       if (response.ok) {
         const data = await response.json()
         
@@ -116,13 +119,13 @@ export function EnhancedBreakingNewsWidget() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-red-600 text-white"
+        return "bg-red-500/10 text-red-600 border-red-200"
       case "high":
-        return "bg-orange-500 text-white"
+        return "bg-orange-500/10 text-orange-600 border-orange-200"
       case "medium":
-        return "bg-yellow-500 text-white"
+        return "bg-yellow-500/10 text-yellow-600 border-yellow-200"
       default:
-        return "bg-blue-500 text-white"
+        return "bg-blue-500/10 text-blue-600 border-blue-200"
     }
   }
 
@@ -143,10 +146,11 @@ export function EnhancedBreakingNewsWidget() {
 
   if (!currentItem) {
     return (
-      <Card className="h-full">
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl">
         <CardContent className="p-4">
-          <div className="text-center text-gray-500 py-8">
-            No breaking news available at the moment.
+          <div className="text-center text-gray-400 py-8">
+            <Newspaper className="w-6 h-6 mx-auto mb-2 opacity-50" />
+            <p className="text-sm font-medium">No news available</p>
           </div>
         </CardContent>
       </Card>
@@ -170,37 +174,18 @@ export function EnhancedBreakingNewsWidget() {
 
   if (loading) {
     return (
-      <Card className="top-row-widget h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Breaking News</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl">
+        <CardHeader className="pb-3 px-5 pt-5">
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-semibold text-gray-900">Breaking News</span>
           </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!currentItem) {
-    return (
-      <Card className="top-row-widget h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span>Breaking News</span>
-          </CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-32">
-          <div className="text-center text-gray-500">
-            <Newspaper className="w-8 h-8 mx-auto mb-2" />
-            <p className="text-sm">No news available</p>
+        <CardContent className="px-5 pb-5">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-gray-100 rounded-lg w-3/4"></div>
+            <div className="h-3 bg-gray-100 rounded-lg w-1/2"></div>
+            <div className="h-3 bg-gray-100 rounded-lg w-2/3"></div>
           </div>
         </CardContent>
       </Card>
@@ -208,14 +193,19 @@ export function EnhancedBreakingNewsWidget() {
   }
 
   return (
-    <Card className="top-row-widget h-full cursor-pointer hover:shadow-lg transition-shadow" onClick={handleItemClick}>
-      <CardHeader className="pb-2">
+    <Card 
+      className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300" 
+      onClick={handleItemClick}
+    >
+      <CardHeader className="pb-3 px-5 pt-5">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-            <span>Breaking News</span>
-            <Badge className="bg-red-500 text-white text-xs animate-pulse">LIVE</Badge>
-          </CardTitle>
+          <div className="flex items-center space-x-2">
+            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-semibold text-gray-900">Breaking News</span>
+            <Badge className="bg-red-500/10 text-red-600 text-xs font-medium border border-red-200 rounded-full px-2 py-0.5">
+              LIVE
+            </Badge>
+          </div>
           <div className="flex items-center space-x-1">
             <Button
               variant="ghost"
@@ -224,11 +214,11 @@ export function EnhancedBreakingNewsWidget() {
                 e.stopPropagation()
                 goToPrevious()
               }}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ChevronLeft className="w-3 h-3" />
+              <ChevronLeft className="w-3 h-3 text-gray-500" />
             </Button>
-            <span className="text-xs text-gray-500 px-1">
+            <span className="text-xs text-gray-400 px-1 font-medium">
               {currentIndex + 1}/{allItems.length}
             </span>
             <Button
@@ -238,19 +228,21 @@ export function EnhancedBreakingNewsWidget() {
                 e.stopPropagation()
                 goToNext()
               }}
-              className="h-6 w-6 p-0"
+              className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3 text-gray-500" />
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="px-5 pb-5">
         {isAdvertisement ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-start justify-between">
-              <Badge className="bg-blue-100 text-blue-800 text-xs">SPONSORED</Badge>
+              <Badge className="bg-blue-50 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5">
+                SPONSORED
+              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
@@ -258,47 +250,49 @@ export function EnhancedBreakingNewsWidget() {
                   e.stopPropagation()
                   window.open((currentItem as StrapiAdvertisement).URL, "_blank")
                 }}
-                className="h-5 w-5 p-0"
+                className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-3 h-3 text-gray-400" />
               </Button>
             </div>
 
             <div className="flex space-x-3">
               {(currentItem as StrapiAdvertisement).Image && (
                 <img
-                  src={`http://localhost:1337${(currentItem as StrapiAdvertisement).Image!.url}`}
+                  src={buildStrapiUrl((currentItem as StrapiAdvertisement).Image!.url)}
                   alt={(currentItem as StrapiAdvertisement).Tiltle}
-                  className="w-16 h-12 rounded object-cover flex-shrink-0"
+                  className="w-16 h-12 rounded-xl object-cover flex-shrink-0 shadow-sm"
                 />
               )}
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 leading-tight">
                   {(currentItem as StrapiAdvertisement).Tiltle}
                 </h4>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as StrapiAdvertisement).Content}</p>
-                <div className="text-xs text-gray-500">
-                  by <span className="font-medium">{(currentItem as StrapiAdvertisement).Sponsor}</span>
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2 leading-relaxed">
+                  {(currentItem as StrapiAdvertisement).Content}
+                </p>
+                <div className="text-xs text-gray-500 font-medium">
+                  by <span className="text-gray-700">{(currentItem as StrapiAdvertisement).Sponsor}</span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Badge className={`text-xs ${getSeverityColor((currentItem as StrapiBreakingNews).Severity)}`}>
+                <Badge className={`text-xs font-medium border rounded-full px-2 py-0.5 ${getSeverityColor((currentItem as StrapiBreakingNews).Severity)}`}>
                   {(currentItem as StrapiBreakingNews).Category}
                 </Badge>
                 {(currentItem as StrapiBreakingNews).IsBreaking && (
-                  <Badge className="bg-red-600 text-white text-xs animate-pulse">
+                  <Badge className="bg-red-500/10 text-red-600 text-xs font-medium border border-red-200 rounded-full px-2 py-0.5 animate-pulse">
                     <Zap className="w-2 h-2 mr-1" />
                     BREAKING
                   </Badge>
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1 text-xs text-gray-500">
+                <div className="flex items-center space-x-1 text-xs text-gray-400 font-medium">
                   <Clock className="w-3 h-3" />
                   <span>{formatTimeAgo((currentItem as StrapiBreakingNews).PublishedTimestamp)}</span>
                 </div>
@@ -309,20 +303,22 @@ export function EnhancedBreakingNewsWidget() {
                     e.stopPropagation()
                     window.open((currentItem as StrapiBreakingNews).URL, "_blank")
                   }}
-                  className="h-5 w-5 p-0"
+                  className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 text-gray-400" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex space-x-3">
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-gray-800 line-clamp-2 mb-1">
-                  {(currentItem as StrapiBreakingNews).Title}
-                </h4>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{(currentItem as StrapiBreakingNews).Summary}</p>
-                <div className="text-xs text-gray-500">Source: {(currentItem as StrapiBreakingNews).Source}</div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
+                {(currentItem as StrapiBreakingNews).Title}
+              </h4>
+              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                {(currentItem as StrapiBreakingNews).Summary}
+              </p>
+              <div className="text-xs text-gray-500 font-medium">
+                Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
               </div>
             </div>
           </div>

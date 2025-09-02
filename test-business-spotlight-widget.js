@@ -99,7 +99,7 @@ async function testBusinessSpotlightWidget() {
     // Get image URL with fallback
     let imageUrl = "/placeholder.svg?height=120&width=200&text=Business";
     if (business.Image) {
-      imageUrl = `http://localhost:1337${business.Image.url}`;
+      imageUrl = `${STRAPI_URL}${business.Image.url}`;
     }
 
     return {
@@ -143,14 +143,14 @@ async function testBusinessSpotlightWidget() {
   console.log('\n5. Testing image URL handling...');
   const testCases = [
     { Image: null, expected: "/placeholder.svg?height=120&width=200&text=Business" },
-    { Image: { url: "/uploads/test.jpg" }, expected: "http://localhost:1337/uploads/test.jpg" },
-    { Image: { url: "/uploads/restaurant.jpg" }, expected: "http://localhost:1337/uploads/restaurant.jpg" }
+    { Image: { url: "/uploads/test.jpg" }, expected: `${STRAPI_URL}/uploads/test.jpg` },
+    { Image: { url: "/uploads/restaurant.jpg" }, expected: `${STRAPI_URL}/uploads/restaurant.jpg` }
   ];
 
   testCases.forEach((testCase, index) => {
     let imageUrl = "/placeholder.svg?height=120&width=200&text=Business";
     if (testCase.Image) {
-      imageUrl = `http://localhost:1337${testCase.Image.url}`;
+      imageUrl = `${STRAPI_URL}${testCase.Image.url}`;
     }
     
     const passed = imageUrl === testCase.expected;
