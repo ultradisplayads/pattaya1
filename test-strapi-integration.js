@@ -9,7 +9,7 @@ async function testStrapiIntegration() {
 
   try {
     // Test 1: Check server status
-    console.log('1. Testingb server status...');
+    console.log('1. Testingb serve r status...');
     const statusResponse = await axios.get(`${STRAPI_URL}/api/test/status`);
     console.log('✅ Server status:', statusResponse.data.message);
     console.log('Firebase config:', statusResponse.data.firebase);
