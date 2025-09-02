@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337/api';
+const API_BASE = process.env.NEXT_PUBLIC_STRAPI_URL ? `${process.env.NEXT_PUBLIC_STRAPI_URL}/api` : 'http://localhost:1337/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -52,6 +52,22 @@ export const newsApi = {
     } catch (error) {
       console.warn('Dashboard endpoint not available:', error);
       return { totalArticles: 0, pendingApproval: 0, approvedArticles: 0, pinnedArticles: 0, recentActivity: [] };
+    }
+  },
+
+  // Get paginated breaking news
+  getBreakingNewsPlural: async (params?: { page?: number; pageSize?: number; sort?: string }): Promise<{ data: NewsArticle[]; meta: any }> => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.set('pagination[page]', params.page.toString());
+      if (params?.pageSize) queryParams.set('pagination[pageSize]', params.pageSize.toString());
+      if (params?.sort) queryParams.set('sort', params.sort);
+      
+      const response = await api.get(`/breaking-news-plural?${queryParams.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.warn('Breaking news plural endpoint not available:', error);
+      return { data: [], meta: {} };
     }
   },
 
@@ -118,6 +134,28 @@ export const newsApi = {
     } catch (error) {
       console.warn('Manual fetch endpoint not available:', error);
       return { success: false, message: 'Endpoint not available' };
+    }
+  },
+
+  // Widget controls
+  getWidgetControls: async (): Promise<any> => {
+    try {
+      const response = await api.get('/widget-controls');
+      return response.data;
+    } catch (error) {
+      console.warn('Widget controls endpoint not available:', error);
+      return { data: [] };
+    }
+  },
+
+  // Sponsored posts
+  getSponsoredPosts: async (): Promise<any> => {
+    try {
+      const response = await api.get('/sponsored-posts');
+      return response.data;
+    } catch (error) {
+      console.warn('Sponsored posts endpoint not available:', error);
+      return { data: [] };
     }
   },
 

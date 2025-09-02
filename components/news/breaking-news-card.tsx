@@ -14,7 +14,9 @@ interface BreakingNewsCardProps {
   onUnpin?: (id: string) => void;
   onUpvote?: (id: string) => void;
   onDownvote?: (id: string) => void;
+  onHide?: (id: string) => void;
   showActions?: boolean;
+  showModeration?: boolean;
 }
 
 export function BreakingNewsCard({
@@ -23,7 +25,9 @@ export function BreakingNewsCard({
   onUnpin,
   onUpvote,
   onDownvote,
+  onHide,
   showActions = true,
+  showModeration = false,
 }: BreakingNewsCardProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [isPinning, setIsPinning] = useState(false);
@@ -139,6 +143,16 @@ export function BreakingNewsCard({
                 <Pin className="h-4 w-4" />
                 {article.isPinned ? 'Unpin' : 'Pin'}
               </Button>
+              {showModeration && onHide && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onHide(article.id)}
+                  className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                >
+                  Hide
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"

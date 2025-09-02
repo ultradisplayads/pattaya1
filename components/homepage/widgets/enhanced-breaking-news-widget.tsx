@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { AlertTriangle, Clock, ExternalLink, Zap, ChevronLeft, ChevronRight, Newspaper } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,12 +12,21 @@ interface StrapiBreakingNews {
   id: number
   Title: string
   Summary: string
-  Severity: "low" | "medium" | "high" | "critical"
-  Category: string
-  Source: string
+  Description: string
   URL: string
-  IsBreaking: boolean
+  ImageURL?: string
+  PublishedAt: string
   PublishedTimestamp: string
+  apiSource: string
+  Source: string
+  Category: string
+  Severity: "low" | "medium" | "high" | "critical"
+  IsBreaking: boolean
+  upvotes: number
+  downvotes: number
+  isPinned: boolean
+  moderationStatus: 'pending' | 'approved' | 'rejected'
+  isHidden: boolean
   createdAt: string
   updatedAt: string
   publishedAt: string
@@ -29,20 +38,11 @@ interface StrapiAdvertisement {
   Content: string
   URL: string
   Image?: {
-    id: number
-    name: string
     url: string
-    formats?: {
-      thumbnail?: { url: string }
-      small?: { url: string }
-      medium?: { url: string }
-      large?: { url: string }
-    }
+    alternativeText?: string
   }
   Sponsor: string
-  WidgetTarget: string
   Active: boolean
-  PublishedTimestamp: string
   createdAt: string
   updatedAt: string
   publishedAt: string
@@ -54,107 +54,178 @@ export function EnhancedBreakingNewsWidget() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showAds, setShowAds] = useState(true)
+  const [lastFetchTime, setLastFetchTime] = useState<Date>(new Date())
+  const [hasNewData, setHasNewData] = useState(false)
   
   // Use Strapi articles as fallback
   const { articles: strapiArticles } = useStrapiArticles()
 
-  useEffect(() => {
-    loadBreakingNews()
-    loadAdvertisements()
-
-    // Auto-rotate every 5 seconds
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const totalItems = news.length + (showAds ? advertisements.length : 0)
-        return totalItems > 0 ? (prev + 1) % totalItems : 0
-      })
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [news.length, advertisements.length, showAds])
-
-  // Re-run when Strapi articles are loaded
-  useEffect(() => {
-    if (strapiArticles.length > 0 && news.length === 0 && !loading) {
-      loadBreakingNews()
-    }
-  }, [strapiArticles.length, news.length, loading])
-
   const loadBreakingNews = async () => {
+    console.log('[Widget] loadBreakingNews function called')
     try {
       setLoading(true)
-      const response = await fetch(buildApiUrl("breaking-news-plural?sort=PublishedTimestamp:desc"))
+      const apiUrl = "/api/breaking-news/live"
+      console.log('[Widget] Fetching from:', apiUrl)
+      const response = await fetch(apiUrl)
+      console.log('[Widget] Response status:', response.status, response.ok)
       if (response.ok) {
         const data = await response.json()
         
-        if (data.data && data.data.length > 0) {
-          setNews(data.data)
-        } else {
-          // Fallback to Strapi articles if no breaking news found
-          if (strapiArticles.length > 0) {
-            const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
-              id: article.id,
-              Title: article.title || 'Untitled Article',
-              Summary: article.description || '',
-              Severity: 'medium' as const,
-              Category: article.category?.name || 'News',
-              Source: article.author?.name || 'Pattaya1',
-              URL: `/articles/${article.slug || article.id}`,
-              IsBreaking: false,
-              PublishedTimestamp: article.publishedAt || article.createdAt,
-              createdAt: article.createdAt,
-              updatedAt: article.updatedAt,
-              publishedAt: article.publishedAt
-            }));
-            setNews(transformedArticles);
-          } else {
-            setNews([])
+        if (data && data.length > 0) {
+          console.log('[Widget] API returned', data.length, 'news items')
+          // Transform the API response to match our interface
+          const transformedNews = data.map((item: any) => ({
+            id: parseInt(item.id),
+            Title: item.title,
+            Summary: item.summary,
+            Description: item.summary,
+            URL: item.url,
+            ImageURL: item.imageUrl,
+            PublishedAt: item.timestamp,
+            PublishedTimestamp: item.timestamp,
+            apiSource: item.source,
+            Source: item.source,
+            Category: item.category,
+            Severity: item.severity as "low" | "medium" | "high" | "critical",
+            IsBreaking: item.isBreaking,
+            upvotes: 0,
+            downvotes: 0,
+            isPinned: false,
+            moderationStatus: 'approved' as const,
+            isHidden: false,
+            createdAt: item.timestamp,
+            updatedAt: item.timestamp,
+            publishedAt: item.timestamp
+          }));
+          
+          // Check if we have new data by comparing with existing news
+          const hasNewContent = news.length === 0 || 
+            transformedNews.some((newItem: StrapiBreakingNews) => 
+              !news.find((existingItem: StrapiBreakingNews) => 
+                existingItem.id === newItem.id && 
+                existingItem.updatedAt === newItem.updatedAt
+              )
+            );
+          
+          if (hasNewContent) {
+            console.log('[Widget] New data detected! Setting fresh news items')
+            setHasNewData(true)
+            setLastFetchTime(new Date())
+            // Reset hasNewData flag after 3 seconds
+            setTimeout(() => setHasNewData(false), 3000)
           }
+          
+          console.log('[Widget] Setting', transformedNews.length, 'news items in state')
+          setNews(transformedNews)
+        } else {
+          setNews([])
         }
       } else {
-        console.error("Failed to load breaking news from Strapi:", response.status)
+        console.log('[Widget] API request failed with status:', response.status)
         // Fallback to Strapi articles if breaking news fails
         if (strapiArticles.length > 0) {
           const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
             id: article.id,
             Title: article.title || 'Untitled Article',
             Summary: article.description || '',
-            Severity: 'medium' as const,
-            Category: article.category?.name || 'News',
-            Source: article.author?.name || 'Pattaya1',
+            Description: article.description || '',
             URL: `/articles/${article.slug || article.id}`,
-            IsBreaking: false,
+            ImageURL: article.cover?.url,
+            PublishedAt: article.publishedAt || article.createdAt,
             PublishedTimestamp: article.publishedAt || article.createdAt,
+            apiSource: article.author?.name || 'Pattaya1',
+            Source: article.author?.name || 'Pattaya1',
+            Category: article.category?.name || 'News',
+            Severity: 'medium' as const,
+            IsBreaking: false,
+            upvotes: 0,
+            downvotes: 0,
+            isPinned: false,
+            moderationStatus: 'approved' as const,
+            isHidden: false,
             createdAt: article.createdAt,
             updatedAt: article.updatedAt,
             publishedAt: article.publishedAt
           }));
           setNews(transformedArticles);
         } else {
-          setNews([])
+          setNews([{
+            id: 1,
+            Title: 'Breaking: Latest News from Pattaya',
+            Summary: 'Stay updated with the latest breaking news and developments.',
+            Description: 'Stay updated with the latest breaking news and developments.',
+            URL: '#',
+            ImageURL: undefined,
+            PublishedAt: new Date().toISOString(),
+            PublishedTimestamp: new Date().toISOString(),
+            apiSource: 'Pattaya1 News',
+            Source: 'Pattaya1 News',
+            Category: 'Breaking News',
+            Severity: 'medium' as const,
+            IsBreaking: true,
+            upvotes: 0,
+            downvotes: 0,
+            isPinned: false,
+            moderationStatus: 'approved' as const,
+            isHidden: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            publishedAt: new Date().toISOString()
+          }])
         }
       }
     } catch (error) {
-      console.error("Failed to load breaking news from Strapi:", error)
-      // Fallback to Strapi articles
+      console.error('[Widget] Error loading breaking news:', error)
+      // Fallback to Strapi articles on error
       if (strapiArticles.length > 0) {
         const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
           id: article.id,
           Title: article.title || 'Untitled Article',
           Summary: article.description || '',
-          Severity: 'medium' as const,
-          Category: article.category?.name || 'News',
-          Source: article.author?.name || 'Pattaya1',
+          Description: article.description || '',
           URL: `/articles/${article.slug || article.id}`,
-          IsBreaking: false,
+          ImageURL: article.cover?.url,
+          PublishedAt: article.publishedAt || article.createdAt,
           PublishedTimestamp: article.publishedAt || article.createdAt,
+          apiSource: article.author?.name || 'Pattaya1',
+          Source: article.author?.name || 'Pattaya1',
+          Category: article.category?.name || 'News',
+          Severity: 'medium' as const,
+          IsBreaking: false,
+          upvotes: 0,
+          downvotes: 0,
+          isPinned: false,
+          moderationStatus: 'approved' as const,
+          isHidden: false,
           createdAt: article.createdAt,
           updatedAt: article.updatedAt,
           publishedAt: article.publishedAt
         }));
         setNews(transformedArticles);
       } else {
-        setNews([])
+        setNews([{
+          id: 1,
+          Title: 'Breaking: Latest News from Pattaya',
+          Summary: 'Stay updated with the latest breaking news and developments.',
+          Description: 'Stay updated with the latest breaking news and developments.',
+          URL: '#',
+          ImageURL: undefined,
+        PublishedAt: new Date().toISOString(),
+        PublishedTimestamp: new Date().toISOString(),
+        apiSource: 'Pattaya1 News',
+        Source: 'Pattaya1 News',
+        Category: 'Breaking News',
+        Severity: 'medium' as const,
+        IsBreaking: true,
+        upvotes: 0,
+        downvotes: 0,
+        isPinned: false,
+        moderationStatus: 'approved' as const,
+        isHidden: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        publishedAt: new Date().toISOString()
+        }])
       }
     } finally {
       setLoading(false)
@@ -163,7 +234,7 @@ export function EnhancedBreakingNewsWidget() {
 
   const loadAdvertisements = async () => {
     try {
-      const response = await fetch(buildApiUrl("advertisements?filters[WidgetTarget][$eq]=breaking-news&filters[Active][$eq]=true&sort=PublishedTimestamp:desc"))
+      const response = await fetch(buildApiUrl("sponsored-posts?filters[Active][$eq]=true&sort=createdAt:desc"))
       if (response.ok) {
         const data = await response.json()
         
@@ -179,23 +250,38 @@ export function EnhancedBreakingNewsWidget() {
     } catch (error) {
       console.error("Failed to load advertisements from Strapi:", error)
       setAdvertisements([])
-    } finally {
-      setLoading(false)
     }
   }
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-red-500/10 text-red-600 border-red-200"
-      case "high":
-        return "bg-orange-500/10 text-orange-600 border-orange-200"
-      case "medium":
-        return "bg-yellow-500/10 text-yellow-600 border-yellow-200"
-      default:
-        return "bg-blue-500/10 text-blue-600 border-blue-200"
-    }
-  }
+  // Initial load
+  useEffect(() => {
+    console.log('[Widget] Initial load triggered')
+    loadBreakingNews()
+    loadAdvertisements()
+  }, [])
+
+  // Auto-rotate every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const totalItems = news.length + (showAds ? advertisements.length : 0)
+        return totalItems > 0 ? (prev + 1) % totalItems : 0
+      })
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [news.length, advertisements.length, showAds])
+
+  // Auto-refresh data every 30 seconds to catch fresh news immediately
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      console.log('[Widget] Auto-refreshing data - checking for fresh news')
+      loadBreakingNews()
+      loadAdvertisements()
+    }, 30 * 1000) // 30 seconds in milliseconds
+
+    return () => clearInterval(refreshInterval)
+  }, [])
 
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date()
@@ -208,9 +294,16 @@ export function EnhancedBreakingNewsWidget() {
     return `${Math.floor(diffInMinutes / 1440)}d ago`
   }
 
-  const allItems = [...news, ...(showAds ? advertisements : [])]
+  const allItems = useMemo(() => {
+    const combined = [...news, ...advertisements]
+    console.log('[Widget] All items combined:', combined.length, 'news:', news.length, 'ads:', advertisements.length)
+    return combined
+  }, [news, advertisements])
+
   const currentItem = allItems[currentIndex]
-  const isAdvertisement = currentItem && "Sponsor" in currentItem
+  const isAdvertisement = currentItem && 'Sponsor' in currentItem
+  
+  console.log('[Widget] Current state - allItems:', allItems.length, 'currentIndex:', currentIndex, 'currentItem:', (currentItem as any)?.Title || (currentItem as any)?.Tiltle || 'none')
 
   if (!currentItem) {
     return (
@@ -223,6 +316,21 @@ export function EnhancedBreakingNewsWidget() {
         </CardContent>
       </Card>
     )
+  }
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case "critical":
+        return "bg-red-500/10 text-red-600 border-red-200"
+      case "high":
+        return "bg-orange-500/10 text-orange-600 border-orange-200"
+      case "medium":
+        return "bg-yellow-500/10 text-yellow-600 border-yellow-200"
+      case "low":
+        return "bg-green-500/10 text-green-600 border-green-200"
+      default:
+        return "bg-gray-500/10 text-gray-600 border-gray-200"
+    }
   }
 
   const goToPrevious = () => {
@@ -268,11 +376,16 @@ export function EnhancedBreakingNewsWidget() {
       <CardHeader className="pb-3 px-5 pt-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasNewData ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <span className="text-sm font-semibold text-gray-900">Breaking News</span>
-            <Badge className="bg-red-500/10 text-red-600 text-xs font-medium border border-red-200 rounded-full px-2 py-0.5">
-              LIVE
+            <Badge className={`text-xs font-medium border rounded-full px-2 py-0.5 ${hasNewData ? 'bg-green-500/10 text-green-600 border-green-200' : 'bg-red-500/10 text-red-600 border-red-200'}`}>
+              {hasNewData ? 'NEW' : 'LIVE'}
             </Badge>
+            {hasNewData && (
+              <Badge className="bg-blue-500/10 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5 animate-bounce">
+                FRESH DATA
+              </Badge>
+            )}
           </div>
           <div className="flex items-center space-x-1">
             <Button

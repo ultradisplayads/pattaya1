@@ -2,9 +2,10 @@
 
 import { useNews } from '@/hooks/use-news';
 import { BreakingNewsCard } from './breaking-news-card';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw, Newspaper } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { RefreshCw, ExternalLink, Clock, AlertTriangle, Pin, Newspaper } from "lucide-react";
 import { useState } from 'react';
 
 interface BreakingNewsFeedProps {

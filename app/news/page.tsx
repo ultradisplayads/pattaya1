@@ -13,7 +13,7 @@ export default function NewsPage() {
           <SimpleDebug />
           
           {/* Strapi Articles Feed */}
-          <StrapiArticlesFeed />
+          <StrapiArticlesFeed showSponsored={true} maxArticles={10} />
           
           {/* Breaking News Feed */}
           <BreakingNewsFeed />

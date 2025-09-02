@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { buildApiUrl } from "@/lib/strapi-config"
-import { useStrapiArticles } from '@/hooks/use-strapi-articles'
-import { transformStrapiArticle } from '@/lib/strapi-articles-api'
+import { useStrapiArticles } from '@/hooks/use-strapi-articles';
+import { transformStrapiArticle } from '@/lib/strapi-articles-api';
+import { strapiAPI, type SponsoredPost } from '@/lib/strapi-api';
+import { SponsoredPost as SponsoredPostComponent } from '@/components/news/sponsored-post';
 
 interface BreakingNews {
   id: number

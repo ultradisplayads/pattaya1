@@ -3,6 +3,40 @@
 import { useState, useEffect, useCallback } from 'react';
 import { newsApi, NewsArticle, DashboardData } from '@/lib/news-api';
 
+export function useBreakingNewsPlural() {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [meta, setMeta] = useState<any>({});
+
+  const fetchBreakingNews = useCallback(async (params?: { page?: number; pageSize?: number; sort?: string }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await newsApi.getBreakingNewsPlural(params);
+      setArticles(response.data || []);
+      setMeta(response.meta || {});
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch breaking news');
+      console.error('Failed to fetch breaking news:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBreakingNews({ sort: 'PublishedAt:desc' });
+  }, [fetchBreakingNews]);
+
+  return {
+    articles,
+    loading,
+    error,
+    meta,
+    fetchBreakingNews,
+  };
+}
+
 export function useNews() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +87,15 @@ export function useNews() {
     }
   }, [fetchLiveNews]);
 
+  const hideArticle = useCallback(async (id: string) => {
+    try {
+      await newsApi.hideArticle(id);
+      await fetchLiveNews(); // Refresh data
+    } catch (err: any) {
+      setError(err.message || 'Failed to hide article');
+    }
+  }, [fetchLiveNews]);
+
   const fetchNews = useCallback(async () => {
     try {
       setLoading(true);
@@ -77,6 +120,7 @@ export function useNews() {
     pinArticle,
     unpinArticle,
     voteArticle,
+    hideArticle,
     fetchNews,
   };
 }

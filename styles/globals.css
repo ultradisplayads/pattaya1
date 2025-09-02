@@ -2,6 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Sponsored Content Styles */
+.sponsored-post {
+  @apply border-2 border-amber-200 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50;
+  @apply transition-all duration-300 hover:shadow-lg hover:border-amber-300;
+  @apply relative overflow-hidden;
+}
+
+.sponsored-post::before {
+  content: '';
+  @apply absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-400;
+}
+
+.sponsored-badge {
+  @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white;
+  @apply px-3 py-1 rounded-full text-xs font-semibold;
+  @apply shadow-sm border-0;
+}
+
+.sponsored-badge-outline {
+  @apply bg-amber-100 text-amber-800 border-amber-300;
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.sponsor-logo-section {
+  @apply flex items-center justify-between gap-4;
+  @apply p-4 bg-white/50 rounded-lg border border-amber-200/50;
+}
+
+.sponsor-cta-button {
+  @apply bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600;
+  @apply text-white font-medium px-6 py-2 rounded-lg;
+  @apply transition-all duration-200 transform hover:scale-105;
+  @apply shadow-md hover:shadow-lg;
+}
+
+.widget-sponsor-banner {
+  @apply border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50;
+  @apply border-l-4 border-l-amber-400;
+}
+
+/* Responsive Design for Sponsored Content */
+@media (max-width: 640px) {
+  .sponsored-post {
+    @apply mx-2;
+  }
+  
+  .sponsor-logo-section {
+    @apply flex-col items-start gap-2 p-3;
+  }
+  
+  .sponsor-cta-button {
+    @apply w-full text-center px-4 py-3;
+  }
+  
+  .sponsored-badge {
+    @apply text-xs px-2 py-1;
+  }
+}
+
+@media (max-width: 768px) {
+  .sponsor-logo-section img {
+    @apply max-w-20 h-5;
+  }
+}
+
+/* News Feed Mixed Content Styles */
+.news-feed-item {
+  @apply transition-all duration-200 hover:shadow-md;
+}
+
+.news-feed-item.sponsored {
+  @apply sponsored-post;
+}
+
+.news-feed-item.news {
+  @apply border border-gray-200 bg-white hover:border-gray-300;
+}
+
+/* Widget Sponsorship Interface Styles */
+.sponsorship-preview {
+  @apply widget-sponsor-banner p-3 rounded-lg;
+}
+
+.sponsorship-controls {
+  @apply space-y-4 p-4 bg-gray-50 rounded-lg border;
+}
+
+/* Analytics Tracking Indicators */
+.sponsored-content[data-tracked="true"] {
+  @apply relative;
+}
+
+.sponsored-content[data-tracked="true"]::after {
+  content: '📊';
+  @apply absolute top-2 right-2 text-xs opacity-50;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }

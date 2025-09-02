@@ -8,28 +8,57 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Newspaper, Search, RefreshCw, User, Calendar, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { transformStrapiArticle } from '@/lib/strapi-articles-api';
+import { SponsoredPost } from './sponsored-post';
+import { useAnalytics } from '@/hooks/use-analytics';
+
+interface FeedItem {
+  type: 'news' | 'sponsored';
+  id: string;
+  [key: string]: any;
+}
+
+interface FeedResponse {
+  data: FeedItem[];
+  meta: {
+    newsCount: number;
+    sponsoredCount: number;
+    total: number;
+  };
+}
 
 interface StrapiArticlesFeedProps {
   maxArticles?: number;
   showSearch?: boolean;
   showFilters?: boolean;
   className?: string;
+  showSponsored?: boolean;
 }
 
 export function StrapiArticlesFeed({ 
   maxArticles = 10, 
   showSearch = true,
   showFilters = true,
-  className = '' 
+  className = '',
+  showSponsored = true
 }: StrapiArticlesFeedProps) {
   const router = useRouter();
   const { articles, loading, error, fetchArticles, searchArticles, pagination } = useStrapiArticles();
   const { categories } = useStrapiCategories();
+  const { trackSponsoredImpression, trackSponsoredClick, trackNewsClick } = useAnalytics();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [feedData, setFeedData] = useState<FeedItem[]>([]);
+  const [feedMeta, setFeedMeta] = useState({ newsCount: 0, sponsoredCount: 0, total: 0 });
+
+  // Fetch mixed feed on component mount and when parameters change
+  useEffect(() => {
+    if (showSponsored) {
+      fetchMixedFeed({ search: searchTerm, category: selectedCategory });
+    }
+  }, [showSponsored, searchTerm, selectedCategory, maxArticles]);
 
   const handleSearch = (query: string) => {
     setSearchTerm(query);
@@ -50,13 +79,41 @@ export function StrapiArticlesFeed({
     }
   };
 
-  const displayArticles = articles.slice(0, maxArticles);
+  // Fetch mixed feed data
+  const fetchMixedFeed = async (params?: { page?: number; search?: string; category?: string }) => {
+    try {
+      const queryParams = new URLSearchParams({
+        limit: maxArticles.toString(),
+        page: (params?.page || 1).toString(),
+        ...(params?.search && { search: params.search }),
+        ...(params?.category && params.category !== 'all' && { category: params.category })
+      })
+      
+      const response = await fetch(`/api/news/mixed-feed?${queryParams}`)
+      if (response.ok) {
+        const data: FeedResponse = await response.json()
+        setFeedData(data.data)
+        setFeedMeta(data.meta)
+      }
+    } catch (error) {
+      console.error('Failed to fetch mixed feed:', error)
+    }
+  }
+
+  // Use mixed feed if sponsored content is enabled, otherwise use regular articles
+  const displayItems = showSponsored ? feedData : articles.slice(0, maxArticles).map(article => ({
+    type: 'news' as const,
+    ...transformStrapiArticle(article)
+  }))
   
   console.log('StrapiArticlesFeed render:', { 
-    articlesLength: articles.length, 
+    articlesLength: articles.length,
+    feedDataLength: feedData.length,
+    displayItemsLength: displayItems.length,
     loading, 
-    error, 
-    displayArticlesLength: displayArticles.length 
+    error,
+    showSponsored,
+    feedMeta
   });
 
   if (loading && articles.length === 0) {
@@ -155,7 +212,7 @@ export function StrapiArticlesFeed({
       )}
 
       {/* Articles List */}
-      {displayArticles.length === 0 ? (
+      {displayItems.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Newspaper className="h-12 w-12 text-muted-foreground mb-4" />
@@ -172,8 +229,20 @@ export function StrapiArticlesFeed({
         </Card>
       ) : (
         <div className="space-y-4">
-          {displayArticles.map((strapiArticle) => {
-            const article = transformStrapiArticle(strapiArticle);
+          {displayItems.map((item) => {
+            if (item.type === 'sponsored') {
+              return (
+                <SponsoredPost
+                  key={item.id}
+                  post={item as any}
+                  onImpression={(postId: string) => trackSponsoredImpression(postId, item.sponsorName || 'Unknown')}
+                  onClick={(postId: string, url: string) => trackSponsoredClick(postId, item.sponsorName || 'Unknown', url)}
+                />
+              )
+            }
+            
+            // Handle news articles
+            const article = item.type === 'news' ? item : transformStrapiArticle(item as any);
             return (
               <Card key={article.id} className="transition-all duration-200 hover:shadow-lg">
                 <CardHeader className="pb-3">
