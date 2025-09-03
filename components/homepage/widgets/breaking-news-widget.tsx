@@ -6,6 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { buildApiUrl } from "@/lib/strapi-config"
+import { useStrapiArticles } from '@/hooks/use-strapi-articles';
+import { transformStrapiArticle } from '@/lib/strapi-articles-api';
+import { strapiAPI, type SponsoredPost } from '@/lib/strapi-api';
+import { SponsoredPost as SponsoredPostComponent } from '@/components/news/sponsored-post';
 
 interface BreakingNews {
   id: number
@@ -63,6 +67,9 @@ export function BreakingNewsWidget() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showAds, setShowAds] = useState(true)
+  
+  // Use Strapi articles as fallback
+  const { articles: strapiArticles } = useStrapiArticles()
 
   useEffect(() => {
     loadBreakingNews()
@@ -79,6 +86,13 @@ export function BreakingNewsWidget() {
     return () => clearInterval(interval)
   }, [news.length, advertisements.length, showAds])
 
+  // Re-run when Strapi articles are loaded
+  useEffect(() => {
+    if (strapiArticles.length > 0 && news.length === 0 && !loading) {
+      loadBreakingNews()
+    }
+  }, [strapiArticles.length, news.length, loading])
+
   const loadBreakingNews = async () => {
     try {
       setLoading(true)
@@ -88,11 +102,47 @@ export function BreakingNewsWidget() {
         setNews(data.data || [])
       } else {
         console.error("Failed to load breaking news:", response.status)
-        setNews([])
+        // Fallback to Strapi articles if breaking news fails
+        if (strapiArticles.length > 0) {
+          const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
+            id: article.id,
+            Title: article.title || 'Untitled Article',
+            Summary: article.description || '',
+            Severity: 'medium' as const,
+            Category: article.category?.name || 'News',
+            Source: article.author?.name || 'Pattaya1',
+            URL: `/articles/${article.slug || article.id}`,
+            IsBreaking: false,
+            PublishedTimestamp: article.publishedAt || article.createdAt,
+            createdAt: article.createdAt,
+            updatedAt: article.updatedAt
+          }));
+          setNews(transformedArticles);
+        } else {
+          setNews([])
+        }
       }
     } catch (error) {
       console.error("Failed to load breaking news:", error)
-      setNews([])
+      // Fallback to Strapi articles
+      if (strapiArticles.length > 0) {
+        const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
+          id: article.id,
+          Title: article.title || 'Untitled Article',
+          Summary: article.description || '',
+          Severity: 'medium' as const,
+          Category: article.category?.name || 'News',
+          Source: article.author?.name || 'Pattaya1',
+          URL: `/articles/${article.slug || article.id}`,
+          IsBreaking: false,
+          PublishedTimestamp: article.publishedAt || article.createdAt,
+          createdAt: article.createdAt,
+          updatedAt: article.updatedAt
+        }));
+        setNews(transformedArticles);
+      } else {
+        setNews([])
+      }
     } finally {
       setLoading(false)
     }

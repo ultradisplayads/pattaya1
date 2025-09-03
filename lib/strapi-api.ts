@@ -29,6 +29,71 @@ export interface FirebaseUserProfilePayload {
   emailVerified?: boolean
 }
 
+export interface SponsoredPost {
+  id: number
+  attributes: {
+    Title: string
+    Content: string
+    URL: string
+    Sponsor: string
+    CallToAction?: string
+    Category?: string
+    Active: boolean
+    Priority: number
+    Image?: {
+      data?: {
+        attributes: {
+          url: string
+          alternativeText?: string
+        }
+      }
+    }
+    SponsorLogo?: {
+      data?: {
+        attributes: {
+          url: string
+          alternativeText?: string
+        }
+      }
+    }
+    Logo?: {
+      data?: {
+        attributes: {
+          url: string
+          alternativeText?: string
+        }
+      }
+    }
+    PublishedTimestamp?: string
+    ExpiryDate?: string
+    TargetWidgets?: string[]
+    impressions?: number
+    clicks?: number
+    clickThroughRate?: number
+    SponsorshipType?: 'banner' | 'content' | 'mixed'
+    DisplayText?: string
+    SponsorWebsite?: string
+    createdAt: string
+    updatedAt: string
+  }
+}
+
+export interface WidgetConfig {
+  id: number
+  attributes: {
+    widgetId: string
+    isSponsoredWidget: boolean
+    sponsorName?: string
+    sponsorBanner?: string
+    sponsorLogo?: string
+    sponsorUrl?: string
+    displayText?: string
+    sponsorshipType?: 'banner' | 'content' | 'mixed'
+    createdAt: string
+    updatedAt: string
+  }
+}
+
 class StrapiAPI {
   private baseUrl: string
 
@@ -146,6 +211,81 @@ class StrapiAPI {
         body: JSON.stringify(profile),
       }
     )
+  }
+
+  // Get sponsored posts
+  async getSponsoredPosts(filters?: { active?: boolean; targetWidget?: string }): Promise<SponsoredPost[]> {
+    let query = '/sponsored-posts?populate=*'
+    
+    if (filters?.active !== undefined) {
+      query += `&filters[Active][$eq]=${filters.active}`
+    }
+    if (filters?.targetWidget) {
+      query += `&filters[TargetWidgets][$contains]=${filters.targetWidget}`
+    }
+    
+    const response = await this.request<{ data: SponsoredPost[] }>(query)
+    return response.data
+  }
+
+  // Get widget configuration
+  async getWidgetConfig(widgetId: string): Promise<WidgetConfig | null> {
+    try {
+      const response = await this.request<{ data: WidgetConfig[] }>(`/widget-configs?filters[widgetId][$eq]=${widgetId}`)
+      return response.data[0] || null
+    } catch (error) {
+      console.error('Failed to fetch widget config:', error)
+      return null
+    }
+  }
+
+  // Update widget configuration
+  async updateWidgetConfig(widgetId: string, config: Partial<WidgetConfig['attributes']>): Promise<WidgetConfig> {
+    const existingConfig = await this.getWidgetConfig(widgetId)
+    
+    if (existingConfig) {
+      return this.request<{ data: WidgetConfig }>(`/widget-configs/${existingConfig.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ data: config }),
+      }).then(response => response.data)
+    } else {
+      return this.request<{ data: WidgetConfig }>('/widget-configs', {
+        method: 'POST',
+        body: JSON.stringify({ data: { widgetId, ...config } }),
+      }).then(response => response.data)
+    }
+  }
+
+  // Track sponsored content analytics
+  async trackSponsoredAnalytics(data: {
+    type: 'impression' | 'click'
+    sponsoredPostId: number
+    timestamp: string
+    userAgent?: string
+    referrer?: string
+  }): Promise<void> {
+    await this.request('/sponsored-analytics', {
+      method: 'POST',
+      body: JSON.stringify({ data }),
+    })
+  }
+
+  // Update sponsored post metrics
+  async updateSponsoredMetrics(postId: number, type: 'impression' | 'click'): Promise<void> {
+    const field = type === 'impression' ? 'impressions' : 'clicks'
+    
+    // Get current post to increment the counter
+    const post = await this.request<{ data: SponsoredPost }>(`/sponsored-posts/${postId}`)
+    const currentCount = post.data.attributes[field] || 0
+    
+    await this.request(`/sponsored-posts/${postId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        data: {
+          [field]: currentCount + 1
+        }
+      }),
+    })
   }
 }
 
