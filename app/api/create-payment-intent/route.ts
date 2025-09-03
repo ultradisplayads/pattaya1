@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+// Initialize Stripe only if the secret key is available
+let stripe: Stripe | null = null;
+
+if (process.env.STRIPE_SECRET_KEY) {
+  try {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-08-27.basil',
+    });
+  } catch (error) {
+    console.error('Failed to initialize Stripe:', error);
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Stripe is properly initialized
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe is not configured. Please check your environment variables.' },
+        { status: 500 }
+      );
+    }
+
     const { dealId, dealTitle, amount, quantity } = await request.json();
 
     if (!dealId || !dealTitle || !amount) {
