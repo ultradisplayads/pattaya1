@@ -171,6 +171,45 @@ export function RadioWidget({ className }: { className?: string }) {
     })
   }, [globalSponsorship])
 
+  // Update audio volume when volume or mute state changes
+  useEffect(() => {
+    updateAudioVolume()
+  }, [volume, isMuted])
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle keyboard events when widget is focused or expanded
+      if (event.target instanceof HTMLElement && 
+          (event.target.closest('[data-radio-widget]') || isExpanded)) {
+        
+        switch (event.key) {
+          case 'ArrowLeft':
+            event.preventDefault()
+            if (canPlayPrevious()) {
+              playPreviousStation()
+            }
+            break
+          case 'ArrowRight':
+            event.preventDefault()
+            if (canPlayNext()) {
+              playNextStation()
+            }
+            break
+          case ' ':
+            event.preventDefault()
+            if (currentStation) {
+              playStation(currentStation)
+            }
+            break
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [currentStation, stations.length, isExpanded])
+
   const loadStations = async () => {
     try {
       setError(null)
@@ -844,9 +883,17 @@ export function RadioWidget({ className }: { className?: string }) {
       audioRef.current = audio
       
       console.log('Setting audio properties')
-      // Set initial volume
+      // Set initial volume and mute state
       audio.volume = volume[0] / 100
       audio.muted = isMuted
+      
+      // Ensure volume is applied correctly
+      if (isMuted) {
+        audio.muted = true
+      } else {
+        audio.volume = volume[0] / 100
+        audio.muted = false
+      }
       
       // Add event listeners
       audio.addEventListener('play', () => {
@@ -1078,7 +1125,52 @@ export function RadioWidget({ className }: { className?: string }) {
     setVolume(value)
     if (audioRef.current) {
       audioRef.current.volume = value[0] / 100
+      audioRef.current.muted = false // Unmute when volume is changed
+      setIsMuted(false)
     }
+  }
+
+  const updateAudioVolume = () => {
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.muted = true
+      } else {
+        audioRef.current.volume = volume[0] / 100
+        audioRef.current.muted = false
+      }
+    }
+  }
+
+  const playNextStation = () => {
+    if (!currentStation || stations.length === 0) return
+    
+    const currentIndex = stations.findIndex(station => station.id === currentStation.id)
+    const nextIndex = (currentIndex + 1) % stations.length
+    const nextStation = stations[nextIndex]
+    
+    if (nextStation) {
+      playStation(nextStation)
+    }
+  }
+
+  const playPreviousStation = () => {
+    if (!currentStation || stations.length === 0) return
+    
+    const currentIndex = stations.findIndex(station => station.id === currentStation.id)
+    const previousIndex = currentIndex === 0 ? stations.length - 1 : currentIndex - 1
+    const previousStation = stations[previousIndex]
+    
+    if (previousStation) {
+      playStation(previousStation)
+    }
+  }
+
+  const canPlayNext = () => {
+    return currentStation && stations.length > 1
+  }
+
+  const canPlayPrevious = () => {
+    return currentStation && stations.length > 1
   }
 
   if (loading) {
@@ -1118,6 +1210,7 @@ export function RadioWidget({ className }: { className?: string }) {
       <Card 
         className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
         onClick={handleWidgetClick}
+        data-radio-widget="true"
       >
       {/* Global Sponsorship Banner - At the very top */}
       {globalSponsorshipLoading && (
@@ -1189,6 +1282,13 @@ export function RadioWidget({ className }: { className?: string }) {
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
             <span className="text-[15px] font-medium text-gray-900">Radio</span>
+            
+            {/* Current Station Indicator */}
+            {currentStation && stations.length > 1 && (
+              <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium border-gray-200 rounded-full">
+                {stations.findIndex(s => s.id === currentStation.id) + 1}/{stations.length}
+              </Badge>
+            )}
             
             {/* Widget-Level Sponsor Indicator */}
             {sponsoredBanner.isSponsored && (
@@ -1354,6 +1454,28 @@ export function RadioWidget({ className }: { className?: string }) {
 
         {/* Main Controls - Responsive Layout */}
         <div className="flex items-center justify-center gap-3 sm:gap-4">
+          {/* Previous Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              handleUserInteraction()
+              playPreviousStation()
+            }}
+            disabled={!canPlayPrevious()}
+            title={canPlayPrevious() ? "Previous station" : "No previous station available"}
+            className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200 ${
+              canPlayPrevious()
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                : "bg-gray-50 text-gray-300 cursor-not-allowed"
+            }`}
+          >
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Button>
+
+          {/* Play/Pause Button */}
           <Button
             variant="ghost"
             size="sm"
@@ -1379,55 +1501,49 @@ export function RadioWidget({ className }: { className?: string }) {
           >
             {isPlaying ? <Pause className="w-5 h-5 sm:w-6 sm:h-6" /> : <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />}
           </Button>
-          
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                handleUserInteraction()
-                toggleMute()
-              }}
-              onMouseEnter={() => setShowVolumeSlider(true)}
-              onMouseLeave={() => setShowVolumeSlider(false)}
-              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-            >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-            </Button>
-            
-            {showVolumeSlider && (
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white rounded-lg shadow-lg border p-3 z-10">
-                <Slider
-                  value={volume}
-                  onValueChange={handleVolumeChange}
-                  max={100}
-                  step={1}
-                  className="w-20 sm:w-24"
-                />
-                <p className="text-[11px] sm:text-xs text-center text-gray-500 mt-1">{volume[0]}%</p>
-              </div>
-            )}
-          </div>
 
-          {currentStation && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleFavorite(currentStation.id)}
-              className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200 ${
-                favorites.includes(currentStation.id)
-                  ? "bg-red-50 text-red-500 hover:bg-red-100"
-                  : "bg-gray-100 text-gray-400 hover:bg-gray-200"
-              }`}
-            >
-              <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
-            </Button>
-          )}
+          {/* Next Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              handleUserInteraction()
+              playNextStation()
+            }}
+            disabled={!canPlayNext()}
+            title={canPlayNext() ? "Next station" : "No next station available"}
+            className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200 ${
+              canPlayNext()
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                : "bg-gray-50 text-gray-300 cursor-not-allowed"
+            }`}
+          >
+            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Button>
         </div>
 
-        <Separator className="my-2" />
+                 {/* Volume Control - Only in collapsed view */}
+         <div className="flex items-center justify-center">
+           <div className="relative">
+             <Button
+               variant="ghost"
+               size="sm"
+               onClick={() => {
+                 handleUserInteraction()
+                 toggleMute()
+               }}
+               className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+             >
+               {isMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Volume2 className="w-3.5 sm:w-4 sm:h-4" />}
+             </Button>
+           </div>
+         </div>
 
-        {/* Station Selector - Responsive Layout */}
+      <Separator className="my-2" />
+
+              {/* Station Selector - Responsive Layout */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-medium text-gray-700">Quick Select:</span>
@@ -1450,123 +1566,106 @@ export function RadioWidget({ className }: { className?: string }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Error indicator */}
-            {error && (
-              <div className="flex items-center gap-1 text-[11px] text-amber-600">
-                <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
-                <span className="font-medium">Connection issue</span>
-              </div>
-            )}
+        <div className="flex items-center gap-2">
+          {/* Error indicator */}
+          {error && (
+            <div className="flex items-center gap-1 text-[11px] text-amber-600">
+              <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+              <span className="font-medium">Connection issue</span>
+            </div>
+          )}
 
-            {/* All Stations Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 px-2 rounded-full text-[11px]">
-                  <MoreVertical className="w-3 h-3 mr-1" />
-                  <span className="hidden sm:inline">All Stations</span>
-                  <span className="sm:hidden">Stations</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-                <div className="p-3">
-                  <div className="text-[13px] font-semibold text-gray-700 mb-3 flex items-center justify-between">
+          {/* All Stations Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-7 px-2 rounded-full text-[11px]">
+                <MoreVertical className="w-3 h-3 mr-1" />
+                <span className="hidden sm:inline">All Stations</span>
+                <span className="sm:hidden">Stations</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+              <div className="p-3">
+                                  <div className="text-[13px] font-semibold text-gray-700 mb-3">
                     <span>All Stations ({stations.length})</span>
-                    <Badge variant="secondary" className="text-[11px]">
-                      {favorites.length} Favorites
-                    </Badge>
                   </div>
-                  <div className="space-y-1">
-                    {stations.map((station) => (
-                      <DropdownMenuItem
-                        key={station.id}
-                        className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                          currentStation?.id === station.id
-                            ? "bg-purple-50 border border-purple-200"
-                            : "hover:bg-gray-50"
-                        }`}
-                        onClick={() => playStation(station)}
-                      >
-                        <div className="flex items-center gap-3 w-full">
-                          <div className="relative">
-                            {logoLoadingStates[station.id] !== false && (
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 animate-pulse flex items-center justify-center">
-                                <Radio className="w-4 h-4 text-gray-400" />
-                              </div>
-                            )}
-                            <img
-                              src={station.logo || "/placeholder.svg"}
-                              alt={station.name}
-                              className={`w-10 h-10 rounded-lg object-cover shadow-sm transition-opacity duration-200 ${
-                                logoLoadingStates[station.id] === false ? 'opacity-100' : 'opacity-0'
-                              }`}
-                              onLoadStart={() => setLogoLoading(station.id)}
-                              onLoad={() => handleLogoLoad(station.id)}
-                              onError={(e) => {
-                                handleLogoError(station.id, station.name)
-                                // Fallback to placeholder if logo fails to load
-                                const target = e.target as HTMLImageElement
-                                target.src = "/placeholder.svg?height=40&width=40&text=" + station.name.charAt(0)
-                              }}
-                            />
-                            {station.featured && (
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
-                                <Star className="w-1.5 h-1.5 text-white fill-white" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-[13px] truncate">{station.name}</p>
-                              {station.isSponsored && (
-                                <div className="flex gap-1">
-                                  <Badge variant="outline" className="text-[8px] px-1 py-0.5 bg-green-50 text-green-700 border-green-200">
-                                    SPONSORED
-                                  </Badge>
-                                  {station.sponsoredLabel && (
-                                    <Badge variant="outline" className="text-[8px] px-1 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
-                                      {station.sponsoredLabel}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
-                              {station.isLive && (
-                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                              )}
+                <div className="space-y-1">
+                  {stations.map((station) => (
+                    <DropdownMenuItem
+                      key={station.id}
+                      className={`p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                        currentStation?.id === station.id
+                          ? "bg-purple-50 border border-purple-200"
+                          : "hover:bg-gray-50"
+                      }`}
+                      onClick={() => playStation(station)}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="relative">
+                          {logoLoadingStates[station.id] !== false && (
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 animate-pulse flex items-center justify-center">
+                              <Radio className="w-4 h-4 text-gray-400" />
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1">
-                              <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
-                              <span>•</span>
-                              <span>{station.genre}</span>
-                              <span>•</span>
-                              <span>{station.listeners.toLocaleString()} listeners</span>
-                            </div>
-                            <p className="text-[11px] text-gray-400 truncate mt-1">{station.nowPlaying}</p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              toggleFavorite(station.id)
-                            }}
-                            className={`h-5 w-5 p-0 rounded-full ${
-                              favorites.includes(station.id)
-                                ? "text-red-500 hover:bg-red-50"
-                                : "text-gray-400 hover:bg-gray-100"
+                          )}
+                          <img
+                            src={station.logo || "/placeholder.svg"}
+                            alt={station.name}
+                            className={`w-10 h-10 rounded-lg object-cover shadow-sm transition-opacity duration-200 ${
+                              logoLoadingStates[station.id] === false ? 'opacity-100' : 'opacity-0'
                             }`}
-                          >
-                            <Heart className={`w-2.5 h-2.5 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
-                          </Button>
+                            onLoadStart={() => setLogoLoading(station.id)}
+                            onLoad={() => handleLogoLoad(station.id)}
+                            onError={(e) => {
+                              handleLogoError(station.id, station.name)
+                              // Fallback to placeholder if logo fails to load
+                              const target = e.target as HTMLImageElement
+                              target.src = "/placeholder.svg?height=40&width=40&text=" + station.name.charAt(0)
+                            }}
+                          />
+                          {station.featured && (
+                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                              <Star className="w-1.5 h-1.5 text-white fill-white" />
+                            </div>
+                          )}
                         </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-[13px] truncate">{station.name}</p>
+                            {station.isSponsored && (
+                              <div className="flex gap-1">
+                                <Badge variant="outline" className="text-[8px] px-1 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                  SPONSORED
+                                </Badge>
+                                {station.sponsoredLabel && (
+                                  <Badge variant="outline" className="text-[8px] px-1 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                    {station.sponsoredLabel}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                            {station.isLive && (
+                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1">
+                            <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                            <span>•</span>
+                            <span>{station.genre}</span>
+                            <span>•</span>
+                            <span>{station.listeners.toLocaleString()} listeners</span>
+                          </div>
+                          <p className="text-[11px] text-gray-400 truncate mt-1">{station.nowPlaying}</p>
+                        </div>
+                        
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
                 </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+      </div>
       </CardContent>
 
       {/* Hidden audio element for pre-roll ads */}
@@ -1652,8 +1751,26 @@ export function RadioWidget({ className }: { className?: string }) {
                     <span>{currentStation.listeners.toLocaleString()} listeners</span>
                   </div>
                   <p className="text-sm text-gray-700">{currentStation.nowPlaying}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-gray-500">
+                      Station {stations.findIndex(s => s.id === currentStation.id) + 1} of {stations.length}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => playPreviousStation()}
+                    disabled={!canPlayPrevious()}
+                    title="Previous station"
+                    className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  
                   <Button
                     onClick={() => currentStation && playStation(currentStation)}
                     disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
@@ -1661,17 +1778,21 @@ export function RadioWidget({ className }: { className?: string }) {
                   >
                     {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
                   </Button>
+                  
                   <Button
                     variant="ghost"
-                    onClick={() => currentStation && toggleFavorite(currentStation.id)}
-                    className={`h-10 w-10 rounded-full ${
-                      currentStation && favorites.includes(currentStation.id)
-                        ? "text-red-500 hover:bg-red-50"
-                        : "text-gray-400 hover:bg-gray-100"
-                    }`}
+                    size="sm"
+                    onClick={() => playNextStation()}
+                    disabled={!canPlayNext()}
+                    title="Next station"
+                    className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
                   >
-                    <Heart className={`w-5 h-5 ${currentStation && favorites.includes(currentStation.id) ? "fill-current" : ""}`} />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </Button>
+                  
+
                 </div>
               </div>
             </div>
@@ -1684,7 +1805,7 @@ export function RadioWidget({ className }: { className?: string }) {
               <div className="flex-1">
                 <Slider
                   value={volume}
-                  onValueChange={setVolume}
+                  onValueChange={handleVolumeChange}
                   max={100}
                   step={1}
                   className="w-full"
@@ -1694,11 +1815,20 @@ export function RadioWidget({ className }: { className?: string }) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMuted(!isMuted)}
+                onClick={toggleMute}
                 className="h-8 w-8 p-0"
               >
                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </Button>
+            </div>
+            <div className="mt-2 text-xs text-gray-500 text-center">
+              Volume: {volume[0]}% {isMuted && "• Muted"}
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="text-xs text-gray-500 text-center space-y-1">
+                <div>Navigation: Use Previous/Next buttons or click on any station</div>
+                <div>Quick Select: Click frequency buttons in collapsed view</div>
+              </div>
             </div>
           </div>
 
@@ -1771,21 +1901,6 @@ export function RadioWidget({ className }: { className?: string }) {
                         <ExternalLink className="w-4 h-4" />
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleFavorite(station.id)
-                      }}
-                      className={`h-8 w-8 p-0 rounded-full ${
-                        favorites.includes(station.id)
-                          ? "text-red-500 hover:bg-red-50"
-                          : "text-gray-400 hover:bg-gray-100"
-                      }`}
-                    >
-                      <Heart className={`w-4 h-4 ${favorites.includes(station.id) ? "fill-current" : ""}`} />
-                    </Button>
                   </div>
                 </div>
               ))}
