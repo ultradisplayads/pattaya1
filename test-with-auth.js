@@ -1,5 +1,10 @@
 const fetch = require('node-fetch');
 
+// Load environment variables
+require('dotenv').config();
+
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || process.env.STRAPI_URL || 'http://localhost:1337';
+
 async function testWithAuth() {
   console.log('🔍 Testing with Authentication...\n');
 
@@ -11,7 +16,7 @@ async function testWithAuth() {
 
   try {
     console.log('1. Testing authentication...');
-    const authResponse = await fetch('http://localhost:1337/api/auth/local', {
+    const authResponse = await fetch(`${STRAPI_URL}/api/auth/local`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +53,7 @@ async function testWithAuth() {
         }
       };
 
-      const createResponse = await fetch('http://localhost:1337/api/businesses', {
+      const createResponse = await fetch(`${STRAPI_URL}/api/businesses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,7 +71,7 @@ async function testWithAuth() {
         
         // Test owner filtering
         console.log('\n3. Testing owner filter with auth...');
-        const filterResponse = await fetch('http://localhost:1337/api/businesses?filters[owner][$eq]=me', {
+        const filterResponse = await fetch(`${STRAPI_URL}/api/businesses?filters[owner][$eq]=me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -71,33 +71,37 @@ export function NewsHeroWidget() {
       setLoading(true)
       console.log('Fetching news articles from Strapi...')
       
-      // Call Strapi API to get news articles with populated media
-      const response = await fetch(buildApiUrl("news-articles?populate=*&sort=PublishedTimestamp:desc"))
+      // Call Strapi API to get regular articles
+      const response = await fetch(buildApiUrl("articles?populate=*&sort=publishedAt:desc&pagination[limit]=10"))
       
       if (response.ok) {
         const data = await response.json()
         console.log('Strapi news articles response:', data)
         
         if (data.data && data.data.length > 0) {
-          // Transform Strapi data to match component interface
-          const transformedArticles: NewsArticle[] = data.data.map((strapiArticle: StrapiArticle) => {
+          console.log('Raw articles data:', data.data);
+          // Transform Strapi v5 data to match component interface
+          const transformedArticles: NewsArticle[] = data.data.map((article: any) => {
+            console.log('Processing article:', article);
             // Get image URL with fallback
             let imageUrl = "/placeholder.svg?height=300&width=450&text=News"
-            if (strapiArticle.Image) {
-              imageUrl = buildStrapiUrl(strapiArticle.Image.url)
+            if (article.attributes?.cover?.data?.attributes?.url) {
+              imageUrl = buildStrapiUrl(article.attributes.cover.data.attributes.url)
             }
 
-            return {
-              id: strapiArticle.id.toString(),
-              title: strapiArticle.Title,
-              summary: strapiArticle.Summary,
+            const transformed = {
+              id: article.id.toString(),
+              title: article.attributes?.title || 'Untitled Article',
+              summary: article.attributes?.description || '',
               image: imageUrl,
-              source: strapiArticle.Source,
-              timestamp: strapiArticle.PublishedTimestamp || strapiArticle.publishedAt,
-              category: strapiArticle.Culture,
-              trending: strapiArticle.Trending || false,
-              url: strapiArticle.URL,
-            }
+              source: article.attributes?.author?.data?.attributes?.name || 'Pattaya1',
+              timestamp: article.attributes?.publishedAt || article.attributes?.createdAt,
+              category: article.attributes?.category?.data?.attributes?.name || 'News',
+              trending: article.attributes?.trending || false,
+              url: `/articles/${article.attributes?.slug || article.id}`,
+            };
+            console.log('Transformed article:', transformed);
+            return transformed;
           })
           
           console.log('Transformed news articles:', transformedArticles)

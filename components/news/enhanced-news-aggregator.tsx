@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useNews } from "@/hooks/use-news"
+import { newsApi } from "@/lib/news-api"
 import {
   Newspaper,
   Clock,
@@ -49,6 +51,7 @@ export function EnhancedNewsAggregator({ theme = "primary", compact = false }: N
   const isPrimary = theme === "primary"
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [loading, setLoading] = useState(true)
+  const { articles: breakingNews, loading: breakingLoading, fetchNews } = useNews()
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedLanguage, setSelectedLanguage] = useState("all")
@@ -62,24 +65,62 @@ export function EnhancedNewsAggregator({ theme = "primary", compact = false }: N
   const loadNews = useCallback(async () => {
     try {
       setLoading(true)
-      const params = new URLSearchParams({
-        ...(pattayaOnly && { pattaya: "true" }),
-        ...(selectedLanguage !== "all" && { lang: selectedLanguage }),
-        ...(selectedCategory !== "all" && { category: selectedCategory }),
-        ...(breakingOnly && { breaking: "true" }),
-      })
+      
+      // Load both RSS aggregator and breaking news
+      const [rssResponse, breakingResponse] = await Promise.allSettled([
+        fetch(`/api/news/rss-aggregator-enhanced?${new URLSearchParams({
+          ...(pattayaOnly && { pattaya: "true" }),
+          ...(selectedLanguage !== "all" && { lang: selectedLanguage }),
+          ...(selectedCategory !== "all" && { category: selectedCategory }),
+          ...(breakingOnly && { breaking: "true" }),
+        })}`),
+        newsApi.getLiveNews().catch(() => ({ data: [] }))
+      ])
 
-      const response = await fetch(`/api/news/rss-aggregator-enhanced?${params}`)
-      if (response.ok) {
-        const data = await response.json()
-        setArticles(data.articles || [])
+      let rssArticles: NewsArticle[] = []
+      if (rssResponse.status === 'fulfilled' && rssResponse.value.ok) {
+        const data = await rssResponse.value.json()
+        rssArticles = data.articles || []
         setFeedStatus(data.feedStatus || {})
         setLastUpdated(data.lastUpdated || new Date().toISOString())
+      }
 
-        // Check for breaking news
-        if (data.breakingNews > 0 && notificationsEnabled) {
-          showBreakingNewsNotification(data.articles.filter((a: NewsArticle) => a.isBreaking)[0])
-        }
+      // Convert breaking news to match NewsArticle interface
+      let convertedBreakingNews: NewsArticle[] = []
+      if (breakingResponse.status === 'fulfilled') {
+        const breakingData = breakingResponse.value as any
+        convertedBreakingNews = (breakingData.data || []).map((article: any) => ({
+          id: `breaking-${article.id}`,
+          title: article.Title,
+          description: article.Description,
+          link: article.URL,
+          pubDate: article.PublishedAt,
+          source: `Breaking: ${article.apiSource}`,
+          category: "local" as const,
+          language: "english" as const,
+          articleCategory: "breaking",
+          image: article.ImageURL || "/placeholder.svg",
+          isPattayaRelated: true,
+          isBreaking: true,
+          relevanceScore: 100,
+          priority: 1,
+          timestamp: article.PublishedAt
+        }))
+      }
+
+      // Combine and sort articles (breaking news first)
+      const combinedArticles = [...convertedBreakingNews, ...rssArticles]
+        .sort((a, b) => {
+          if (a.isBreaking && !b.isBreaking) return -1
+          if (!a.isBreaking && b.isBreaking) return 1
+          return new Date(b.pubDate || b.timestamp).getTime() - new Date(a.pubDate || a.timestamp).getTime()
+        })
+
+      setArticles(combinedArticles)
+
+      // Check for breaking news notifications
+      if (convertedBreakingNews.length > 0 && notificationsEnabled) {
+        showBreakingNewsNotification(convertedBreakingNews[0])
       }
     } catch (error) {
       console.error("Failed to load news:", error)
@@ -232,8 +273,11 @@ export function EnhancedNewsAggregator({ theme = "primary", compact = false }: N
             <Button
               variant="ghost"
               size="icon"
-              onClick={loadNews}
-              disabled={loading}
+              onClick={() => {
+                loadNews()
+                fetchNews() // Also fetch new breaking news
+              }}
+              disabled={loading || breakingLoading}
               className={`h-6 w-6 ${isPrimary ? "hover:bg-orange-200" : "hover:bg-purple-700"}`}
             >
               <Globe className="h-3 w-3" />

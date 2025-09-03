@@ -1,5 +1,10 @@
 const fetch = require('node-fetch');
 
+// Load environment variables
+require('dotenv').config();
+
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || process.env.STRAPI_URL || 'http://localhost:1337';
+
 async function testCreateBusiness() {
   console.log('🔍 Testing Business Creation...\n');
 
@@ -25,7 +30,7 @@ async function testCreateBusiness() {
 
   try {
     console.log('1. Testing POST /api/businesses (without owner field)...');
-    const response = await fetch('http://localhost:1337/api/businesses', {
+    const response = await fetch(`${STRAPI_URL}/api/businesses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +47,7 @@ async function testCreateBusiness() {
       
       // Try to fetch the created business
       console.log('\n2. Testing GET /api/businesses to see created business...');
-      const getResponse = await fetch('http://localhost:1337/api/businesses');
+      const getResponse = await fetch(`${STRAPI_URL}/api/businesses`);
       const getResult = await getResponse.json();
       console.log('GET Response:', JSON.stringify(getResult, null, 2));
     }

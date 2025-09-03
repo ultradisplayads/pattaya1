@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Separator } from '@/components/ui/separator'
 import { LocateMeButton } from '@/components/location/locate-me-button'
 import { useLocation } from '@/components/location/location-provider'
+import { buildApiUrl } from '@/lib/strapi-config'
 
 interface WeatherData {
   location: {
@@ -129,8 +130,7 @@ export function EnhancedWeatherWidget() {
   const fetchWeatherSuggestions = async (condition: string) => {
     try {
       setSuggestionsLoading(true)
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
-      const suggestionsResponse = await fetch(`${strapiUrl}/api/weather/suggestions?condition=${condition}`)
+      const suggestionsResponse = await fetch(buildApiUrl(`weather/suggestions?condition=${condition}`))
       if (suggestionsResponse.ok) {
         const suggestionsData = await suggestionsResponse.json()
         if (suggestionsData.data && suggestionsData.data.length > 0) {
@@ -173,9 +173,7 @@ export function EnhancedWeatherWidget() {
 
   const loadSettings = async () => {
     try {
-      // Use Strapi backend URL from environment or default to localhost:1337
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
-      const response = await fetch(`${strapiUrl}/api/weather/settings`)
+      const response = await fetch(buildApiUrl('weather/settings'))
       
       if (response.ok) {
         const data = await response.json()
@@ -218,8 +216,7 @@ export function EnhancedWeatherWidget() {
       const currentUnits = units || settings?.units || 'metric'
       
       // Build API URL with parameters
-      const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
-      const apiUrl = `${strapiUrl}/api/weather/current?lat=${lat}&lon=${lon}&units=${currentUnits}`
+      const apiUrl = buildApiUrl(`weather/current?lat=${lat}&lon=${lon}&units=${currentUnits}`)
       
       console.log('🌤️ Fetching weather from:', apiUrl)
       

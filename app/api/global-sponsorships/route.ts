@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildApiUrl } from '@/lib/strapi-config'
 
 export async function GET(request: NextRequest) {
   try {
-    const response = await fetch('http://localhost:1337/api/global-sponsorships', {
+    const response = await fetch(buildApiUrl('global-sponsorships'), {
       headers: {
         'Content-Type': 'application/json',
       },

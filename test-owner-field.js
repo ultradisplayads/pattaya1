@@ -1,5 +1,7 @@
 // Test script to check owner field functionality
-const STRAPI_URL = 'http://localhost:1337';
+require('dotenv').config();
+
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || process.env.STRAPI_URL || 'http://localhost:1337';
 
 async function makeRequest(endpoint, method = 'GET', body = null) {
   const headers = {

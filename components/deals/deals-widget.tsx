@@ -8,10 +8,23 @@ import { DealCard } from "./deal-card"
 interface Deal {
   id: string
   deal_title: string
+  description: string
   sale_price: number
   original_price: number
   deal_category: string
-  expiry_date_time: string
+  slug: string
+  isActive: boolean
+  featured: boolean
+  views: number
+  clicks: number
+  conversions: number
+  expiry_date_time?: string
+  requires_reservation?: boolean
+  business?: {
+    name: string
+    address: string
+  }
+  image_gallery?: any[]
 }
 
 export function DealsWidget() {
