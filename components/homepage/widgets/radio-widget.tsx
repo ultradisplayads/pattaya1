@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -116,7 +116,7 @@ interface GlobalSponsorship {
   sponsorColor: string
 }
 
-export function RadioWidget({ className }: { className?: string }) {
+export function RadioWidget({ className, isExpanded = false, onToggleExpand }: { className?: string; isExpanded?: boolean; onToggleExpand?: () => void }) {
   const [stations, setStations] = useState<RadioStation[]>([])
   const [currentStation, setCurrentStation] = useState<RadioStation | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -133,7 +133,6 @@ export function RadioWidget({ className }: { className?: string }) {
   })
   const [globalSponsorship, setGlobalSponsorship] = useState<GlobalSponsorship | null>(null)
   const [globalSponsorshipLoading, setGlobalSponsorshipLoading] = useState(true)
-  const [isExpanded, setIsExpanded] = useState(false)
   const [isPlayingPreRollAd, setIsPlayingPreRollAd] = useState(false)
   const [preRollAdProgress, setPreRollAdProgress] = useState(0)
   const [logoLoadingStates, setLogoLoadingStates] = useState<Record<string, boolean>>({})
@@ -757,7 +756,9 @@ export function RadioWidget({ className }: { className?: string }) {
     }
     
     // Expand the widget
-    setIsExpanded(true)
+    if (onToggleExpand) {
+      onToggleExpand()
+    }
   }
 
   const refreshStations = () => {
@@ -1207,11 +1208,13 @@ export function RadioWidget({ className }: { className?: string }) {
 
   return (
     <>
-      <Card 
-        className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
-        onClick={handleWidgetClick}
-        data-radio-widget="true"
-      >
+      {!isExpanded ? (
+        // Compact Radio View
+        <Card 
+          className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
+          onClick={handleWidgetClick}
+          data-radio-widget="true"
+        >
       {/* Global Sponsorship Banner - At the very top */}
       {globalSponsorshipLoading && (
         <div className="w-full p-3 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20">
@@ -1297,8 +1300,6 @@ export function RadioWidget({ className }: { className?: string }) {
               </Badge>
             )}
             
-
-            
             {/* Offline Fallback Indicator */}
             {stations.length > 0 && stations[0].streamUrl.includes('example.com') && (
               <Badge className="bg-orange-500/10 text-orange-600 text-[10px] px-2 py-0.5 font-medium border border-orange-200 rounded-full">
@@ -1307,6 +1308,22 @@ export function RadioWidget({ className }: { className?: string }) {
             )}
           </div>
           
+          {/* More Button */}
+          {onToggleExpand && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleExpand()
+              }}
+              className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm"
+              title="Expand widget"
+            >
+              <ChevronDown className="w-3 h-3 mr-1" />
+              More
+            </Button>
+          )}
         </div>
       </CardHeader>
 
@@ -1698,217 +1715,219 @@ export function RadioWidget({ className }: { className?: string }) {
           </div>
         </div>
       )}
-    </Card>
-
-    {/* Expanded Radio Widget Modal */}
-    <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Radio className="h-5 w-5 text-blue-600" />
-            Radio Stations
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(false)}
-              className="ml-auto h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Current Station Info */}
-          {currentStation && (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <img
-                    src={currentStation.logo || "/placeholder.svg"}
-                    alt={currentStation.name}
-                    className="w-16 h-16 rounded-lg object-cover"
-                    onLoad={() => handleLogoLoad(currentStation.id)}
-                    onError={(e) => {
-                      handleLogoError(currentStation.id, currentStation.name)
-                      const target = e.target as HTMLImageElement
-                      target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
+        </Card>
+      ) : (
+        // Expanded Radio View (Full Content in Widget)
+        <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-lg overflow-y-auto">
+          <CardHeader className="pb-4 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                <span className="text-[15px] font-medium text-gray-900">Radio Stations</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {onToggleExpand && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleExpand()
                     }}
-                  />
-                  {currentStation.featured && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
-                      <Star className="w-2 h-2 text-white fill-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{currentStation.name}</h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <span className="font-mono font-medium text-purple-600">{currentStation.frequency} FM</span>
-                    <span>•</span>
-                    <span>{currentStation.genre}</span>
-                    <span>•</span>
-                    <span>{currentStation.listeners.toLocaleString()} listeners</span>
-                  </div>
-                  <p className="text-sm text-gray-700">{currentStation.nowPlaying}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-gray-500">
-                      Station {stations.findIndex(s => s.id === currentStation.id) + 1} of {stations.length}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => playPreviousStation()}
-                    disabled={!canPlayPrevious()}
-                    title="Previous station"
-                    className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm"
+                    title="Collapse widget"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <ChevronUp className="w-3 h-3 mr-1" />
+                    Less
                   </Button>
-                  
-                  <Button
-                    onClick={() => currentStation && playStation(currentStation)}
-                    disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
-                    className="h-12 w-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
-                  </Button>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => playNextStation()}
-                    disabled={!canPlayNext()}
-                    title="Next station"
-                    className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Button>
-                  
-
-                </div>
+                )}
               </div>
             </div>
-          )}
+          </CardHeader>
 
-          {/* Volume Control */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <Volume2 className="h-5 w-5 text-gray-600" />
-              <div className="flex-1">
-                <Slider
-                  value={volume}
-                  onValueChange={handleVolumeChange}
-                  max={100}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-              <span className="text-sm font-medium text-gray-600 min-w-[3rem]">{volume[0]}%</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMute}
-                className="h-8 w-8 p-0"
-              >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </Button>
-            </div>
-            <div className="mt-2 text-xs text-gray-500 text-center">
-              Volume: {volume[0]}% {isMuted && "• Muted"}
-            </div>
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="text-xs text-gray-500 text-center space-y-1">
-                <div>Navigation: Use Previous/Next buttons or click on any station</div>
-                <div>Quick Select: Click frequency buttons in collapsed view</div>
-              </div>
-            </div>
-          </div>
-
-          {/* All Stations List */}
-          <div className="space-y-3">
-            <h4 className="text-lg font-semibold text-gray-900">All Stations</h4>
-            <div className="grid gap-3 max-h-96 overflow-y-auto">
-              {stations.map((station) => (
-                <div
-                  key={station.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:bg-gray-50 ${
-                    currentStation?.id === station.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
-                  }`}
-                  onClick={() => playStation(station)}
-                >
+          <CardContent className="pt-0 space-y-6">
+            {/* Current Station Info */}
+            {currentStation && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
-                      src={station.logo || "/placeholder.svg"}
-                      alt={station.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                      onLoad={() => handleLogoLoad(station.id)}
+                      src={currentStation.logo || "/placeholder.svg"}
+                      alt={currentStation.name}
+                      className="w-16 h-16 rounded-lg object-cover"
+                      onLoad={() => handleLogoLoad(currentStation.id)}
                       onError={(e) => {
-                        handleLogoError(station.id, station.name)
+                        handleLogoError(currentStation.id, currentStation.name)
                         const target = e.target as HTMLImageElement
-                        target.src = "/placeholder.svg?height=48&width=48&text=" + station.name.charAt(0)
+                        target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
                       }}
                     />
-                    {station.featured && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
-                        <Star className="w-1.5 h-1.5 text-white fill-white" />
-                      </div>
-                    )}
-                    {station.isLive && (
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                    {currentStation.featured && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+                        <Star className="w-2 h-2 text-white fill-white" />
                       </div>
                     )}
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h5 className="font-medium text-gray-900 truncate">{station.name}</h5>
-                      {station.isSponsored && (
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
-                          SPONSORED
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900">{currentStation.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                      <span className="font-mono font-medium text-purple-600">{currentStation.frequency} FM</span>
                       <span>•</span>
-                      <span>{station.genre}</span>
+                      <span>{currentStation.genre}</span>
                       <span>•</span>
-                      <span>{station.listeners.toLocaleString()} listeners</span>
+                      <span>{currentStation.listeners.toLocaleString()} listeners</span>
                     </div>
-                    <p className="text-sm text-gray-600 truncate">{station.nowPlaying}</p>
+                    <p className="text-sm text-gray-700">{currentStation.nowPlaying}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs text-gray-500">
+                        Station {stations.findIndex(s => s.id === currentStation.id) + 1} of {stations.length}
+                      </span>
+                    </div>
                   </div>
-
                   <div className="flex items-center gap-2">
-                    {station.website && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.open(station.website, '_blank')
-                        }}
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => playPreviousStation()}
+                      disabled={!canPlayPrevious()}
+                      title="Previous station"
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </Button>
+                    
+                    <Button
+                      onClick={() => currentStation && playStation(currentStation)}
+                      disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
+                      className="h-12 w-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => playNextStation()}
+                      disabled={!canPlayNext()}
+                      title="Next station"
+                      className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Button>
                   </div>
                 </div>
-              ))}
+              </div>
+            )}
+
+            {/* Volume Control */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-5 w-5 text-gray-600" />
+                <div className="flex-1">
+                  <Slider
+                    value={volume}
+                    onValueChange={handleVolumeChange}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+                <span className="text-sm font-medium text-gray-600 min-w-[3rem]">{volume[0]}%</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className="h-8 w-8 p-0"
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </Button>
+              </div>
+              <div className="mt-2 text-xs text-gray-500 text-center">
+                Volume: {volume[0]}% {isMuted && "• Muted"}
+              </div>
             </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+            {/* All Stations List */}
+            <div className="space-y-3">
+              <h4 className="text-lg font-semibold text-gray-900">All Stations</h4>
+              <div className="grid gap-3 max-h-96 overflow-y-auto">
+                {stations.map((station) => (
+                  <div
+                    key={station.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:bg-gray-50 ${
+                      currentStation?.id === station.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
+                    }`}
+                    onClick={() => playStation(station)}
+                  >
+                    <div className="relative">
+                      <img
+                        src={station.logo || "/placeholder.svg"}
+                        alt={station.name}
+                        className="w-12 h-12 rounded-lg object-cover"
+                        onLoad={() => handleLogoLoad(station.id)}
+                        onError={(e) => {
+                          handleLogoError(station.id, station.name)
+                          const target = e.target as HTMLImageElement
+                          target.src = "/placeholder.svg?height=48&width=48&text=" + station.name.charAt(0)
+                        }}
+                      />
+                      {station.featured && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                          <Star className="w-1.5 h-1.5 text-white fill-white" />
+                        </div>
+                      )}
+                      {station.isLive && (
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h5 className="font-medium text-gray-900 truncate">{station.name}</h5>
+                        {station.isSponsored && (
+                          <Badge variant="outline" className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200">
+                            SPONSORED
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                        <span>•</span>
+                        <span>{station.genre}</span>
+                        <span>•</span>
+                        <span>{station.listeners.toLocaleString()} listeners</span>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate">{station.nowPlaying}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {station.website && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            window.open(station.website, '_blank')
+                          }}
+                          className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </>
   )
 }

@@ -268,7 +268,10 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
   const maxHeight = isExpanded ? "600px" : "320px"
 
   return (
-    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+    <>
+      {!isExpanded ? (
+        // Compact Events Calendar View
+        <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
       <CardHeader className="pb-3 px-6 pt-6">
         <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
@@ -403,6 +406,145 @@ export function EventsCalendarWidget({ isExpanded = false, onToggleExpand }: Eve
           </div>
         )}
       </CardContent>
-    </Card>
+        </Card>
+      ) : (
+        // Expanded Events Calendar View
+        <Card className="h-full bg-white border border-gray-100 shadow-lg rounded-2xl overflow-hidden">
+          <CardHeader className="pb-3 px-6 pt-6">
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-3 text-blue-500" />
+                Events Calendar - Full View
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center text-xs text-gray-500 font-medium">
+                  <Clock className="h-3 w-3 mr-2" />
+                  {currentTime.toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
+                </div>
+                {onToggleExpand && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={onToggleExpand} 
+                    className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm"
+                  >
+                    <ChevronUp className="h-3 w-3 mr-1" />
+                    Less
+                  </Button>
+                )}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="space-y-4 overflow-y-auto transition-all duration-300 max-h-[600px]">
+              {events.map((event, index) => (
+                <div
+                  key={event.id}
+                  className={`p-6 rounded-xl transition-all duration-200 cursor-pointer group border ${
+                    event.featured
+                      ? "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md"
+                      : "bg-gray-50 hover:bg-white border-gray-100 hover:shadow-sm"
+                  }`}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex space-x-6">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={event.image || "/placeholder.svg"}
+                        alt={event.title}
+                        className="w-24 h-18 rounded-lg object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                          {event.title}
+                          {event.featured && <Star className="inline w-4 h-4 ml-2 text-yellow-500 fill-current" />}
+                        </h3>
+                        <Badge className={`text-sm font-medium rounded-full border-0 ${getStatusColor(event.status)}`}>
+                          {event.status.replace("-", " ")}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center space-x-6 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center font-medium">
+                          <Clock className="w-4 h-4 mr-2" />
+                          <span className="font-mono">{formatTimeUntil(event.date, event.time)}</span>
+                        </div>
+                        <div className="flex items-center font-medium">
+                          <MapPin className="w-4 h-4 mr-2" />
+                          <span className="truncate max-w-[200px]">{event.location}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Badge variant="outline" className={`text-sm font-medium border ${getCategoryColor(event.category)}`}>
+                            {event.category}
+                          </Badge>
+                          <div className="flex items-center text-sm text-gray-500 font-medium">
+                            <Users className="w-4 h-4 mr-2" />
+                            <span>{event.attendees}</span>
+                            {event.maxAttendees && <span>/{event.maxAttendees}</span>}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center text-sm font-semibold">
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            <span className={event.price === 0 ? "text-green-600" : "text-gray-700"}>
+                              {formatPrice(event.price)}
+                            </span>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Attendance progress bar */}
+                      {event.maxAttendees && (
+                        <div className="mt-4 w-full bg-gray-100 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                              event.attendees / event.maxAttendees > 0.8
+                                ? "bg-red-500"
+                                : event.attendees / event.maxAttendees > 0.6
+                                  ? "bg-orange-500"
+                                  : "bg-green-500"
+                            }`}
+                            style={{ width: `${(event.attendees / event.maxAttendees) * 100}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 text-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-sm font-medium bg-white border-gray-200 hover:bg-gray-50 transition-colors px-4 py-2"
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                View Full Calendar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
   )
 }

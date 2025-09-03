@@ -67,7 +67,7 @@ interface StrapiSocialMediaPost {
   publishedAt: string
 }
 
-export function SocialFeedWidget() {
+export function SocialFeedWidget({ isExpanded = false, onToggleExpand }: { isExpanded?: boolean; onToggleExpand?: () => void }) {
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -315,16 +315,33 @@ export function SocialFeedWidget() {
   }
 
   return (
-    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+    <>
+      {!isExpanded ? (
+        // Compact Social Feed View
+        <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
       <CardHeader className="pb-3 px-6 pt-6">
         <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-3"></div>
             Social Feed
           </div>
-          <Badge variant="secondary" className="text-xs font-medium bg-gray-50 text-gray-600 border-0">
-            {socialPosts.length} posts
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs font-medium bg-gray-50 text-gray-600 border-0">
+              {socialPosts.length} posts
+            </Badge>
+            {onToggleExpand && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleExpand()
+                }}
+                className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                title="Expand widget"
+              >
+                {isExpanded ? 'Less' : 'More'}
+              </button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
@@ -417,6 +434,124 @@ export function SocialFeedWidget() {
           ))}
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      ) : (
+        // Expanded Social Feed View
+        <Card className="h-full bg-white border border-gray-100 shadow-lg rounded-2xl overflow-hidden">
+          <CardHeader className="pb-3 px-6 pt-6">
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-3"></div>
+                Social Feed - All Posts
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs font-medium bg-gray-50 text-gray-600 border-0">
+                  {socialPosts.length} posts
+                </Badge>
+                {onToggleExpand && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleExpand()
+                    }}
+                    className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                    title="Collapse widget"
+                  >
+                    Less
+                  </button>
+                )}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="space-y-6 max-h-[600px] overflow-y-auto social-feed-scroll">
+              {socialPosts.map((post) => (
+                <div key={post.id} className="border-b border-gray-50 pb-6 last:border-b-0 last:pb-0">
+                  {/* Platform Badge */}
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className={`${getPlatformColor(post.platform)} px-3 py-1 text-xs font-medium rounded-full border-0`}>
+                      {getPlatformIcon(post.platform)} {post.platform.charAt(0).toUpperCase() + post.platform.slice(1)}
+                    </Badge>
+                    <button className="text-gray-300 hover:text-gray-500 transition-colors">
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Author Info */}
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={post.avatar || "/placeholder.svg"}
+                      alt={post.author}
+                      className="w-12 h-12 rounded-full mr-4 ring-1 ring-gray-100 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center">
+                        <span className="font-semibold text-base text-gray-900 truncate">{post.author}</span>
+                        {post.verified && <CheckCircle className="w-4 h-4 text-blue-500 ml-2 flex-shrink-0" />}
+                      </div>
+                      <span className="text-sm text-gray-500 truncate block font-medium">{post.handle}</span>
+                    </div>
+                    <span className="text-sm text-gray-400 flex-shrink-0 font-medium">{post.timestamp}</span>
+                  </div>
+
+                  {/* Content */}
+                  <p className="text-base text-gray-700 mb-4 leading-relaxed font-medium">{post.content}</p>
+
+                  {/* Location */}
+                  {post.location && (
+                    <div className="flex items-center mb-4 text-sm text-gray-500">
+                      <MapPin className="w-4 h-4 mr-2 text-red-400 flex-shrink-0" />
+                      <span className="truncate font-medium">{post.location}</span>
+                    </div>
+                  )}
+
+                  {/* Image */}
+                  {post.image && (
+                    <img
+                      src={post.image || "/placeholder.svg"}
+                      alt="Post content"
+                      className="w-full h-32 object-cover rounded-xl mb-4"
+                    />
+                  )}
+
+                  {/* Hashtags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {post.hashtags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="text-sm text-blue-600 cursor-pointer truncate font-medium hover:text-blue-700 transition-colors"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Engagement */}
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center space-x-8">
+                      <div className="flex items-center cursor-pointer hover:text-red-500 transition-colors">
+                        <Heart className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="font-medium">{post.likes}</span>
+                      </div>
+                      <div className="flex items-center cursor-pointer hover:text-blue-500 transition-colors">
+                        <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="font-medium">{post.comments}</span>
+                      </div>
+                      <div className="flex items-center cursor-pointer hover:text-green-500 transition-colors">
+                        <Repeat2 className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="font-medium">{post.shares}</span>
+                      </div>
+                    </div>
+                    <button className="hover:text-gray-700 transition-colors">
+                      <Share className="w-4 h-4 flex-shrink-0" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
   )
 }

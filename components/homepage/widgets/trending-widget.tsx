@@ -20,7 +20,7 @@ interface StrapiTrendingTopic {
   url: string | null
 }
 
-export function TrendingWidget() {
+export function TrendingWidget({ isExpanded = false, onToggleExpand }: { isExpanded?: boolean; onToggleExpand?: () => void }) {
   const [trendingItems, setTrendingItems] = useState<StrapiTrendingTopic[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -141,17 +141,34 @@ export function TrendingWidget() {
   }
 
   return (
-    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300">
+    <>
+      {!isExpanded ? (
+        // Compact Trending View
+        <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300">
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
             <TrendingUp className="h-4 w-4 mr-2 text-gray-600" />
             Trending Now
           </div>
-          <Badge className="bg-green-50 text-green-700 text-xs font-medium border-0">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
-            Live
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-50 text-green-700 text-xs font-medium border-0">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+              Live
+            </Badge>
+            {onToggleExpand && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleExpand()
+                }}
+                className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                title="Expand widget"
+              >
+                {isExpanded ? 'Less' : 'More'}
+              </button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
@@ -209,6 +226,111 @@ export function TrendingWidget() {
           </button>
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      ) : (
+        // Expanded Trending View
+        <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <CardHeader className="pb-4 px-6 pt-6">
+            <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
+              <div className="flex items-center">
+                <TrendingUp className="h-4 w-4 mr-2 text-gray-600" />
+                Trending Now - Full Analysis
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-green-50 text-green-700 text-xs font-medium border-0">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+                  Live
+                </Badge>
+                {onToggleExpand && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleExpand()
+                    }}
+                    className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                    title="Collapse widget"
+                  >
+                    Less
+                  </button>
+                )}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="space-y-4 max-h-[600px] overflow-y-auto">
+              {trendingItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="p-6 rounded-2xl bg-gray-50/50 hover:bg-white transition-all duration-200 cursor-pointer group border border-transparent hover:border-gray-100"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-gray-500 group-hover:text-gray-700 transition-colors">{getIcon(item.type)}</div>
+                      <span className="text-lg font-bold text-gray-400">#{index + 1}</span>
+                      <span className="text-sm font-medium text-gray-600">{item.type}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {getGrowthIcon(item.growth)}
+                      <span
+                        className={`text-sm font-medium ${
+                          item.growth > 0 ? "text-green-600" : item.growth < 0 ? "text-red-600" : "text-gray-500"
+                        }`}
+                      >
+                        {Math.abs(item.growth).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-semibold text-lg text-gray-900 mb-3 group-hover:text-gray-700 transition-colors leading-tight">
+                    {item.title}
+                  </h3>
+
+                  {item.description && (
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      {item.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className={`text-sm ${getCategoryColor(item.category)} border-0 font-medium`}>
+                      {item.category}
+                    </Badge>
+                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <span className="flex items-center">
+                        <Users className="w-4 h-4 mr-1" />
+                        {item.posts.toLocaleString()} posts
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Growth bar */}
+                  <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        item.growth > 0 ? "bg-green-500" : item.growth < 0 ? "bg-red-500" : "bg-gray-300"
+                      }`}
+                      style={{ width: `${Math.min(Math.abs(item.growth), 100)}%` }}
+                    ></div>
+                  </div>
+
+                  {/* Additional details */}
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>Growth trend</span>
+                    <span>{item.growth > 0 ? 'Rising' : item.growth < 0 ? 'Declining' : 'Stable'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 text-center">
+              <button className="text-sm text-gray-600 hover:text-gray-800 font-medium transition-colors px-4 py-2 rounded-lg hover:bg-gray-50">
+                View All Trending Topics →
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
   )
 }
