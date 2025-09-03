@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Settings, BarChart3, Eye, EyeOff, ToggleLeft, ToggleRight, Activity, Sparkles } from "lucide-react"
+import { Settings, BarChart3, Eye, EyeOff, ToggleLeft, ToggleRight, Activity, Sparkles, Maximize2, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -51,6 +51,7 @@ export function ModularHomepage() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [userRole, setUserRole] = useState<"admin" | "business" | "user">("admin")
   const [loading, setLoading] = useState(true)
+  const [expandedWidget, setExpandedWidget] = useState<string | null>(null)
 
   useEffect(() => {
     initializeWidgets()
@@ -284,6 +285,16 @@ export function ModularHomepage() {
     setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, isVisible: !w.isVisible } : w)))
   }
 
+  const handleWidgetClick = (widgetId: string) => {
+    if (expandedWidget === widgetId) {
+      setExpandedWidget(null)
+    } else {
+      setExpandedWidget(widgetId)
+    }
+  }
+
+  const isWidgetExpanded = (widgetId: string) => expandedWidget === widgetId
+
   const visibleWidgets = widgets.filter((w) => w.isVisible)
 
   const getWidgetComponent = (widgetId: string) => {
@@ -453,21 +464,83 @@ export function ModularHomepage() {
             margin: '0 auto',
             padding: '1.5rem',
             alignItems: 'start',
-            justifyItems: 'stretch'
+            justifyItems: 'stretch',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            willChange: 'grid-template-rows, grid-template-columns'
           }}
         >
           {/* Row 1: Small widgets - Auto-fit in first row */}
           <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
             <EnhancedBreakingNewsWidget />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedWeatherWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('weather') ? 'widget-expanded' : 'widget-small'}`} 
+            style={{ 
+              minHeight: isWidgetExpanded('weather') ? '500px' : '250px', 
+              maxHeight: isWidgetExpanded('weather') ? '700px' : '350px', 
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('weather') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('weather') ? 'span 2' : 'span 1',
+              position: 'relative',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+                                        <EnhancedWeatherWidget 
+                isExpanded={isWidgetExpanded('weather')} 
+                onToggleExpand={() => handleWidgetClick('weather')}
+              />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <RadioWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+                      <div 
+              className={`widget-item ${isWidgetExpanded('radio') ? 'widget-expanded' : 'widget-small'}`}
+              style={{
+                minHeight: isWidgetExpanded('radio') ? '500px' : '250px',
+                maxHeight: isWidgetExpanded('radio') ? '700px' : '350px',
+                overflow: 'hidden',
+                gridColumn: isWidgetExpanded('radio') ? 'span 2' : 'span 1',
+                gridRow: isWidgetExpanded('radio') ? 'span 2' : 'span 1',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                transformOrigin: 'top left'
+              }}
+            >
+              <RadioWidget 
+                isExpanded={isWidgetExpanded('radio')}
+                onToggleExpand={() => handleWidgetClick('radio')}
+              />
+            </div>
+          <div 
+            className={`widget-item ${isWidgetExpanded('hot-deals') ? 'widget-expanded' : 'widget-small'}`} 
+            style={{ 
+              minHeight: isWidgetExpanded('hot-deals') ? '500px' : '250px', 
+              maxHeight: isWidgetExpanded('hot-deals') ? '700px' : '350px', 
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('hot-deals') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('hot-deals') ? 'span 2' : 'span 1',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+            onClick={() => handleWidgetClick('hot-deals')}
+          >
             <EnhancedHotDealsWidget />
+            <div className="absolute top-3 right-3 z-10">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 bg-white/80 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full shadow-sm transition-all duration-300"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleWidgetClick('hot-deals')
+                }}
+              >
+                {isWidgetExpanded('hot-deals') ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* Row 2: Large widget + Medium widget */}
@@ -506,29 +579,141 @@ export function ModularHomepage() {
           </div>
 
           {/* Row 4: Small widgets - Auto-fit */}
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <SocialFeedWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('social-feed') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('social-feed') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('social-feed') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('social-feed') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('social-feed') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <SocialFeedWidget 
+              isExpanded={isWidgetExpanded('social-feed')}
+              onToggleExpand={() => handleWidgetClick('social-feed')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <TrendingWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('trending') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('trending') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('trending') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('trending') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('trending') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <TrendingWidget 
+              isExpanded={isWidgetExpanded('trending')}
+              onToggleExpand={() => handleWidgetClick('trending')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <EventsCalendarWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('events-calendar') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('events-calendar') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('events-calendar') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('events-calendar') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('events-calendar') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <EventsCalendarWidget 
+              isExpanded={isWidgetExpanded('events-calendar')}
+              onToggleExpand={() => handleWidgetClick('events-calendar')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <ForumActivityWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('forum-activity') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('forum-activity') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('forum-activity') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('forum-activity') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('forum-activity') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <ForumActivityWidget 
+              isExpanded={isWidgetExpanded('forum-activity')}
+              onToggleExpand={() => handleWidgetClick('forum-activity')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <PhotoGalleryWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('photo-gallery') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('photo-gallery') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('photo-gallery') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('photo-gallery') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('photo-gallery') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <PhotoGalleryWidget 
+              isExpanded={isWidgetExpanded('photo-gallery')}
+              onToggleExpand={() => handleWidgetClick('photo-gallery')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <GoogleReviewsWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('google-reviews') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('google-reviews') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('google-reviews') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('google-reviews') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('google-reviews') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <GoogleReviewsWidget 
+              isExpanded={isWidgetExpanded('google-reviews')}
+              onToggleExpand={() => handleWidgetClick('google-reviews')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <LiveEventsWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('live-events') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('live-events') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('live-events') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('live-events') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('live-events') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <LiveEventsWidget 
+              isExpanded={isWidgetExpanded('live-events')}
+              onToggleExpand={() => handleWidgetClick('live-events')}
+            />
           </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <QuickLinksWidget />
+          <div 
+            className={`widget-item ${isWidgetExpanded('quick-links') ? 'widget-expanded' : 'widget-small'}`}
+            style={{
+              minHeight: isWidgetExpanded('quick-links') ? '500px' : '200px',
+              maxHeight: isWidgetExpanded('quick-links') ? '700px' : '300px',
+              overflow: 'hidden',
+              gridColumn: isWidgetExpanded('quick-links') ? 'span 2' : 'span 1',
+              gridRow: isWidgetExpanded('quick-links') ? 'span 2' : 'span 1',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformOrigin: 'top left'
+            }}
+          >
+            <QuickLinksWidget 
+              isExpanded={isWidgetExpanded('quick-links')}
+              onToggleExpand={() => handleWidgetClick('quick-links')}
+            />
           </div>
 
           {/* Row 5: Extra large widget - Full width */}
@@ -581,10 +766,11 @@ export function ModularHomepage() {
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           border-radius: 1rem;
           background: white;
           box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+          will-change: transform, grid-column, grid-row, min-height, max-height;
         }
 
         .widget-item:hover {
@@ -615,6 +801,94 @@ export function ModularHomepage() {
         .widget-xlarge {
           min-height: 300px;
           max-height: 400px;
+        }
+
+        .widget-expanded {
+          min-height: 500px;
+          max-height: 700px;
+          grid-column: span 2;
+          grid-row: span 2;
+          z-index: 10;
+          transform-origin: top left;
+          animation: expandWidget 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .widget-expanded:hover {
+          transform: none;
+          box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes expandWidget {
+          from {
+            opacity: 0.8;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        /* Ensure grid items flow smoothly around expanded widget */
+        .widget-grid-container {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Smooth transition for all grid items when layout changes */
+        .widget-grid-container > * {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, grid-column, grid-row;
+        }
+
+        /* Ensure smooth settling of other widgets when one expands */
+        .widget-grid-container {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: grid-template-rows, grid-template-columns;
+        }
+
+        /* Smooth movement for individual widgets during layout changes */
+        .widget-item {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, grid-column, grid-row, min-height, max-height;
+        }
+
+        /* Enhanced settling animation for non-expanded widgets with stagger effect */
+        .widget-item:not(.widget-expanded) {
+          animation: settleWidget 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .widget-item:not(.widget-expanded):nth-child(1) { animation-delay: 0.05s; }
+        .widget-item:not(.widget-expanded):nth-child(2) { animation-delay: 0.1s; }
+        .widget-item:not(.widget-expanded):nth-child(3) { animation-delay: 0.15s; }
+        .widget-item:not(.widget-expanded):nth-child(4) { animation-delay: 0.2s; }
+        .widget-item:not(.widget-expanded):nth-child(5) { animation-delay: 0.25s; }
+        .widget-item:not(.widget-expanded):nth-child(6) { animation-delay: 0.3s; }
+        .widget-item:not(.widget-expanded):nth-child(7) { animation-delay: 0.35s; }
+        .widget-item:not(.widget-expanded):nth-child(8) { animation-delay: 0.4s; }
+
+        @keyframes settleWidget {
+          from {
+            opacity: 0.9;
+            transform: scale(0.98) translateY(2px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        /* Smooth grid flow animation */
+        .widget-grid-container {
+          animation: gridFlow 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes gridFlow {
+          from {
+            opacity: 0.95;
+          }
+          to {
+            opacity: 1;
+          }
         }
 
         /* Responsive breakpoints */
@@ -668,6 +942,13 @@ export function ModularHomepage() {
           .widget-xlarge {
             max-height: 300px;
           }
+
+          .widget-expanded {
+            min-height: 300px;
+            max-height: 400px;
+            grid-column: span 1;
+            grid-row: span 1;
+          }
         }
 
         @media (max-width: 480px) {
@@ -699,6 +980,13 @@ export function ModularHomepage() {
 
           .widget-xlarge {
             max-height: 350px;
+          }
+
+          .widget-expanded {
+            min-height: 250px;
+            max-height: 300px;
+            grid-column: span 1;
+            grid-row: span 1;
           }
         }
       `}</style>
