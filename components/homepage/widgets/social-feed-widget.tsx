@@ -231,15 +231,15 @@ export function SocialFeedWidget() {
   const getPlatformColor = (platform: string) => {
     switch (platform) {
       case "twitter":
-        return "bg-black text-white"
+        return "bg-slate-900 text-white"
       case "threads":
-        return "bg-black text-white"
+        return "bg-neutral-900 text-white"
       case "instagram":
-        return "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+        return "bg-gradient-to-r from-slate-800 to-slate-600 text-white"
       case "bluesky":
-        return "bg-blue-500 text-white"
+        return "bg-sky-700 text-white"
       default:
-        return "bg-gray-600 text-white"
+        return "bg-slate-700 text-white"
     }
   }
 

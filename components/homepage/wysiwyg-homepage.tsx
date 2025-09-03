@@ -9,7 +9,7 @@ import { ResizableWidgetWrapper } from "./resizable-widget-wrapper"
 import type { WidgetDimensions } from "@/lib/widget-resize"
 
 // Import all widgets
-import { WeatherWidget } from "./widgets/weather-widget"
+import { EnhancedWeatherWidget } from "../widgets/enhanced-weather-widget"
 import { LiveEventsWidget } from "./widgets/live-events-widget"
 import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { QuickLinksWidget } from "./widgets/quick-links-widget"
@@ -34,7 +34,7 @@ interface Widget {
 }
 
 const widgetComponents = {
-  weather: WeatherWidget,
+        weather: EnhancedWeatherWidget,
   liveEvents: LiveEventsWidget,
   newsHero: NewsHeroWidget,
   quickLinks: QuickLinksWidget,
