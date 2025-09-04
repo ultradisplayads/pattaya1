@@ -39,21 +39,7 @@ interface StrapiDeal {
   views: number
   clicks: number
   conversions: number
-  image_gallery?: {
-    data: Array<{
-      id: number
-      attributes: {
-        name: string
-        url: string
-        formats?: {
-          thumbnail?: { url: string }
-          small?: { url: string }
-          medium?: { url: string }
-          large?: { url: string }
-        }
-      }
-    }>
-  }
+  image_gallery?: any[]
   business?: {
     data: {
       id: number
@@ -200,8 +186,8 @@ export function EnhancedHotDealsWidget() {
                     name: deal.business.data.attributes.name || 'Business Name',
                     address: deal.business.data.attributes.address || 'Pattaya, Thailand'
                   } : undefined,
-                  image_gallery: deal.image_gallery?.data?.map(img => ({
-                    url: buildStrapiUrl(img.attributes.url)
+                  image_gallery: deal.image_gallery?.map(img => ({
+                    url: buildStrapiUrl(img.url)
                   })) || []
                 }}
                 variant="default"

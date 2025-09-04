@@ -211,7 +211,7 @@ export default function PaymentPage({ params }: PaymentPageProps) {
       try {
         // In a real app, you'd fetch this from your backend
         // For now, we'll simulate it with the payment intent ID
-        const response = await fetch(buildApiUrl('/create-payment-intent'), {
+        const response = await fetch(('/api/create-payment-intent'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
