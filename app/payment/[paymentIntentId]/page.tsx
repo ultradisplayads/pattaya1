@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { stripePromise } from '@/lib/stripe-config';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { Loader2, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { buildApiUrl } from '@/lib/strapi-config';
 
 interface PaymentPageProps {
   params: {
@@ -210,7 +211,7 @@ export default function PaymentPage({ params }: PaymentPageProps) {
       try {
         // In a real app, you'd fetch this from your backend
         // For now, we'll simulate it with the payment intent ID
-        const response = await fetch(`/api/create-payment-intent`, {
+        const response = await fetch(buildApiUrl('/create-payment-intent'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
