@@ -48,7 +48,7 @@ interface ForumStats {
   hotTopics: number
 }
 
-export function ForumActivityWidget() {
+export function ForumActivityWidget({ isExpanded = false, onToggleExpand }: { isExpanded?: boolean; onToggleExpand?: () => void }) {
   const [posts, setPosts] = useState<StrapiForumActivity[]>([])
   const [stats, setStats] = useState<ForumStats>({
     totalPosts: 0,
@@ -205,17 +205,34 @@ export function ForumActivityWidget() {
   }
 
   return (
-    <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+    <>
+      {!isExpanded ? (
+        // Compact Forum Activity View
+        <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
       <CardHeader className="pb-3 px-6 pt-6">
         <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
             <MessageSquare className="h-4 w-4 mr-3 text-indigo-500" />
             Forum Activity
           </div>
-          <Badge className="bg-indigo-500 text-white text-xs font-medium rounded-full border-0">
-            <Users className="h-3 w-3 mr-2" />
-            {stats.activeUsers}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-indigo-500 text-white text-xs font-medium rounded-full border-0">
+              <Users className="h-3 w-3 mr-2" />
+              {stats.activeUsers}
+            </Badge>
+            {onToggleExpand && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleExpand()
+                }}
+                className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                title="Expand widget"
+              >
+                {isExpanded ? 'Less' : 'More'}
+              </button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
@@ -296,6 +313,135 @@ export function ForumActivityWidget() {
           </button>
         </div>
       </CardContent>
-    </Card>
+        </Card>
+      ) : (
+        // Expanded Forum Activity View
+        <Card className="h-full bg-white border border-gray-100 shadow-lg rounded-2xl overflow-hidden">
+          <CardHeader className="pb-3 px-6 pt-6">
+            <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
+              <div className="flex items-center">
+                <MessageSquare className="h-4 w-4 mr-3 text-indigo-500" />
+                Forum Activity - Full View
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge className="bg-indigo-500 text-white text-xs font-medium rounded-full border-0">
+                  <Users className="h-3 w-3 mr-2" />
+                  {stats.activeUsers}
+                </Badge>
+                {onToggleExpand && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleExpand()
+                    }}
+                    className="h-8 px-3 text-xs font-medium bg-white/80 hover:bg-white border-blue-200 hover:border-blue-300 text-blue-600 hover:text-blue-700 transition-all duration-300 hover:scale-105 shadow-sm rounded-lg border"
+                    title="Collapse widget"
+                  >
+                    Less
+                  </button>
+                )}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            {/* Enhanced Forum Stats */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-4 text-center border border-indigo-100">
+                <div className="text-xl font-bold text-indigo-600">{formatNumber(stats.totalPosts)}</div>
+                <div className="text-sm text-gray-600 font-medium">Total Posts</div>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 text-center border border-green-100">
+                <div className="text-xl font-bold text-green-600">{stats.newPostsToday}</div>
+                <div className="text-sm text-gray-600 font-medium">New Today</div>
+              </div>
+            </div>
+
+            {/* All Posts with Enhanced Details */}
+            <div className="space-y-4 max-h-[600px] overflow-y-auto">
+              {posts.map((post, index) => (
+                <div
+                  key={post.id}
+                  className="p-6 rounded-xl bg-gray-50 hover:bg-white border border-gray-100 hover:shadow-sm transition-all duration-200 cursor-pointer group"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex space-x-6">
+                    <Avatar className="h-12 w-12 flex-shrink-0 ring-2 ring-gray-100">
+                      <AvatarImage src={post.AuthorAvatar?.url || "/placeholder.svg"} alt={post.AuthorName} />
+                      <AvatarFallback className="text-sm font-medium">{post.AuthorName.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                          {post.IsPinned && "📌 "}
+                          {post.Title}
+                          {post.IsHot && <TrendingUp className="inline w-4 h-4 ml-2 text-red-500 flex-shrink-0" />}
+                        </h3>
+                      </div>
+
+                      {post.Content && (
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                          {post.Content}
+                        </p>
+                      )}
+
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Badge variant="outline" className={`text-sm font-medium border ${getCategoryColor(post.Category)}`}>
+                          {post.Category}
+                        </Badge>
+                        <span className="text-sm text-gray-500 font-medium">by {post.AuthorName}</span>
+                        <Badge variant="outline" className="text-sm font-medium bg-gray-50 text-gray-700 border-gray-200">
+                          Rep: {post.AuthorReputation}
+                        </Badge>
+                      </div>
+
+                      {post.Tags && post.Tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {post.Tags.map((tag, tagIndex) => (
+                            <span
+                              key={tagIndex}
+                              className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full font-medium"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center space-x-6">
+                          <div className="flex items-center font-medium">
+                            <MessageCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>{post.Replies} replies</span>
+                          </div>
+                          <div className="flex items-center font-medium">
+                            <Eye className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>{formatNumber(post.Views)} views</span>
+                          </div>
+                          <div className="flex items-center font-medium">
+                            <ThumbsUp className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>{post.Likes} likes</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center flex-shrink-0 font-medium">
+                          <Clock className="w-4 h-4 mr-2" />
+                          <span className="truncate">{formatTimeAgo(post.LastActivity)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 text-center">
+              <button className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-indigo-50">
+                View All Forum Activity →
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </>
   )
 }
