@@ -63,7 +63,7 @@ export async function GET(request: Request) {
         })) || []
       }
     } catch (error) {
-      console.log('No sponsored posts available:', error)
+      // Sponsored posts not available
     }
     
     

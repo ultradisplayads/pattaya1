@@ -61,19 +61,15 @@ export function EnhancedBreakingNewsWidget() {
   const { articles: strapiArticles } = useStrapiArticles()
 
   const loadBreakingNews = async () => {
-    console.log('[Widget] loadBreakingNews function called')
     try {
       setLoading(true)
       const apiUrl = "/api/breaking-news/live"
-      console.log('[Widget] Fetching from:', apiUrl)
       const response = await fetch(apiUrl)
-      console.log('[Widget] Response status:', response.status, response.ok)
       if (response.ok) {
         const result = await response.json()
         const data = result.data || result // Handle both old and new API formats
         
         if (data && data.length > 0) {
-          console.log('[Widget] API returned', data.length, 'news items')
           // Transform the API response to match our interface
           const transformedNews = data.map((item: any) => {
             const baseItem = {
@@ -124,20 +120,16 @@ export function EnhancedBreakingNewsWidget() {
             );
           
           if (hasNewContent) {
-            console.log('[Widget] New data detected! Setting fresh news items')
             setHasNewData(true)
             setLastFetchTime(new Date())
             // Reset hasNewData flag after 3 seconds
             setTimeout(() => setHasNewData(false), 3000)
           }
-          
-          console.log('[Widget] Setting', transformedNews.length, 'news items in state')
           setNews(transformedNews)
         } else {
           setNews([])
         }
       } else {
-        console.log('[Widget] API request failed with status:', response.status)
         // Fallback to Strapi articles if breaking news fails
         if (strapiArticles.length > 0) {
           const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
@@ -191,7 +183,6 @@ export function EnhancedBreakingNewsWidget() {
         }
       }
     } catch (error) {
-      console.error('[Widget] Error loading breaking news:', error)
       // Fallback to Strapi articles on error
       if (strapiArticles.length > 0) {
         const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
@@ -260,18 +251,15 @@ export function EnhancedBreakingNewsWidget() {
           setAdvertisements([])
         }
       } else {
-        console.error("Failed to load advertisements from Strapi:", response.status)
         setAdvertisements([])
       }
     } catch (error) {
-      console.error("Failed to load advertisements from Strapi:", error)
       setAdvertisements([])
     }
   }
 
   // Initial load
   useEffect(() => {
-    console.log('[Widget] Initial load triggered')
     loadBreakingNews()
     loadAdvertisements()
   }, [])
@@ -291,7 +279,6 @@ export function EnhancedBreakingNewsWidget() {
   // Auto-refresh data every 30 seconds to catch fresh news immediately
   useEffect(() => {
     const refreshInterval = setInterval(() => {
-      console.log('[Widget] Auto-refreshing data - checking for fresh news')
       loadBreakingNews()
       loadAdvertisements()
     }, 30 * 1000) // 30 seconds in milliseconds
@@ -312,14 +299,12 @@ export function EnhancedBreakingNewsWidget() {
 
   const allItems = useMemo(() => {
     // Use the unified news array that now contains both news and sponsored content
-    console.log('[Widget] All items from unified feed:', news.length, 'items')
     return news
   }, [news])
 
   const currentItem = allItems[currentIndex]
   const isAdvertisement = currentItem && ((currentItem as any).type === 'sponsored' || 'Sponsor' in currentItem)
   
-  console.log('[Widget] Current state - allItems:', allItems.length, 'currentIndex:', currentIndex, 'currentItem:', (currentItem as any)?.Title || (currentItem as any)?.Tiltle || 'none')
 
   if (!currentItem) {
     return (
