@@ -199,6 +199,7 @@ export function RadioWidget({ className }: { className?: string }) {
           case ' ':
             event.preventDefault()
             if (currentStation) {
+              handleUserInteraction()
               playStation(currentStation)
             }
             break
@@ -737,15 +738,15 @@ export function RadioWidget({ className }: { className?: string }) {
       setShouldAutoplay(true)
       
       // Trigger autoplay after a short delay
-      setTimeout(() => {
-        if (currentStation && !isPlaying) {
-          console.log('🚀 Autoplaying current station:', currentStation.name)
-          playStation(currentStation)
-        } else if (stations.length > 0 && !isPlaying) {
-          console.log('🚀 Autoplaying first available station:', stations[0].name)
-          playStation(stations[0])
-        }
-      }, 500)
+      // setTimeout(() => {
+      //   if (currentStation && !isPlaying) {
+      //     console.log('🚀 Autoplaying current station:', currentStation.name)
+      //     playStation(currentStation)
+      //   } else if (stations.length > 0 && !isPlaying) {
+      //     console.log('🚀 Autoplaying first available station:', stations[0].name)
+      //     playStation(stations[0])
+      //   }
+      // }, 500)
     }
   }
 
@@ -880,6 +881,8 @@ export function RadioWidget({ className }: { className?: string }) {
     try {
       console.log('Creating new Audio object')
       const audio = new Audio(station.streamUrl)
+      audio.crossOrigin = 'anonymous'
+      audio.preload = 'metadata'
       audioRef.current = audio
       
       console.log('Setting audio properties')
@@ -1487,6 +1490,7 @@ export function RadioWidget({ className }: { className?: string }) {
               console.log('Audio ref:', audioRef.current)
               if (currentStation) {
                 console.log('Calling playStation with:', currentStation)
+                handleUserInteraction()
                 playStation(currentStation)
               } else {
                 console.log('No current station available')
@@ -1553,7 +1557,10 @@ export function RadioWidget({ className }: { className?: string }) {
                   key={station.id}
                   variant="ghost"
                   size="sm"
-                  onClick={() => playStation(station)}
+                  onClick={() => {
+                    handleUserInteraction()
+                    playStation(station)
+                  }}
                   className={`h-7 px-2 rounded-full text-[11px] transition-all duration-200 ${
                     currentStation?.id === station.id
                       ? "bg-purple-100 text-purple-700 font-medium"
@@ -1598,7 +1605,10 @@ export function RadioWidget({ className }: { className?: string }) {
                           ? "bg-purple-50 border border-purple-200"
                           : "hover:bg-gray-50"
                       }`}
-                      onClick={() => playStation(station)}
+                      onClick={() => {
+                        handleUserInteraction()
+                        playStation(station)
+                      }}
                     >
                       <div className="flex items-center gap-3 w-full">
                         <div className="relative">
@@ -1681,7 +1691,8 @@ export function RadioWidget({ className }: { className?: string }) {
       {/* Hidden audio element for radio streams */}
       <audio
         ref={audioRef}
-        preload="none"
+        preload="metadata"
+        crossOrigin="anonymous"
         onError={(e) => {
           console.error('Radio stream error:', e)
           setError('Radio stream error occurred')
@@ -1772,7 +1783,7 @@ export function RadioWidget({ className }: { className?: string }) {
                   </Button>
                   
                   <Button
-                    onClick={() => currentStation && playStation(currentStation)}
+                    onClick={() => {handleUserInteraction();currentStation && playStation(currentStation)}}
                     disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
                     className="h-12 w-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
@@ -1842,7 +1853,10 @@ export function RadioWidget({ className }: { className?: string }) {
                   className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:bg-gray-50 ${
                     currentStation?.id === station.id ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
                   }`}
-                  onClick={() => playStation(station)}
+                  onClick={() => {
+                    handleUserInteraction()
+                    playStation(station)
+                  }}
                 >
                   <div className="relative">
                     <img
