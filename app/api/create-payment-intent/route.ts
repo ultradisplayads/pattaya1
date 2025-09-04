@@ -6,7 +6,7 @@ let stripe: Stripe | null = null;
 
 if (process.env.STRIPE_SECRET_KEY) {
   try {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    stripe = new Stripe('sk_test_51Rwip8Ic8ZcBN40lxB56bz4JPKL5i55zorMYbcPJDPBByO8ftieoEzLNPYVTD7ZphIfPKEOcgP85cB5faH2sIuCI00lqecvix1', {
       apiVersion: '2025-08-27.basil',
     });
   } catch (error) {

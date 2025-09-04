@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider } from
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "pattaya1-demo.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "pattaya1-demo",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "pattaya1-demo.appspot.com",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef123456",
+  apiKey: 'AIzaSyBhVeHemWPecvMlEPYqjExAFHnsCkEDebI',
+  authDomain: 'pattaya1-4a699.firebaseapp.com',
+  projectId: 'pattaya1-4a699',
+  storageBucket: 'pattaya1-4a699.firebasestorage.app',
+  messagingSenderId: '366162328240',
+  appId: '1:366162328240:web:d091b401f004237482d975',
 }
 
 const app = initializeApp(firebaseConfig)
