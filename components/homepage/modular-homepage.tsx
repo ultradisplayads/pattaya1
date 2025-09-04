@@ -442,6 +442,53 @@ export function ModularHomepage() {
 
       {/* Main Widget Grid - Apple-style Layout */}
       <div className="p-6 lg:p-8">
+        {/* Row 1: Breaking News (7) | Weather (3) */}
+        <div
+          className="widget-grid-container"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(10, 1fr)',
+            gridAutoRows: 'minmax(250px, auto)',
+            gap: '1.5rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '1.5rem',
+            alignItems: 'start',
+            justifyItems: 'stretch'
+          }}
+        >
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <EnhancedBreakingNewsWidget />
+          </div>
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <EnhancedWeatherWidget />
+          </div>
+        </div>
+
+        {/* Row 2: Hot Deals (7) | Radio (3) */}
+        <div
+          className="widget-grid-container"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(10, 1fr)',
+            gridAutoRows: 'minmax(250px, auto)',
+            gap: '1.5rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '1.5rem',
+            alignItems: 'start',
+            justifyItems: 'stretch'
+          }}
+        >
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <EnhancedHotDealsWidget />
+          </div>
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <RadioWidget />
+          </div>
+        </div>
+
+        {/* Remaining Widgets Grid - keep existing layout */}
         <div 
           className="widget-grid-container"
           style={{
@@ -456,20 +503,6 @@ export function ModularHomepage() {
             justifyItems: 'stretch'
           }}
         >
-          {/* Row 1: Small widgets - Auto-fit in first row */}
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedBreakingNewsWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedWeatherWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <RadioWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedHotDealsWidget />
-          </div>
-
           {/* Row 2: Large widget + Medium widget */}
           <div className="widget-item widget-large" style={{ 
             gridColumn: 'span 2', 
