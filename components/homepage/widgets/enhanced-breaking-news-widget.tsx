@@ -264,17 +264,17 @@ export function EnhancedBreakingNewsWidget() {
     loadAdvertisements()
   }, [])
 
-  // Auto-rotate every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const totalItems = news.length + (showAds ? advertisements.length : 0)
-        return totalItems > 0 ? (prev + 1) % totalItems : 0
-      })
-    }, 5000)
+  // Auto-rotate disabled - manual navigation only
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentIndex((prev) => {
+  //       const totalItems = news.length + (showAds ? advertisements.length : 0)
+  //       return totalItems > 0 ? (prev + 1) % totalItems : 0
+  //     })
+  //   }, 5000)
 
-    return () => clearInterval(interval)
-  }, [news.length, advertisements.length, showAds])
+  //   return () => clearInterval(interval)
+  // }, [news.length, advertisements.length, showAds])
 
   // Auto-refresh data every 30 seconds to catch fresh news immediately
   useEffect(() => {
