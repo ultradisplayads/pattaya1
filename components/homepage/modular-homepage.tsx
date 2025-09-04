@@ -453,11 +453,12 @@ export function ModularHomepage() {
 
       {/* Main Widget Grid - Apple-style Layout */}
       <div className="p-6 lg:p-8">
-        <div 
+        {/* Row 1: Breaking News (7) | Weather (3) */}
+        <div
           className="widget-grid-container"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(10, 1fr)',
             gridAutoRows: 'minmax(250px, auto)',
             gap: '1.5rem',
             maxWidth: '1400px',
@@ -469,60 +470,30 @@ export function ModularHomepage() {
             willChange: 'grid-template-rows, grid-template-columns'
           }}
         >
-          {/* Row 1: Small widgets - Auto-fit in first row */}
-          <div className="widget-item widget-small" style={{ minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
             <EnhancedBreakingNewsWidget />
           </div>
-          <div 
-            className={`widget-item ${isWidgetExpanded('weather') ? 'widget-expanded' : 'widget-small'}`} 
-            style={{ 
-              minHeight: isWidgetExpanded('weather') ? '500px' : '250px', 
-              maxHeight: isWidgetExpanded('weather') ? '700px' : '350px', 
-              overflow: 'hidden',
-              gridColumn: isWidgetExpanded('weather') ? 'span 2' : 'span 1',
-              gridRow: isWidgetExpanded('weather') ? 'span 2' : 'span 1',
-              position: 'relative',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transformOrigin: 'top left'
-            }}
-          >
-                                        <EnhancedWeatherWidget 
-                isExpanded={isWidgetExpanded('weather')} 
-                onToggleExpand={() => handleWidgetClick('weather')}
-              />
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <EnhancedWeatherWidget />
           </div>
-                      <div 
-              className={`widget-item ${isWidgetExpanded('radio') ? 'widget-expanded' : 'widget-small'}`}
-              style={{
-                minHeight: isWidgetExpanded('radio') ? '500px' : '250px',
-                maxHeight: isWidgetExpanded('radio') ? '700px' : '350px',
-                overflow: 'hidden',
-                gridColumn: isWidgetExpanded('radio') ? 'span 2' : 'span 1',
-                gridRow: isWidgetExpanded('radio') ? 'span 2' : 'span 1',
-                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                transformOrigin: 'top left'
-              }}
-            >
-              <RadioWidget 
-                isExpanded={isWidgetExpanded('radio')}
-                onToggleExpand={() => handleWidgetClick('radio')}
-              />
-            </div>
-          <div 
-            className={`widget-item ${isWidgetExpanded('hot-deals') ? 'widget-expanded' : 'widget-small'}`} 
-            style={{ 
-              minHeight: isWidgetExpanded('hot-deals') ? '500px' : '250px', 
-              maxHeight: isWidgetExpanded('hot-deals') ? '700px' : '350px', 
-              overflow: 'hidden',
-              gridColumn: isWidgetExpanded('hot-deals') ? 'span 2' : 'span 1',
-              gridRow: isWidgetExpanded('hot-deals') ? 'span 2' : 'span 1',
-              cursor: 'pointer',
-              position: 'relative',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transformOrigin: 'top left'
-            }}
-            onClick={() => handleWidgetClick('hot-deals')}
-          >
+        </div>
+
+        {/* Row 2: Hot Deals (7) | Radio (3) */}
+        <div
+          className="widget-grid-container"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(10, 1fr)',
+            gridAutoRows: 'minmax(250px, auto)',
+            gap: '1.5rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '1.5rem',
+            alignItems: 'start',
+            justifyItems: 'stretch'
+          }}
+        >
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
             <EnhancedHotDealsWidget />
             <div className="absolute top-3 right-3 z-10">
               <Button
@@ -542,7 +513,26 @@ export function ModularHomepage() {
               </Button>
             </div>
           </div>
+          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
+            <RadioWidget />
+          </div>
+        </div>
 
+        {/* Remaining Widgets Grid - keep existing layout */}
+        <div 
+          className="widget-grid-container"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridAutoRows: 'minmax(250px, auto)',
+            gap: '1.5rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: '1.5rem',
+            alignItems: 'start',
+            justifyItems: 'stretch'
+          }}
+        >
           {/* Row 2: Large widget + Medium widget */}
           <div className="widget-item widget-large" style={{ 
             gridColumn: 'span 2', 
