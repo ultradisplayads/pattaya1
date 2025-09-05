@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, User, Share2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
 import { transformStrapiArticle } from '@/lib/strapi-articles-api';
+import { buildStrapiUrl } from '@/lib/strapi-config';
 
 interface ArticlePageProps {
   params: {
@@ -113,7 +114,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               {transformedArticle.featuredImage && (
                 <div className="relative aspect-video rounded-lg overflow-hidden">
                   <img
-                    src={`http://localhost:1337${transformedArticle.featuredImage}`}
+                    src={buildStrapiUrl(transformedArticle.featuredImage)}
                     alt={transformedArticle.imageAlt || transformedArticle.title}
                     className="w-full h-full object-cover"
                   />

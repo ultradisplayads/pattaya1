@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // 3) REST lookup with idToken (Identity Toolkit)
     try {
       const idToken = await currentUser.getIdToken(true)
-      const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
+      const key = 'AIzaSyBhVeHemWPecvMlEPYqjExAFHnsCkEDebI'
       if (!key) return null
       const res = await fetch(
         `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${key}`,

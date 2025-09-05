@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { transformStrapiArticle } from '@/lib/strapi-articles-api';
 import { SponsoredPost } from './sponsored-post';
 import { useAnalytics } from '@/hooks/use-analytics';
+import { buildStrapiUrl } from '@/lib/strapi-config';
 
 interface FeedItem {
   type: 'news' | 'sponsored';
@@ -262,7 +263,7 @@ export function StrapiArticlesFeed({
                   {article.featuredImage && (
                     <div className="relative aspect-video rounded-lg overflow-hidden">
                       <img
-                        src={`http://localhost:1337${article.featuredImage}`}
+                        src={buildStrapiUrl(article.featuredImage)}
                         alt={article.imageAlt || article.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
