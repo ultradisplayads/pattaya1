@@ -15,6 +15,9 @@ interface StrapiBreakingNews {
   Description: string
   URL: string
   ImageURL?: string
+  image?: string
+  imageAlt?: string
+  imageCaption?: string
   PublishedAt: string
   PublishedTimestamp: string
   apiSource: string
@@ -494,15 +497,34 @@ export function EnhancedBreakingNewsWidget() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
-                {(currentItem as StrapiBreakingNews).Title}
-              </h4>
-              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                {(currentItem as StrapiBreakingNews).Summary}
-              </p>
-              <div className="text-xs text-gray-500 font-medium">
-                Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
+            <div className="flex space-x-3">
+              {((currentItem as StrapiBreakingNews).image || (currentItem as StrapiBreakingNews).ImageURL) && (
+                <div className="flex-shrink-0">
+                  <img
+                    src={(currentItem as StrapiBreakingNews).image || (currentItem as StrapiBreakingNews).ImageURL}
+                    alt={(currentItem as StrapiBreakingNews).imageAlt || (currentItem as StrapiBreakingNews).Title}
+                    className="w-16 h-12 rounded-xl object-cover shadow-sm"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              <div className="flex-1 min-w-0 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
+                  {(currentItem as StrapiBreakingNews).Title}
+                </h4>
+                <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                  {(currentItem as StrapiBreakingNews).Summary}
+                </p>
+                <div className="text-xs text-gray-500 font-medium">
+                  Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
+                </div>
+                {(currentItem as StrapiBreakingNews).imageCaption && (
+                  <p className="text-xs text-gray-500 italic">
+                    {(currentItem as StrapiBreakingNews).imageCaption}
+                  </p>
+                )}
               </div>
             </div>
           </div>

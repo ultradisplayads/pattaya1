@@ -77,17 +77,22 @@ export function BreakingNewsCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {article.ImageURL && (
-          <div className="relative aspect-video rounded-lg overflow-hidden">
+        {((article as any).image || article.ImageURL) && (
+          <div className="news-image-container relative aspect-video rounded-lg overflow-hidden">
             <img
-              src={article.ImageURL}
-              alt={article.Title}
-              className="w-full h-full object-cover"
+              src={(article as any).image || article.ImageURL}
+              alt={(article as any).imageAlt || article.Title}
+              className="news-image w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
             />
+            {(article as any).imageCaption && (
+              <p className="image-caption absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 text-xs">
+                {(article as any).imageCaption}
+              </p>
+            )}
           </div>
         )}
 

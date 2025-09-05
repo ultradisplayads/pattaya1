@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Breaking News Image Styles */
+@layer components {
+  .news-image-container {
+    @apply mb-3;
+  }
+
+  .news-image {
+    @apply w-full max-w-xs h-auto rounded-lg object-cover transition-opacity duration-300;
+  }
+
+  .news-image.loading {
+    @apply opacity-50;
+  }
+
+  .news-image.loaded {
+    @apply opacity-100;
+  }
+
+  .image-caption {
+    @apply text-xs text-gray-600 italic mt-1 text-center;
+  }
+
+  .image-placeholder {
+    @apply w-16 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-xs text-gray-400 animate-pulse;
+  }
+
+  /* Responsive design for news images */
+  @media (max-width: 768px) {
+    .news-image {
+      @apply max-w-full;
+    }
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

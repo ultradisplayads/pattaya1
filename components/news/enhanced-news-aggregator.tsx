@@ -34,7 +34,9 @@ interface NewsArticle {
   category: "local" | "national" | "expat"
   language: "thai" | "english"
   articleCategory: string
-  image: string
+  image?: string
+  imageAlt?: string
+  imageCaption?: string
   isPattayaRelated: boolean
   isBreaking: boolean
   relevanceScore: number
