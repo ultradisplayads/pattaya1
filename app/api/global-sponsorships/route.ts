@@ -10,6 +10,10 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.ok) {
+      // Return empty data for 403/404 errors instead of throwing
+      if (response.status === 403 || response.status === 404) {
+        return NextResponse.json({ data: [] })
+      }
       throw new Error(`Strapi API responded with status: ${response.status}`)
     }
 
@@ -17,9 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error fetching global sponsorships:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch global sponsorships' },
-      { status: 500 }
-    )
+    // Return empty data instead of error for graceful degradation
+    return NextResponse.json({ data: [] })
   }
 }
