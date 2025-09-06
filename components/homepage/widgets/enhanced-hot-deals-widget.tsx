@@ -26,6 +26,7 @@ import Image from "next/image"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { DealCard } from "@/components/deals/deal-card"
 import { useToast } from "@/hooks/use-toast"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiDeal {
   id: number
@@ -147,6 +148,8 @@ export function EnhancedHotDealsWidget() {
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out flex flex-col">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="hot-deals" />
       <CardHeader className="pb-2 px-4 pt-4 flex-shrink-0">
         <CardTitle className="text-sm font-semibold text-gray-900 flex items-center justify-between tracking-tight">
           <div className="flex items-center gap-2">

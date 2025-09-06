@@ -7,6 +7,7 @@ import { TrendingUp, Hash, MapPin, Calendar, Building, Users, ArrowUp, ArrowDown
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { buildApiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiTrendingTopic {
   id: number
@@ -142,6 +143,8 @@ export function TrendingWidget() {
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="trending" />
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
           <div className="flex items-center">

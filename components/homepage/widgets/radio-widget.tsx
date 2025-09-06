@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X, ChevronDown, ChevronUp, Activity, Zap, Headphones, Signal, Clock, TrendingUp, Globe, Wifi, WifiOff, SkipBack, SkipForward } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface RadioStation {
   id: string
@@ -108,13 +109,6 @@ interface SponsoredWidgetBanner {
   bannerPosition: "top" | "bottom" | "overlay"
 }
 
-interface GlobalSponsorship {
-  id: number
-  title: string
-  isActive: boolean
-  sponsoredWidgets: string[]
-  sponsorColor: string
-}
 
 export function RadioWidget({ className }: { className?: string }) {
   const [stations, setStations] = useState<RadioStation[]>([])
@@ -131,14 +125,15 @@ export function RadioWidget({ className }: { className?: string }) {
     isSponsored: false,
     bannerPosition: "top"
   })
-  const [globalSponsorship, setGlobalSponsorship] = useState<GlobalSponsorship | null>(null)
-  const [globalSponsorshipLoading, setGlobalSponsorshipLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isPlayingPreRollAd, setIsPlayingPreRollAd] = useState(false)
   const [preRollAdProgress, setPreRollAdProgress] = useState(0)
   const [logoLoadingStates, setLogoLoadingStates] = useState<Record<string, boolean>>({})
   const [hasUserInteracted, setHasUserInteracted] = useState(false)
   const [shouldAutoplay, setShouldAutoplay] = useState(false)
+  const [preloadedAudio, setPreloadedAudio] = useState<HTMLAudioElement | null>(null)
+  const [isPreloading, setIsPreloading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const preRollAdRef = useRef<HTMLAudioElement>(null)
 
@@ -146,7 +141,6 @@ export function RadioWidget({ className }: { className?: string }) {
     loadStations()
     loadFavorites()
     loadSponsoredBanner()
-    loadGlobalSponsorship()
     // Refresh every 5 minutes
     const interval = setInterval(loadStations, 300000)
     
@@ -161,15 +155,6 @@ export function RadioWidget({ className }: { className?: string }) {
     }
   }, [])
 
-  // Debug effect for global sponsorship
-  useEffect(() => {
-    console.log('🎨 Global sponsorship state changed:', {
-      globalSponsorship: !!globalSponsorship,
-      isActive: globalSponsorship?.isActive,
-      title: globalSponsorship?.title,
-      fullData: globalSponsorship
-    })
-  }, [globalSponsorship])
 
   // Update audio volume when volume or mute state changes
   useEffect(() => {
@@ -303,6 +288,9 @@ export function RadioWidget({ className }: { className?: string }) {
           if (defaultStation) {
             setCurrentStation(defaultStation)
             console.log('Set default station from Strapi:', defaultStation.name, 'with stream URL:', defaultStation.streamUrl)
+            
+            // Preload the default station for immediate playback
+            preloadStationAudio(defaultStation)
             
             // Log sponsored station details
             if (firstSponsoredStation) {
@@ -513,62 +501,6 @@ export function RadioWidget({ className }: { className?: string }) {
     }
   }
 
-  const loadGlobalSponsorship = async () => {
-    try {
-      setGlobalSponsorshipLoading(true)
-      console.log('🔄 Loading global sponsorship...')
-      // Load all global sponsorships from Strapi and filter for radio widget
-      const response = await fetch('/api/global-sponsorships')
-      if (response.ok) {
-        const data = await response.json()
-        console.log('📡 Global sponsorship API response:', data)
-        
-        if (data.data && data.data.length > 0) {
-          console.log('📊 Found', data.data.length, 'sponsorship records')
-          
-          // Find active sponsorship for radio widget
-          const radioSponsorship = data.data.find((sponsorship: any) => {
-            console.log('🔍 Checking sponsorship:', {
-              id: sponsorship.id,
-              title: sponsorship.title,
-              isActive: sponsorship.isActive,
-              sponsoredWidgets: sponsorship.sponsoredWidgets,
-              type: typeof sponsorship.sponsoredWidgets
-            })
-            
-            const isActive = sponsorship.isActive
-            const hasWidgets = sponsorship.sponsoredWidgets
-            const isRadioWidget = Array.isArray(sponsorship.sponsoredWidgets) 
-              ? sponsorship.sponsoredWidgets.includes('radio')
-              : sponsorship.sponsoredWidgets === 'radio'
-            
-            console.log('🔍 Sponsorship check result:', { isActive, hasWidgets, isRadioWidget })
-            
-            return isActive && hasWidgets && isRadioWidget
-          })
-          
-          if (radioSponsorship) {
-            setGlobalSponsorship(radioSponsorship)
-            console.log('✅ Loaded global sponsorship for radio widget:', radioSponsorship)
-          } else {
-            console.log('❌ No active global sponsorship found for radio widget')
-            setGlobalSponsorship(null)
-          }
-        } else {
-          console.log('❌ No global sponsorships found')
-          setGlobalSponsorship(null)
-        }
-      } else {
-        console.log('❌ Failed to fetch global sponsorships:', response.status)
-        setGlobalSponsorship(null)
-      }
-    } catch (error) {
-      console.error('❌ Error loading global sponsorship:', error)
-      setGlobalSponsorship(null)
-    } finally {
-      setGlobalSponsorshipLoading(false)
-    }
-  }
 
   const loadSponsoredBanner = async () => {
     try {
@@ -690,7 +622,10 @@ export function RadioWidget({ className }: { className?: string }) {
     console.log('Testing with URL:', testUrl)
     
     try {
-      const testAudio = new Audio(testUrl)
+      const testAudio = new Audio()
+      testAudio.crossOrigin = 'anonymous'
+      testAudio.preload = 'none'
+      testAudio.volume = 0.3 // Low volume for testing
       
       testAudio.addEventListener('loadstart', () => {
         console.log('✅ Test audio loading started')
@@ -713,7 +648,8 @@ export function RadioWidget({ className }: { className?: string }) {
         }
       })
       
-      // Try to play
+      // Set source and try to play
+      testAudio.src = testUrl
       console.log('Attempting to play test audio...')
       testAudio.play().then(() => {
         console.log('✅ Test audio play promise resolved')
@@ -736,17 +672,74 @@ export function RadioWidget({ className }: { className?: string }) {
       console.log('🎵 User first interaction detected - enabling autoplay!')
       setHasUserInteracted(true)
       setShouldAutoplay(true)
+    }
+  }
+
+  // Preload audio for immediate playback
+  const preloadStationAudio = async (station: RadioStation) => {
+    if (!station.streamUrl || !validateStreamUrl(station.streamUrl)) {
+      console.log('Skipping preload for invalid stream URL:', station.streamUrl)
+      return
+    }
+
+    try {
+      setIsPreloading(true)
+      console.log('🔄 Preloading audio for:', station.name)
       
-      // Trigger autoplay after a short delay
-      // setTimeout(() => {
-      //   if (currentStation && !isPlaying) {
-      //     console.log('🚀 Autoplaying current station:', currentStation.name)
-      //     playStation(currentStation)
-      //   } else if (stations.length > 0 && !isPlaying) {
-      //     console.log('🚀 Autoplaying first available station:', stations[0].name)
-      //     playStation(stations[0])
-      //   }
-      // }, 500)
+      // Create new audio element for preloading
+      const audio = new Audio()
+      
+      // Configure for preloading
+      try {
+        audio.crossOrigin = 'anonymous'
+      } catch (corsError) {
+        console.log('CORS anonymous failed during preload, trying use-credentials:', corsError)
+        try {
+          audio.crossOrigin = 'use-credentials'
+        } catch (corsError2) {
+          console.log('CORS use-credentials failed during preload, using no CORS:', corsError2)
+          audio.crossOrigin = null
+        }
+      }
+      
+      audio.preload = 'metadata'
+      audio.volume = 0 // Keep volume at 0 during preload
+      audio.muted = true // Keep muted during preload
+      audio.controls = false
+      
+      // Set up event listeners for preloading
+      const handleCanPlay = () => {
+        console.log('✅ Audio preloaded successfully for:', station.name)
+        setPreloadedAudio(audio)
+        setIsPreloading(false)
+        audio.removeEventListener('canplay', handleCanPlay)
+        audio.removeEventListener('error', handleError)
+        audio.removeEventListener('loadstart', handleLoadStart)
+      }
+      
+      const handleError = (e: any) => {
+        console.warn('⚠️ Preload failed for:', station.name, e)
+        setIsPreloading(false)
+        audio.removeEventListener('canplay', handleCanPlay)
+        audio.removeEventListener('error', handleError)
+        audio.removeEventListener('loadstart', handleLoadStart)
+      }
+      
+      const handleLoadStart = () => {
+        console.log('🔄 Preload started for:', station.name)
+      }
+      
+      audio.addEventListener('canplay', handleCanPlay)
+      audio.addEventListener('error', handleError)
+      audio.addEventListener('loadstart', handleLoadStart)
+      
+      // Set source and start loading
+      audio.src = station.streamUrl
+      audio.load()
+      
+    } catch (error) {
+      console.error('Error preloading audio:', error)
+      setIsPreloading(false)
     }
   }
 
@@ -789,26 +782,33 @@ export function RadioWidget({ className }: { className?: string }) {
     // If clicking the same station, toggle play/pause
     if (currentStation?.id === station.id) {
       console.log('Same station clicked, toggling play/pause')
-      if (isPlaying) {
+      console.log('Current playing state:', isPlaying)
+      console.log('Audio ref current time:', audioRef.current?.currentTime)
+      console.log('Audio ref paused:', audioRef.current?.paused)
+      console.log('Audio ref ready state:', audioRef.current?.readyState)
+      
+      if (isPlaying && audioRef.current && !audioRef.current.paused) {
         // Pause current station
         console.log('Pausing current station')
-        if (audioRef.current) {
-          audioRef.current.pause()
-          setIsPlaying(false)
-        } else {
-          console.log('No audio ref to pause')
-        }
+        audioRef.current.pause()
+        setIsPlaying(false)
       } else {
-        // Resume current station
-        console.log('Resuming current station')
-        if (audioRef.current) {
+        // Resume or start current station
+        console.log('Resuming/starting current station')
+        if (audioRef.current && audioRef.current.readyState >= 2) {
+          // Audio is loaded, try to play
           audioRef.current.play().catch((err) => {
-            console.error('Play failed:', err)
+            console.error('Resume play failed:', err)
             setError(`Playback failed: ${err.message}`)
+            // If resume fails, try to restart the station
+            console.log('Resume failed, restarting station...')
+            playStationDirectly(station)
           })
           setIsPlaying(true)
         } else {
-          console.log('No audio ref to resume')
+          // Audio not ready, restart the station
+          console.log('Audio not ready, restarting station...')
+          playStationDirectly(station)
         }
       }
       return
@@ -865,58 +865,88 @@ export function RadioWidget({ className }: { className?: string }) {
     }
   }
 
-  const playStationDirectly = (station: RadioStation) => {
+  const playStationDirectly = async (station: RadioStation) => {
     console.log('=== playStationDirectly called ===')
     console.log('Station:', station.name)
     console.log('Stream URL:', station.streamUrl)
+    console.log('Has user interacted:', hasUserInteracted)
     
-    // Stop any currently playing audio
+    // Stop any currently playing audio and clean up
     if (audioRef.current) {
       console.log('Stopping current audio')
-      audioRef.current.pause()
+      try {
+        // Call cleanup function if it exists
+        if ((audioRef.current as any).__cleanup) {
+          (audioRef.current as any).__cleanup()
+        }
+        
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current.src = ''
+        audioRef.current.load() // Reset the audio element
+      } catch (cleanupError) {
+        console.log('Error during audio cleanup:', cleanupError)
+      }
       audioRef.current = null
     }
     
-    // Create new Audio object for the new station
+    // Clear any existing error and set loading state
+    setError(null)
+    setIsLoading(true)
+    
     try {
       console.log('Creating new Audio object')
-      const audio = new Audio(station.streamUrl)
-      audio.crossOrigin = 'anonymous'
-      audio.preload = 'metadata'
-      audioRef.current = audio
+      const audio = new Audio()
       
-      console.log('Setting audio properties')
-      // Set initial volume and mute state
-      audio.volume = volume[0] / 100
-      audio.muted = isMuted
-      
-      // Ensure volume is applied correctly
-      if (isMuted) {
-        audio.muted = true
-      } else {
-        audio.volume = volume[0] / 100
-        audio.muted = false
+      // Configure audio element for streaming
+      // Try different CORS settings for better compatibility
+      try {
+        audio.crossOrigin = 'anonymous'
+      } catch (corsError) {
+        console.log('CORS anonymous failed, trying use-credentials:', corsError)
+        try {
+          audio.crossOrigin = 'use-credentials'
+        } catch (corsError2) {
+          console.log('CORS use-credentials failed, using no CORS:', corsError2)
+          audio.crossOrigin = null
+        }
       }
       
-      // Add event listeners
-      audio.addEventListener('play', () => {
-        console.log('Audio started playing:', station.name)
+      audio.preload = 'none' // Don't preload for streaming
+      audio.controls = false
+      
+      // Additional audio configuration for better streaming support
+      audio.loop = false
+      audio.autoplay = false
+      
+      // Set initial volume and mute state
+      audio.volume = isMuted ? 0 : volume[0] / 100
+      audio.muted = isMuted
+      
+      console.log('Setting audio properties - Volume:', audio.volume, 'Muted:', audio.muted)
+      
+      // Add comprehensive event listeners
+      const handlePlay = () => {
+        console.log('✅ Audio started playing:', station.name)
         setIsPlaying(true)
+        setIsLoading(false)
         setError(null)
-      })
+      }
       
-      audio.addEventListener('pause', () => {
-        console.log('Audio paused:', station.name)
+      const handlePause = () => {
+        console.log('⏸️ Audio paused:', station.name)
         setIsPlaying(false)
-      })
+        setIsLoading(false)
+      }
       
-      audio.addEventListener('ended', () => {
-        console.log('Audio ended:', station.name)
+      const handleEnded = () => {
+        console.log('⏹️ Audio ended:', station.name)
         setIsPlaying(false)
-      })
+        setIsLoading(false)
+      }
       
-      audio.addEventListener('error', (e) => {
-        console.error('Audio error for station:', station.name, e)
+      const handleError = (e: Event) => {
+        console.error('❌ Audio error for station:', station.name, e)
         const audioElement = e.target as HTMLAudioElement
         
         let errorMessage = `Unable to play ${station.name}. `
@@ -939,48 +969,122 @@ export function RadioWidget({ className }: { className?: string }) {
               errorMessage += `Error code: ${audioElement.error.code}`
           }
         } else {
-          // Check if it's a network error (like 404)
+          // Check network state
           if (audioElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
             errorMessage += "Stream URL not accessible (404 or offline)."
+          } else if (audioElement.networkState === HTMLMediaElement.NETWORK_LOADING) {
+            errorMessage += "Stream is loading but may be slow or offline."
           } else {
             errorMessage += "Unknown error occurred."
           }
         }
         
+        console.error('Audio error details:', {
+          error: audioElement.error,
+          networkState: audioElement.networkState,
+          readyState: audioElement.readyState,
+          src: audioElement.src
+        })
+        
         setError(errorMessage)
         setIsPlaying(false)
-      })
+        setIsLoading(false)
+      }
       
-      audio.addEventListener('canplay', () => {
-        console.log('Audio can play:', station.name)
+      const handleCanPlay = () => {
+        console.log('✅ Audio can play:', station.name)
         setError(null)
-      })
+        setIsLoading(false)
+      }
       
-      audio.addEventListener('loadstart', () => {
-        console.log('Audio loading started:', station.name)
-      })
+      const handleLoadStart = () => {
+        console.log('🔄 Audio loading started:', station.name)
+        setError(null)
+      }
       
-      // Update current station and start playing
+      const handleLoadedMetadata = () => {
+        console.log('📊 Audio metadata loaded:', station.name)
+      }
+      
+      const handleWaiting = () => {
+        console.log('⏳ Audio waiting for data:', station.name)
+      }
+      
+      const handleStalled = () => {
+        console.log('⚠️ Audio stalled:', station.name)
+      }
+      
+      // Add all event listeners
+      audio.addEventListener('play', handlePlay)
+      audio.addEventListener('pause', handlePause)
+      audio.addEventListener('ended', handleEnded)
+      audio.addEventListener('error', handleError)
+      audio.addEventListener('canplay', handleCanPlay)
+      audio.addEventListener('loadstart', handleLoadStart)
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.addEventListener('waiting', handleWaiting)
+      audio.addEventListener('stalled', handleStalled)
+      
+      // Store cleanup function for later use
+      const cleanup = () => {
+        audio.removeEventListener('play', handlePlay)
+        audio.removeEventListener('pause', handlePause)
+        audio.removeEventListener('ended', handleEnded)
+        audio.removeEventListener('error', handleError)
+        audio.removeEventListener('canplay', handleCanPlay)
+        audio.removeEventListener('loadstart', handleLoadStart)
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        audio.removeEventListener('waiting', handleWaiting)
+        audio.removeEventListener('stalled', handleStalled)
+      }
+      
+      // Store cleanup function on the audio element for later use
+      ;(audio as any).__cleanup = cleanup
+      
+      // Set the audio source
+      audio.src = station.streamUrl
+      audioRef.current = audio
+      
+      // Update current station
       setCurrentStation(station)
-      setIsPlaying(true)
       
-      // Start playback
-      audio.play().catch((err) => {
-        console.error('Failed to start playback:', err)
-        setError(`Failed to start playback: ${err.message}`)
+      console.log('🎵 Attempting to play audio...')
+      
+      // Try to play the audio
+      try {
+        await audio.play()
+        console.log('✅ Audio play() promise resolved')
+        setIsPlaying(true)
+      } catch (playError: any) {
+        console.error('❌ Audio play() promise rejected:', playError)
+        
+        // Handle specific autoplay policy errors
+        if (playError.name === 'NotAllowedError') {
+          setError('Audio playback blocked by browser. Please click the play button again.')
+          console.log('🔒 Autoplay blocked - user interaction required')
+        } else if (playError.name === 'NotSupportedError') {
+          setError('Audio format not supported by your browser.')
+        } else if (playError.name === 'AbortError') {
+          setError('Audio playback was interrupted.')
+        } else {
+          setError(`Playback failed: ${playError.message}`)
+        }
+        
         setIsPlaying(false)
-      })
+        setIsLoading(false)
+      }
       
     } catch (error) {
-      console.error('Error creating audio object:', error)
+      console.error('❌ Error creating audio object:', error)
       setError(`Error creating audio: ${String(error)}`)
       setIsPlaying(false)
+      setIsLoading(false)
     }
   }
 
   const validateStreamUrl = (url: string): boolean => {
     // Check if URL is not a placeholder
-    if (url.includes('example.com') || url.includes('placeholder')) {
+    if (url.includes('example.com') || url.includes('placeholder') || !url || url.trim() === '') {
       return false
     }
     
@@ -989,33 +1093,91 @@ export function RadioWidget({ className }: { className?: string }) {
       const urlObj = new URL(url)
       const isValidProtocol = urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
       
+      if (!isValidProtocol) {
+        return false
+      }
+      
       // Check for actual streaming URLs (not webpage URLs)
       const isStreamingUrl = (
+        // Audio file extensions
         url.includes('.mp3') || 
         url.includes('.aac') || 
         url.includes('.ogg') || 
+        url.includes('.wav') ||
+        url.includes('.flac') ||
+        url.includes('.m4a') ||
+        // Streaming protocols
         url.includes('.m3u8') ||
+        url.includes('.pls') ||
+        // Common streaming paths
         url.includes('/stream') ||
         url.includes('/live') ||
+        url.includes('/listen') ||
+        url.includes('/audio') ||
+        url.includes('/radio') ||
+        // Common streaming domains
         url.includes('ice.infomaniak.ch') ||
         url.includes('stream.') ||
         url.includes('radio.') ||
+        url.includes('live.') ||
+        url.includes('listen.') ||
+        url.includes('audio.') ||
+        // Common streaming ports
         url.includes(':8000') ||
         url.includes(':8048') ||
-        url.includes(':9050')
+        url.includes(':9050') ||
+        url.includes(':8080') ||
+        url.includes(':8001') ||
+        url.includes(':8002') ||
+        // Shoutcast/Icecast streams
+        url.includes('shoutcast') ||
+        url.includes('icecast') ||
+        // Radio streaming services
+        url.includes('radiojar.com') ||
+        url.includes('somafm.com') ||
+        url.includes('tunein.com') ||
+        url.includes('radionomy.com') ||
+        // Direct streaming URLs with common patterns
+        url.includes(';stream') ||
+        url.includes('stream.mp3') ||
+        url.includes('stream.aac') ||
+        url.includes('stream.ogg') ||
+        url.includes('live.mp3') ||
+        url.includes('live.aac') ||
+        url.includes('listen.mp3') ||
+        url.includes('listen.aac')
       )
       
-      // Exclude webpage URLs
+      // Exclude webpage URLs and non-streaming content
       const isNotWebpage = !(
         url.includes('/stations/') ||
         url.includes('/radio/') ||
+        url.includes('/station/') ||
         url.includes('.html') ||
         url.includes('.php') ||
-        url.includes('onlineradiofm.in')
+        url.includes('.aspx') ||
+        url.includes('.jsp') ||
+        url.includes('onlineradiofm.in') ||
+        url.includes('tunein.com/radio/') ||
+        url.includes('radionomy.com/radio/') ||
+        // Exclude URLs that are clearly web pages
+        (url.includes('.com/') && !url.includes('stream') && !url.includes('live') && !url.includes('listen') && !url.includes('audio'))
       )
       
-      return isValidProtocol && isStreamingUrl && isNotWebpage
-    } catch {
+      const isValid = isValidProtocol && isStreamingUrl && isNotWebpage
+      
+      if (!isValid) {
+        console.log('Stream URL validation failed:', {
+          url,
+          isValidProtocol,
+          isStreamingUrl,
+          isNotWebpage
+        })
+      }
+      
+      return isValid
+    } catch (error) {
+      console.log('Stream URL validation error:', error, 'for URL:', url)
       return false
     }
   }
@@ -1116,6 +1278,24 @@ export function RadioWidget({ className }: { className?: string }) {
     console.log('- SomaFM and RadioJar are generally reliable sources')
   }
 
+  const testCurrentStation = async () => {
+    if (!currentStation) {
+      console.log('No current station to test')
+      return
+    }
+    
+    console.log('🧪 Testing current station:', currentStation.name)
+    console.log('Stream URL:', currentStation.streamUrl)
+    console.log('URL validation:', validateStreamUrl(currentStation.streamUrl))
+    
+    // Test the stream URL
+    const testResult = await testStreamUrl(currentStation.streamUrl)
+    console.log('Stream test result:', testResult)
+    
+    // Test audio playback
+    testAudioPlayback()
+  }
+
   const toggleMute = () => {
     const newMutedState = !isMuted
     setIsMuted(newMutedState)
@@ -1152,6 +1332,8 @@ export function RadioWidget({ className }: { className?: string }) {
     const nextStation = stations[nextIndex]
     
     if (nextStation) {
+      // Preload the next station for immediate playback
+      preloadStationAudio(nextStation)
       playStation(nextStation)
     }
   }
@@ -1164,6 +1346,8 @@ export function RadioWidget({ className }: { className?: string }) {
     const previousStation = stations[previousIndex]
     
     if (previousStation) {
+      // Preload the previous station for immediate playback
+      preloadStationAudio(previousStation)
       playStation(previousStation)
     }
   }
@@ -1215,29 +1399,8 @@ export function RadioWidget({ className }: { className?: string }) {
         onClick={handleWidgetClick}
         data-radio-widget="true"
       >
-      {/* Global Sponsorship Banner - At the very top */}
-      {globalSponsorshipLoading && (
-        <div className="w-full p-3 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm font-bold">Loading sponsorship...</span>
-          </div>
-        </div>
-      )}
-      {!globalSponsorshipLoading && globalSponsorship && globalSponsorship.isActive && (
-        <div 
-          className="w-full p-3 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20"
-          style={{
-            backgroundColor: globalSponsorship.sponsorColor || undefined
-          }}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-sm font-bold">
-              {globalSponsorship.title}
-            </span>
-          </div>
-        </div>
-      )}
+        {/* Global Sponsorship Banner - At the very top */}
+        <SponsorshipBanner widgetType="radio" />
 
       {/* Widget-Level Sponsor Banner - Always Visible */}
       {sponsoredBanner.isSponsored && (
@@ -1300,8 +1463,6 @@ export function RadioWidget({ className }: { className?: string }) {
               </Badge>
             )}
             
-
-            
             {/* Offline Fallback Indicator */}
             {stations.length > 0 && stations[0].streamUrl.includes('example.com') && (
               <Badge className="bg-orange-500/10 text-orange-600 text-[10px] px-2 py-0.5 font-medium border border-orange-200 rounded-full">
@@ -1310,6 +1471,21 @@ export function RadioWidget({ className }: { className?: string }) {
             )}
           </div>
           
+          {/* Mute/Unmute Button - Top Right */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                handleUserInteraction()
+                toggleMute()
+              }}
+              className="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+              title={isMuted ? "Unmute" : "Mute"}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -1467,15 +1643,13 @@ export function RadioWidget({ className }: { className?: string }) {
             }}
             disabled={!canPlayPrevious()}
             title={canPlayPrevious() ? "Previous station" : "No previous station available"}
-            className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200 ${
+            className={`h-10 w-10 rounded-full transition-all duration-200 ${
               canPlayPrevious()
-                ? "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:scale-105"
                 : "bg-gray-50 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <SkipBack className="w-4 h-4" />
           </Button>
 
           {/* Play/Pause Button */}
@@ -1496,14 +1670,20 @@ export function RadioWidget({ className }: { className?: string }) {
                 console.log('No current station available')
               }
             }}
-            className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-sm hover:shadow-md transition-all duration-200 ${
+            className={`h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ${
               currentStation && validateStreamUrl(currentStation.streamUrl)
-                ? "bg-purple-500 hover:bg-purple-600 text-white"
+                ? "bg-purple-500 hover:bg-purple-600 text-white hover:scale-105"
                 : "bg-gray-400 text-gray-200 cursor-not-allowed"
             }`}
             disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
           >
-            {isPlaying ? <Pause className="w-5 h-5 sm:w-6 sm:h-6" /> : <Play className="w-5 h-5 sm:w-6 sm:h-6 ml-0.5" />}
+            {isLoading ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
+              <Pause className="w-6 h-6" />
+            ) : (
+              <Play className="w-6 h-6 ml-0.5" />
+            )}
           </Button>
 
           {/* Next Button */}
@@ -1516,69 +1696,158 @@ export function RadioWidget({ className }: { className?: string }) {
             }}
             disabled={!canPlayNext()}
             title={canPlayNext() ? "Next station" : "No next station available"}
-            className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full transition-all duration-200 ${
+            className={`h-10 w-10 rounded-full transition-all duration-200 ${
               canPlayNext()
-                ? "bg-gray-100 hover:bg-gray-200 text-gray-600"
+                ? "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:scale-105"
                 : "bg-gray-50 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <SkipForward className="w-4 h-4" />
           </Button>
         </div>
 
-                 {/* Volume Control - Only in collapsed view */}
-         <div className="flex items-center justify-center">
-           <div className="relative">
-             <Button
-               variant="ghost"
-               size="sm"
-               onClick={() => {
-                 handleUserInteraction()
-                 toggleMute()
-               }}
-               className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
-             >
-               {isMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Volume2 className="w-3.5 sm:w-4 sm:h-4" />}
-             </Button>
-           </div>
-         </div>
 
       <Separator className="my-2" />
 
-              {/* Station Selector - Responsive Layout */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-gray-700">Quick Select:</span>
-            <div className="flex gap-1 flex-wrap">
-              {stations.slice(0, 3).map((station) => (
-                <Button
-                  key={station.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    handleUserInteraction()
-                    playStation(station)
-                  }}
-                  className={`h-7 px-2 rounded-full text-[11px] transition-all duration-200 ${
-                    currentStation?.id === station.id
-                      ? "bg-purple-100 text-purple-700 font-medium"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {station.frequency}
-                </Button>
-              ))}
-            </div>
+        {/* Station Cards - Scrollable Layout */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-medium text-gray-700">Other Stations:</span>
+            <span className="text-[11px] text-gray-500">{stations.length} total</span>
           </div>
+          
+          <div className="max-h-32 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            {stations.filter(station => station.id !== currentStation?.id).slice(0, 6).map((station) => (
+              <div
+                key={station.id}
+                className={`flex items-center gap-3 p-2 rounded-lg border transition-all duration-200 cursor-pointer hover:bg-gray-50 ${
+                  currentStation?.id === station.id
+                    ? "bg-purple-50 border-purple-200"
+                    : "bg-white border-gray-200 hover:border-gray-300"
+                }`}
+                onClick={() => {
+                  handleUserInteraction()
+                  playStation(station)
+                }}
+              >
+                <div className="relative flex-shrink-0">
+                  {logoLoadingStates[station.id] !== false && (
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 animate-pulse flex items-center justify-center">
+                      <Radio className="w-3 h-3 text-gray-400" />
+                    </div>
+                  )}
+                  <img
+                    src={station.logo || "/placeholder.svg"}
+                    alt={station.name}
+                    className={`w-8 h-8 rounded-lg object-cover shadow-sm transition-opacity duration-200 ${
+                      logoLoadingStates[station.id] === false ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoadStart={() => setLogoLoading(station.id)}
+                    onLoad={() => handleLogoLoad(station.id)}
+                    onError={(e) => {
+                      handleLogoError(station.id, station.name)
+                      const target = e.target as HTMLImageElement
+                      target.src = "/placeholder.svg?height=32&width=32&text=" + station.name.charAt(0)
+                    }}
+                  />
+                  {station.featured && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center">
+                      <Star className="w-1.5 h-1.5 text-white fill-white" />
+                    </div>
+                  )}
+                  {station.isSponsored && (
+                    <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-[6px] px-1 py-0.5 rounded-full font-medium">
+                      SP
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-[12px] text-gray-900 truncate">{station.name}</h4>
+                    {station.isLive && (
+                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                    <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                    <span>•</span>
+                    <span className="truncate">{station.genre}</span>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleUserInteraction()
+                      playStation(station)
+                    }}
+                    className={`h-6 w-6 p-0 rounded-full transition-all duration-200 ${
+                      currentStation?.id === station.id
+                        ? "bg-purple-100 text-purple-600"
+                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    }`}
+                  >
+                    {currentStation?.id === station.id && isPlaying ? (
+                      <Pause className="w-3 h-3" />
+                    ) : (
+                      <Play className="w-3 h-3 ml-0.5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Select - Compact */}
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-medium text-gray-600">Quick:</span>
+          <div className="flex gap-1 flex-wrap">
+            {stations.slice(0, 4).map((station) => (
+              <Button
+                key={station.id}
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  handleUserInteraction()
+                  playStation(station)
+                }}
+                className={`h-6 px-2 rounded-full text-[10px] transition-all duration-200 ${
+                  currentStation?.id === station.id
+                    ? "bg-purple-100 text-purple-700 font-medium"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {station.frequency}
+              </Button>
+            ))}
+          </div>
+        </div>
 
         <div className="flex items-center gap-2">
-          {/* Error indicator */}
+          {/* Error indicator with retry */}
           {error && (
-            <div className="flex items-center gap-1 text-[11px] text-amber-600">
+            <div className="flex items-center gap-2 text-[11px] text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
               <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
               <span className="font-medium">Connection issue</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (currentStation) {
+                    handleUserInteraction()
+                    playStation(currentStation)
+                  }
+                }}
+                className="h-4 w-4 p-0 text-amber-600 hover:text-amber-700"
+                title="Retry playback"
+              >
+                <RefreshCw className="w-3 h-3" />
+              </Button>
             </div>
           )}
 
@@ -1593,9 +1862,9 @@ export function RadioWidget({ className }: { className?: string }) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
               <div className="p-3">
-                                  <div className="text-[13px] font-semibold text-gray-700 mb-3">
-                    <span>All Stations ({stations.length})</span>
-                  </div>
+                <div className="text-[13px] font-semibold text-gray-700 mb-3">
+                  <span>All Stations ({stations.length})</span>
+                </div>
                 <div className="space-y-1">
                   {stations.map((station) => (
                     <DropdownMenuItem
@@ -1666,7 +1935,6 @@ export function RadioWidget({ className }: { className?: string }) {
                           </div>
                           <p className="text-[11px] text-gray-400 truncate mt-1">{station.nowPlaying}</p>
                         </div>
-                        
                       </div>
                     </DropdownMenuItem>
                   ))}
@@ -1675,7 +1943,6 @@ export function RadioWidget({ className }: { className?: string }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
       </CardContent>
 
       {/* Hidden audio element for pre-roll ads */}
@@ -1739,32 +2006,34 @@ export function RadioWidget({ className }: { className?: string }) {
                     src={currentStation.logo || "/placeholder.svg"}
                     alt={currentStation.name}
                     className="w-16 h-16 rounded-lg object-cover"
-                    onLoad={() => handleLogoLoad(currentStation.id)}
+                    onLoad={() => currentStation && handleLogoLoad(currentStation.id)}
                     onError={(e) => {
-                      handleLogoError(currentStation.id, currentStation.name)
-                      const target = e.target as HTMLImageElement
-                      target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
+                      if (currentStation) {
+                        handleLogoError(currentStation.id, currentStation.name)
+                        const target = e.target as HTMLImageElement
+                        target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
+                      }
                     }}
                   />
-                  {currentStation.featured && (
+                  {currentStation?.featured && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
                       <Star className="w-2 h-2 text-white fill-white" />
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{currentStation.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{currentStation?.name}</h3>
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                    <span className="font-mono font-medium text-purple-600">{currentStation.frequency} FM</span>
+                    <span className="font-mono font-medium text-purple-600">{currentStation?.frequency} FM</span>
                     <span>•</span>
-                    <span>{currentStation.genre}</span>
+                    <span>{currentStation?.genre}</span>
                     <span>•</span>
-                    <span>{currentStation.listeners.toLocaleString()} listeners</span>
+                    <span>{currentStation?.listeners.toLocaleString()} listeners</span>
                   </div>
-                  <p className="text-sm text-gray-700">{currentStation.nowPlaying}</p>
+                  <p className="text-sm text-gray-700">{currentStation?.nowPlaying}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-gray-500">
-                      Station {stations.findIndex(s => s.id === currentStation.id) + 1} of {stations.length}
+                      Station {currentStation ? stations.findIndex(s => s.id === currentStation.id) + 1 : 0} of {stations.length}
                     </span>
                   </div>
                 </div>
@@ -1777,14 +2046,12 @@ export function RadioWidget({ className }: { className?: string }) {
                     title="Previous station"
                     className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <SkipBack className="w-4 h-4" />
                   </Button>
                   
                   <Button
                     onClick={() => {handleUserInteraction();currentStation && playStation(currentStation)}}
-                    disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
+                    disabled={!currentStation || !validateStreamUrl(currentStation?.streamUrl || '')}
                     className="h-12 w-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-1" />}
@@ -1798,12 +2065,8 @@ export function RadioWidget({ className }: { className?: string }) {
                     title="Next station"
                     className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <SkipForward className="w-4 h-4" />
                   </Button>
-                  
-
                 </div>
               </div>
             </div>
@@ -1839,6 +2102,26 @@ export function RadioWidget({ className }: { className?: string }) {
               <div className="text-xs text-gray-500 text-center space-y-1">
                 <div>Navigation: Use Previous/Next buttons or click on any station</div>
                 <div>Quick Select: Click frequency buttons in collapsed view</div>
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="mt-2 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={testCurrentStation}
+                      className="h-6 px-2 text-xs"
+                    >
+                      🧪 Test Current Station
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={testAudioPlayback}
+                      className="h-6 px-2 text-xs"
+                    >
+                      🔊 Test Audio
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1923,6 +2206,31 @@ export function RadioWidget({ className }: { className?: string }) {
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Custom Scrollbar Styles */}
+    <style jsx>{`
+      .scrollbar-thin {
+        scrollbar-width: thin;
+      }
+      
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 4px;
+      }
+      
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 2px;
+      }
+      
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
+      }
+      
+      .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    `}</style>
     </>
   )
 }

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface NewsArticle {
   id: string
@@ -227,6 +228,8 @@ export function NewsHeroWidget() {
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgba(0,0,0,0.1),0_1px_2px_0_rgba(0,0,0,0.06)] rounded-2xl hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] transition-all duration-300">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="news" />
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="flex items-center justify-between text-base font-semibold text-gray-900 tracking-tight">
           <div className="flex items-center space-x-3">

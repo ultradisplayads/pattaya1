@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Marquee animation for sponsorship banners */
+@keyframes sponsorship-marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-sponsorship-marquee {
+  animation: sponsorship-marquee linear infinite;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

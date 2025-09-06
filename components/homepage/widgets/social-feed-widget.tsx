@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MessageCircle, Repeat2, Share, MapPin, CheckCircle, ExternalLink } from "lucide-react"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface SocialPost {
   id: string
@@ -316,6 +317,8 @@ export function SocialFeedWidget() {
 
   return (
     <Card className="h-full bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="social" />
       <CardHeader className="pb-3 px-6 pt-6">
         <CardTitle className="text-base font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">

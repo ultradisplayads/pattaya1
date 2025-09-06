@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Star, MapPin, Clock, Phone, ExternalLink, Heart } from "lucide-react"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface Business {
   id: string
@@ -204,6 +205,8 @@ export function BusinessSpotlightWidget() {
 
   return (
     <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="business-spotlight" />
       <CardHeader className="pb-3">
         <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center justify-between">
           <div className="flex items-center gap-2">

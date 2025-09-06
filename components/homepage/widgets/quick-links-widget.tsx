@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { buildApiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiQuickLink {
   id: number
@@ -171,6 +172,8 @@ export function QuickLinksWidget() {
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="quick-links" />
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="text-base font-medium text-gray-900 flex items-center justify-between">
           <span>Quick Access</span>

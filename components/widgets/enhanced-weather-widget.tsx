@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator'
 import { LocateMeButton } from '@/components/location/locate-me-button'
 import { useLocation } from '@/components/location/location-provider'
 import { buildApiUrl } from '@/lib/strapi-config'
+import { SponsorshipBanner } from '@/components/widgets/sponsorship-banner'
 
 interface WeatherData {
   location: {
@@ -99,9 +100,8 @@ export function EnhancedWeatherWidget() {
   const [settings, setSettings] = useState<WeatherSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadSettings()
@@ -220,10 +220,28 @@ export function EnhancedWeatherWidget() {
       
       console.log('🌤️ Fetching weather from:', apiUrl)
       
+      // Test if Strapi server is running
+      try {
+        const healthCheck = await fetch(buildApiUrl(''), { method: 'HEAD' })
+        console.log('🔍 Strapi server status:', healthCheck.status)
+      } catch (healthError) {
+        console.error('🚨 Strapi server appears to be down:', healthError)
+        throw new Error('Weather service is currently unavailable. Please check if the server is running.')
+      }
+      
       const response = await fetch(apiUrl)
       
       if (!response.ok) {
-        throw new Error(`Weather API error: ${response.status} ${response.statusText}`)
+        // Try to get more detailed error information
+        let errorMessage = `Weather API error: ${response.status} ${response.statusText}`
+        try {
+          const errorData = await response.text()
+          console.error('Weather API error details:', errorData)
+          errorMessage += ` - ${errorData}`
+        } catch (e) {
+          console.error('Could not parse error response:', e)
+        }
+        throw new Error(errorMessage)
       }
       
       const data = await response.json()
@@ -240,7 +258,19 @@ export function EnhancedWeatherWidget() {
       
     } catch (error) {
       console.error('Weather loading error:', error)
-      setError('Unable to load weather data')
+      
+      // Provide specific error messages based on the error type
+      let errorMessage = 'Unable to load weather data'
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      if (errorMsg.includes('Weather service is currently unavailable')) {
+        errorMessage = 'Weather service is currently unavailable. Please check if the server is running.'
+      } else if (errorMsg.includes('500')) {
+        errorMessage = 'Weather API configuration error. Please check server logs for details.'
+      } else if (errorMsg.includes('OpenWeatherMap API key not configured')) {
+        errorMessage = 'Weather API key not configured. Please contact administrator.'
+      }
+      
+      setError(errorMessage)
       
       // Set fallback weather data for better UX
       const currentUnits = units || settings?.units || 'metric'
@@ -596,6 +626,9 @@ export function EnhancedWeatherWidget() {
         } shadow-sm backdrop-blur-xl`}
         onClick={() => setIsModalOpen(true)}
       >
+        {/* Global Sponsorship Banner */}
+        <SponsorshipBanner widgetType="weather" />
+        
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-100/20 rounded-full animate-pulse"></div>
@@ -630,17 +663,6 @@ export function EnhancedWeatherWidget() {
               >
                 <RefreshCw className={`w-4 h-4 transition-transform duration-300 ${loading ? 'animate-spin' : ''}`} />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setExpanded(!expanded)
-                }}
-                className="h-8 w-8 p-0 hover:bg-gray-100/80 rounded-full transition-all duration-300 hover:scale-110"
-              >
-                {expanded ? <ChevronUp className="w-4 h-4 transition-transform duration-300" /> : <ChevronDown className="w-4 h-4 transition-transform duration-300" />}
-              </Button>
             </div>
           </div>
 
@@ -668,18 +690,18 @@ export function EnhancedWeatherWidget() {
           )}
         </CardHeader>
 
-        <CardContent className="pt-0 space-y-4 relative z-10">
-          {/* Main Weather Display */}
+        <CardContent className="pt-0 space-y-3 relative z-10">
+          {/* Main Weather Display - Optimized for full width */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="transform hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="transform hover:scale-110 transition-transform duration-300 flex-shrink-0">
                 {getWeatherIcon(weather.current.condition)}
               </div>
-              <div className="space-y-1">
-                <div className="text-4xl font-light text-gray-900 tracking-tight group-hover:text-blue-600 transition-colors duration-500">
+              <div className="flex-1 min-w-0">
+                <div className="text-3xl sm:text-4xl font-light text-gray-900 tracking-tight group-hover:text-blue-600 transition-colors duration-500">
                   {Math.round(weather.current.temperature)}°{units === 'metric' ? 'C' : 'F'}
                 </div>
-                <div className="text-sm font-medium text-gray-600 capitalize group-hover:text-gray-700 transition-colors duration-500">
+                <div className="text-sm font-medium text-gray-600 capitalize group-hover:text-gray-700 transition-colors duration-500 truncate">
                   {weather.current.description}
                 </div>
                 <div className="text-xs text-gray-400 font-medium group-hover:text-gray-500 transition-colors duration-500">
@@ -689,7 +711,7 @@ export function EnhancedWeatherWidget() {
             </div>
 
             {/* Units Toggle */}
-            <div className="flex items-center gap-1 bg-gray-100/80 backdrop-blur-sm rounded-lg p-1 border border-gray-200/50">
+            <div className="flex items-center gap-1 bg-gray-100/80 backdrop-blur-sm rounded-lg p-1 border border-gray-200/50 flex-shrink-0">
               <Button
                 variant={units === 'metric' ? 'default' : 'ghost'}
                 size="sm"
@@ -715,204 +737,94 @@ export function EnhancedWeatherWidget() {
             </div>
           </div>
 
-          {/* Weather Details */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30 hover:from-blue-100/50 hover:to-blue-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1.5 bg-blue-100/50 rounded-full group-hover:bg-blue-200/50 transition-colors duration-300">
-                <Droplets className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+          {/* Weather Details - Responsive grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30 hover:from-blue-100/50 hover:to-blue-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1 bg-blue-100/50 rounded-full group-hover:bg-blue-200/50 transition-colors duration-300 flex-shrink-0">
+                <Droplets className="w-3 h-3 text-blue-600" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-blue-900 transition-colors duration-300">{weather.current.humidity}%</div>
                 <div className="text-xs text-gray-500 font-medium group-hover:text-blue-700 transition-colors duration-300">Humidity</div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1.5 bg-gray-100/50 rounded-full group-hover:bg-gray-200/50 transition-colors duration-300">
-                <Wind className="w-3.5 h-3.5 text-gray-600 animate-pulse" />
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1 bg-gray-100/50 rounded-full group-hover:bg-gray-200/50 transition-colors duration-300 flex-shrink-0">
+                <Wind className="w-3 h-3 text-gray-600" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
                   {Math.round(weather.current.windSpeed)} {units === 'metric' ? 'km/h' : 'mph'}
                 </div>
-                <div className="text-xs text-gray-500 font-medium group-hover:text-gray-700 transition-colors duration-300">Wind Speed</div>
+                <div className="text-xs text-gray-500 font-medium group-hover:text-gray-700 transition-colors duration-300">Wind</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-purple-50/50 to-purple-100/30 backdrop-blur-sm rounded-lg border border-purple-200/30 hover:from-purple-100/50 hover:to-purple-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1 bg-purple-100/50 rounded-full group-hover:bg-purple-200/50 transition-colors duration-300 flex-shrink-0">
+                <Gauge className="w-3 h-3 text-purple-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-gray-900 group-hover:text-purple-900 transition-colors duration-300">{weather.current.pressure} hPa</div>
+                <div className="text-xs text-gray-500 font-medium group-hover:text-purple-700 transition-colors duration-300">Pressure</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-green-50/50 to-green-100/30 backdrop-blur-sm rounded-lg border border-green-200/30 hover:from-green-100/50 hover:to-green-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1 bg-green-100/50 rounded-full group-hover:bg-green-200/50 transition-colors duration-300 flex-shrink-0">
+                <Eye className="w-3 h-3 text-green-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold text-gray-900 group-hover:text-green-900 transition-colors duration-300">{weather.current.visibility} km</div>
+                <div className="text-xs text-gray-500 font-medium group-hover:text-green-700 transition-colors duration-300">Visibility</div>
               </div>
             </div>
           </div>
 
-          {/* Expanded Content */}
-          <div className={`overflow-hidden transition-all duration-700 ease-out ${
-            expanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="space-y-4 pt-4 border-t border-gray-100/50">
-              {/* Hourly Forecast */}
-              {weather.hourly.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    Hourly Forecast
-                  </h4>
-                  <div className="grid grid-cols-4 gap-2">
-                    {weather.hourly.map((hour, index) => (
-                      <div key={index} className="text-center p-2 bg-gradient-to-b from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/50 transition-all duration-300 hover:scale-105 group">
-                        <div className="text-xs text-gray-600 mb-1 group-hover:text-gray-800 transition-colors duration-300">
-                          {formatTime(hour.time)}
-                        </div>
-                        <div className="transform group-hover:scale-110 transition-transform duration-300">
-                          {getWeatherIcon(hour.icon, 'h-6 w-6 mx-auto mb-1')}
-                        </div>
-                        <div className="text-xs font-medium group-hover:text-blue-600 transition-colors duration-300">{hour.temp}°</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Daily Forecast */}
-              {weather.daily.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Sun className="w-4 h-4 text-amber-500" />
-                    5-Day Forecast
-                  </h4>
-                  <div className="space-y-2">
-                    {weather.daily.map((day, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-gradient-to-r from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/50 transition-all duration-300 hover:scale-[1.02] group">
-                        <div className="flex items-center gap-2">
-                          <div className="transform group-hover:scale-110 transition-transform duration-300">
-                            {getWeatherIcon(day.icon, 'h-5 w-5')}
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-300">{formatDate(day.date)}</div>
-                            <div className="text-xs text-gray-600 capitalize group-hover:text-gray-800 transition-colors duration-300">{day.description}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-medium group-hover:text-red-600 transition-colors duration-300">{day.high}°</div>
-                          <div className="text-xs text-gray-500 group-hover:text-gray-700 transition-colors duration-300">{day.low}°</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Air Quality */}
-              {weather.airQuality && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Thermometer className="w-4 h-4 text-purple-500" />
-                    Air Quality
-                  </h4>
-                  <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50/50 to-purple-100/30 backdrop-blur-sm rounded-lg border border-purple-200/30">
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getAirQualityColor(weather.airQuality.index)}`}>
-                      {weather.airQuality.level}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      PM2.5: {weather.airQuality.pm25} | PM10: {weather.airQuality.pm10}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Sunrise/Sunset */}
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <Sunrise className="w-4 h-4 text-orange-500" />
-                    <Sunset className="w-4 h-4 text-red-500" />
-                  </div>
-                  Sun Times
-                </h4>
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50/50 to-red-50/30 backdrop-blur-sm rounded-lg border border-orange-200/30">
-                  <div className="flex items-center gap-2">
-                    <Sunrise className="w-4 h-4 text-orange-500 animate-pulse" />
-                    <span className="text-sm text-gray-600">
-                      {formatTime(weather.current.sunrise)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sunset className="w-4 h-4 text-red-500 animate-pulse" />
-                    <span className="text-sm text-gray-600">
-                      {formatTime(weather.current.sunset)}
-                    </span>
-                  </div>
+          {/* UV Index & Air Quality - Responsive row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-yellow-50/50 to-amber-100/30 backdrop-blur-sm rounded-lg border border-yellow-200/30">
+              <div className="p-1 bg-yellow-100/50 rounded-full flex-shrink-0">
+                <Sun className="w-3 h-3 text-yellow-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-gray-500 font-medium">UV Index</div>
+                <div className="text-sm font-semibold text-gray-900">{weather.current.uvIndex}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-amber-50/50 to-amber-100/30 backdrop-blur-sm rounded-lg border border-amber-200/30">
+              <div className="p-1 bg-amber-100/50 rounded-full flex-shrink-0">
+                <Activity className="w-3 h-3 text-amber-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-gray-500 font-medium">Air Quality</div>
+                <div className="text-sm font-semibold text-gray-900">
+                  {weather.airQuality ? weather.airQuality.level : 'Good'}
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Tide Times & Sea Conditions */}
-              {weather.marine && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Waves className="w-4 h-4 text-blue-500 animate-pulse" />
-                    Beach Conditions
-                  </h4>
-                  <div className="space-y-3">
-                    {weather.marine.tideTimes && (
-                      <div className="p-3 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30">
-                        <h5 className="text-xs font-medium text-gray-700 mb-2">Today's Tides</h5>
-                        <div className="flex justify-between text-sm">
-                          {weather.marine.tideTimes.map((tide, index) => (
-                            <div key={index} className="text-center">
-                              <div className="font-medium text-gray-900">{tide.type}</div>
-                              <div className="text-gray-600">{formatTime(tide.time)}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {weather.marine.seaState && (
-                      <div className="p-3 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30">
-                        <h5 className="text-xs font-medium text-gray-700 mb-2">Sea Conditions</h5>
-                        <div className="flex items-center justify-between">
-                          <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getSeaStateColor(weather.marine.seaState)}`}>
-                            {weather.marine.seaState}
-                          </div>
-                          {weather.marine.waveHeightM && (
-                            <span className="text-sm text-gray-600">
-                              Waves: {weather.marine.waveHeightM}m
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Activity Suggestions */}
-              {weather.suggestions && weather.suggestions.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-green-500 animate-pulse" />
-                    Smart Suggestions
-                  </h4>
-                  <div className="space-y-2">
-                    {weather.suggestions.map((suggestion, index) => (
-                      <a
-                        key={index}
-                        href={suggestion.link}
-                        className="block p-3 bg-gradient-to-r from-green-50/50 to-green-100/30 backdrop-blur-sm border border-green-200/30 rounded-lg hover:from-green-100/50 hover:to-green-200/50 transition-all duration-300 hover:scale-[1.02] group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg group-hover:scale-110 transition-transform duration-300">{suggestion.icon}</span>
-                          <div>
-                            <div className="text-sm font-medium text-green-900 group-hover:text-green-800 transition-colors duration-300">
-                              {suggestion.title}
-                            </div>
-                            {suggestion.description && (
-                              <div className="text-xs text-green-700 group-hover:text-green-600 transition-colors duration-300">
-                                {suggestion.description}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* Sunrise/Sunset - Responsive display */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-orange-50/50 to-orange-100/30 backdrop-blur-sm rounded-lg border border-orange-200/30">
+              <div className="p-1 bg-orange-100/50 rounded-full flex-shrink-0">
+                <Sunrise className="w-3 h-3 text-orange-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-gray-500 font-medium">Sunrise</div>
+                <div className="text-sm font-semibold text-gray-900">{formatTime(weather.current.sunrise)}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-red-50/50 to-red-100/30 backdrop-blur-sm rounded-lg border border-red-200/30">
+              <div className="p-1 bg-red-100/50 rounded-full flex-shrink-0">
+                <Sunset className="w-3 h-3 text-red-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs text-gray-500 font-medium">Sunset</div>
+                <div className="text-sm font-semibold text-gray-900">{formatTime(weather.current.sunset)}</div>
+              </div>
             </div>
           </div>
 
@@ -1276,7 +1188,6 @@ export function EnhancedWeatherWidget() {
                 <div className="text-xs text-gray-500">km</div>
               </div>
             </div>
-
 
           </div>
         </DialogContent>
