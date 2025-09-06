@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { buildApiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface WeatherData {
   location: {
@@ -382,6 +383,8 @@ export function WeatherWidget() {
         }`}
         onClick={handleCardClick}
       >
+        {/* Global Sponsorship Banner */}
+        <SponsorshipBanner widgetType="weather" />
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

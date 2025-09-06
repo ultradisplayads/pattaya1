@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Users, Clock, Zap } from "lucide-react"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface LiveEvent {
   id: string
@@ -189,6 +190,8 @@ export function LiveEventsWidget() {
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="live-events" />
       <CardHeader className="pb-3 px-5 pt-5">
         <CardTitle className="text-[15px] font-semibold text-gray-900 flex items-center tracking-tight">
           <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-2.5 animate-pulse"></div>

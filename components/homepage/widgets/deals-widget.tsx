@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tag, Clock, MapPin, FlameIcon as Fire } from "lucide-react"
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface Deal {
   id: string
@@ -94,6 +95,8 @@ export function DealsWidget() {
 
   return (
     <Card className="h-full bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="deals" />
       <CardHeader className="pb-6">
         <CardTitle className="text-[15px] font-medium text-gray-900 flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>

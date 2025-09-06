@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { useStrapiArticles } from '@/hooks/use-strapi-articles'
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiBreakingNews {
   id: number
@@ -389,6 +390,8 @@ export function EnhancedBreakingNewsWidget() {
       className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300" 
       onClick={handleItemClick}
     >
+      {/* Global Sponsorship Banner */}
+      <SponsorshipBanner widgetType="breaking-news" />
       <CardHeader className="pb-3 px-5 pt-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
