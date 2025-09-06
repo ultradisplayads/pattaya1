@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Settings, BarChart3, Eye, EyeOff, ToggleLeft, ToggleRight, Activity, Sparkles } from "lucide-react"
+import { Settings, BarChart3, Eye, EyeOff, ToggleLeft, ToggleRight, Activity, Sparkles, Save, RotateCcw, Move } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
 
 // Import all widgets
 import { EnhancedBreakingNewsWidget } from "./widgets/enhanced-breaking-news-widget"
@@ -32,8 +33,10 @@ interface Widget {
   type: string
   description: string
   size: "small" | "medium" | "large" | "xlarge"
-  position: { row: number; col: number; rowSpan: number; colSpan: number }
+  gridArea: string
+  category: string
   isVisible: boolean
+  isResizable: boolean
   settings: {
     apiKeys?: Record<string, string>
     refreshInterval?: number
@@ -51,9 +54,44 @@ export function ModularHomepage() {
   const [showAdmin, setShowAdmin] = useState(false)
   const [userRole, setUserRole] = useState<"admin" | "business" | "user">("admin")
   const [loading, setLoading] = useState(true)
+  const [isEditMode, setIsEditMode] = useState(false)
 
   useEffect(() => {
     initializeWidgets()
+  }, [])
+
+  // Load DMCA script
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://images.dmca.com/Badges/DMCABadgeHelper.min.js'
+    script.async = true
+    document.head.appendChild(script)
+
+    return () => {
+      // Cleanup script on unmount
+      const existingScript = document.querySelector('script[src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js"]')
+      if (existingScript) {
+        document.head.removeChild(existingScript)
+      }
+    }
+  }, [])
+
+  // Load saved configuration
+  useEffect(() => {
+    const saved = localStorage.getItem("pattaya1-widget-config")
+    if (saved) {
+      try {
+        const savedConfig = JSON.parse(saved)
+        setWidgets((prev) =>
+          prev.map((widget) => {
+            const savedWidget = savedConfig.find((s: any) => s.id === widget.id)
+            return savedWidget ? { ...widget, ...savedWidget } : widget
+          }),
+        )
+      } catch (error) {
+        console.error("Failed to load widget configuration:", error)
+      }
+    }
   }, [])
 
   const initializeWidgets = () => {
@@ -61,29 +99,33 @@ export function ModularHomepage() {
       console.log('Initializing widgets...')
       const defaultWidgets: Widget[] = [
         {
-          id: "breaking-news",
-          name: "Breaking News",
-          type: "news",
-          description: "Live breaking news and alerts",
-          size: "small",
-          position: { row: 1, col: 1, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 300000,
-            advertisements: { enabled: true, slots: 2, content: [] },
-          },
-        },
-        {
           id: "weather",
           name: "Weather Widget",
           type: "weather",
           description: "Current weather conditions",
-          size: "small",
-          position: { row: 1, col: 2, rowSpan: 1, colSpan: 1 },
+          size: "medium",
+          gridArea: "1 / 1 / 3 / 2",
+          category: "Information",
           isVisible: true,
+          isResizable: true,
           settings: {
             apiKeys: { openweather: process.env.OPENWEATHER_API_KEY || "" },
             refreshInterval: 600000,
+          },
+        },
+        {
+          id: "breaking-news",
+          name: "Breaking News",
+          type: "news",
+          description: "Live breaking news and alerts",
+          size: "medium",
+          gridArea: "1 / 2 / 2 / 4",
+          category: "News",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 300000,
+            advertisements: { enabled: true, slots: 2, content: [] },
           },
         },
         {
@@ -91,9 +133,11 @@ export function ModularHomepage() {
           name: "Radio Player",
           type: "media",
           description: "Live radio streaming",
-          size: "small",
-          position: { row: 1, col: 3, rowSpan: 1, colSpan: 1 },
+          size: "medium",
+          gridArea: "1 / 4 / 3 / 5",
+          category: "Entertainment",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 30000,
           },
@@ -103,9 +147,11 @@ export function ModularHomepage() {
           name: "Hot Deals",
           type: "business",
           description: "Latest deals and promotions with Groupon integration",
-          size: "small",
-          position: { row: 1, col: 4, rowSpan: 1, colSpan: 1 },
+          size: "medium",
+          gridArea: "2 / 2 / 3 / 4",
+          category: "Business",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 1800000,
             advertisements: { enabled: true, slots: 3, content: [] },
@@ -117,45 +163,10 @@ export function ModularHomepage() {
           type: "news",
           description: "Featured news stories",
           size: "large",
-          position: { row: 2, col: 1, rowSpan: 2, colSpan: 3 },
+          gridArea: "3 / 1 / 5 / 3",
+          category: "News",
           isVisible: true,
-          settings: {
-            refreshInterval: 300000,
-          },
-        },
-        {
-          id: "youtube",
-          name: "YouTube Videos",
-          type: "media",
-          description: "Featured YouTube content",
-          size: "medium",
-          position: { row: 2, col: 4, rowSpan: 3, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            apiKeys: { youtube: process.env.YOUTUBE_API_KEY || "" },
-            refreshInterval: 900000,
-          },
-        },
-        {
-          id: "social-feed",
-          name: "Social Media Feed",
-          type: "social",
-          description: "Real-time social media updates",
-          size: "small",
-          position: { row: 3, col: 1, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 120000,
-          },
-        },
-        {
-          id: "trending",
-          name: "Trending Topics",
-          type: "social",
-          description: "Hot trending topics and hashtags",
-          size: "small",
-          position: { row: 3, col: 2, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 300000,
           },
@@ -166,10 +177,55 @@ export function ModularHomepage() {
           type: "business",
           description: "Featured local businesses",
           size: "medium",
-          position: { row: 4, col: 1, rowSpan: 1, colSpan: 2 },
+          gridArea: "3 / 3 / 4 / 5",
+          category: "Business",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 600000,
+          },
+        },
+        {
+          id: "social-feed",
+          name: "Social Media Feed",
+          type: "social",
+          description: "Real-time social media updates",
+          size: "small",
+          gridArea: "4 / 3 / 6 / 4",
+          category: "Social",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 120000,
+          },
+        },
+        {
+          id: "trending",
+          name: "Trending Topics",
+          type: "social",
+          description: "Hot trending topics and hashtags",
+          size: "small",
+          gridArea: "4 / 4 / 5 / 5",
+          category: "Social",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 300000,
+          },
+        },
+        {
+          id: "youtube",
+          name: "YouTube Videos",
+          type: "media",
+          description: "Featured YouTube content",
+          size: "small",
+          gridArea: "5 / 1 / 6 / 2",
+          category: "Entertainment",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            apiKeys: { youtube: process.env.YOUTUBE_API_KEY || "" },
+            refreshInterval: 900000,
           },
         },
         {
@@ -178,58 +234,12 @@ export function ModularHomepage() {
           type: "events",
           description: "Upcoming events and activities",
           size: "small",
-          position: { row: 5, col: 1, rowSpan: 1, colSpan: 1 },
+          gridArea: "5 / 2 / 6 / 3",
+          category: "Events",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 300000,
-          },
-        },
-        {
-          id: "forum-activity",
-          name: "Forum Activity",
-          type: "social",
-          description: "Latest forum discussions",
-          size: "small",
-          position: { row: 5, col: 2, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 180000,
-          },
-        },
-        {
-          id: "photo-gallery",
-          name: "Photo Gallery",
-          type: "media",
-          description: "User-submitted photos",
-          size: "small",
-          position: { row: 5, col: 3, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 600000,
-          },
-        },
-        {
-          id: "google-reviews",
-          name: "Google Reviews",
-          type: "business",
-          description: "Latest Google reviews",
-          size: "small",
-          position: { row: 6, col: 1, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 900000,
-          },
-        },
-        {
-          id: "live-events",
-          name: "Live Events",
-          type: "events",
-          description: "Currently happening events",
-          size: "small",
-          position: { row: 6, col: 2, rowSpan: 1, colSpan: 1 },
-          isVisible: true,
-          settings: {
-            refreshInterval: 60000,
           },
         },
         {
@@ -238,10 +248,54 @@ export function ModularHomepage() {
           type: "navigation",
           description: "Quick access to popular sections",
           size: "small",
-          position: { row: 6, col: 3, rowSpan: 1, colSpan: 1 },
+          gridArea: "5 / 4 / 6 / 5",
+          category: "Navigation",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 3600000,
+          },
+        },
+        {
+          id: "photo-gallery",
+          name: "Photo Gallery",
+          type: "media",
+          description: "User-submitted photos",
+          size: "medium",
+          gridArea: "6 / 1 / 8 / 3",
+          category: "Media",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 600000,
+          },
+        },
+        {
+          id: "forum-activity",
+          name: "Forum Activity",
+          type: "social",
+          description: "Latest forum discussions",
+          size: "medium",
+          gridArea: "6 / 3 / 7 / 5",
+          category: "Community",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 180000,
+          },
+        },
+        {
+          id: "google-reviews",
+          name: "Google Reviews",
+          type: "business",
+          description: "Latest Google reviews",
+          size: "small",
+          gridArea: "7 / 3 / 8 / 4",
+          category: "Business",
+          isVisible: true,
+          isResizable: true,
+          settings: {
+            refreshInterval: 900000,
           },
         },
         {
@@ -249,9 +303,11 @@ export function ModularHomepage() {
           name: "Curator Social",
           type: "social",
           description: "Curated social media content",
-          size: "medium",
-          position: { row: 7, col: 1, rowSpan: 1, colSpan: 2 },
+          size: "small",
+          gridArea: "7 / 4 / 8 / 5",
+          category: "Social",
           isVisible: true,
+          isResizable: true,
           settings: {
             refreshInterval: 300000,
           },
@@ -262,8 +318,10 @@ export function ModularHomepage() {
           type: "transport",
           description: "Live traffic updates",
           size: "xlarge",
-          position: { row: 12, col: 1, rowSpan: 1, colSpan: 4 },
+          gridArea: "8 / 1 / 9 / 5",
+          category: "Information",
           isVisible: true,
+          isResizable: true,
           settings: {
             apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
@@ -283,6 +341,18 @@ export function ModularHomepage() {
   const handleToggleWidget = (widgetId: string) => {
     setWidgets((prev) => prev.map((w) => (w.id === widgetId ? { ...w, isVisible: !w.isVisible } : w)))
   }
+
+  const handleSaveLayout = () => {
+    const configToSave = widgets.map(({ ...widget }) => widget)
+    localStorage.setItem("pattaya1-widget-config", JSON.stringify(configToSave))
+    console.log("Layout saved!")
+  }
+
+  const handleResetLayout = () => {
+    initializeWidgets()
+    localStorage.removeItem("pattaya1-widget-config")
+  }
+
 
   const visibleWidgets = widgets.filter((w) => w.isVisible)
 
@@ -325,50 +395,53 @@ export function ModularHomepage() {
       {/* Scrolling Marquee */}
       <ScrollingMarquee />
 
-      {/* Apple-style Admin Controls */}
-      <div className="sticky top-16 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-100"></div>
-                  <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse delay-200"></div>
-                </div>
-                <Badge variant="outline" className="text-sm font-medium bg-white/50 border-gray-200">
-                  {visibleWidgets.length} Active
-                </Badge>
-              </div>
-              <Badge variant="secondary" className="text-sm font-medium bg-blue-50 text-blue-700 border-blue-200">
-                <Sparkles className="w-3 h-3 mr-1" />
-                v0.5
+      {/* Control Header */}
+      {isEditMode && (
+        <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 px-6 py-4 shadow-sm">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-semibold text-gray-800">Widget Layout Editor</h2>
+              <Badge variant="outline" className="text-blue-600 border-blue-600">
+                {visibleWidgets.length} Active Widgets
               </Badge>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAdmin(!showAdmin)}
-                className="h-9 px-4 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                {showAdmin ? "Hide" : "Show"} Admin
-                {showAdmin ? <ToggleRight className="w-4 h-4 ml-2" /> : <ToggleLeft className="w-4 h-4 ml-2" />}
+
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={handleSaveLayout}>
+                <Save className="w-4 h-4 mr-2" />
+                Save Layout
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => window.open("/analytics", "_blank")}
-                className="h-9 px-4 text-gray-600 hover:text-gray-900 hover:bg-gray-50 font-medium"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Analytics
+
+              <Button variant="outline" size="sm" onClick={handleResetLayout}>
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Reset
               </Button>
+
+              <div className="flex items-center gap-2">
+                <Switch checked={isEditMode} onCheckedChange={setIsEditMode} id="edit-mode" />
+                <label htmlFor="edit-mode" className="text-sm font-medium">
+                  Edit Mode
+                </label>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Toggle Edit Mode Button (when not in edit mode) */}
+      {!isEditMode && (
+        <div className="fixed top-20 right-4 z-40">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditMode(true)}
+            className="bg-white/90 backdrop-blur-sm shadow-lg"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Edit Layout
+          </Button>
+        </div>
+      )}
 
       {/* Apple-style Widget Admin Panel */}
       {showAdmin && (
@@ -440,166 +513,95 @@ export function ModularHomepage() {
         </div>
       )}
 
-      {/* Main Widget Grid - Apple-style Layout */}
-      <div className="p-6 lg:p-8">
-        {/* Row 1: Breaking News (7) | Weather (3) */}
-        <div
-          className="widget-grid-container"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(10, 1fr)',
-            gridAutoRows: 'minmax(250px, auto)',
-            gap: '1.5rem',
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: '1.5rem',
-            alignItems: 'start',
-            justifyItems: 'stretch'
-          }}
-        >
-          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedBreakingNewsWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedWeatherWidget />
-          </div>
-        </div>
+      {/* Widget Grid */}
+      <div className="p-4">
+        <div className={`static-widget-grid ${isEditMode ? "admin-mode" : ""}`}>
+          {widgets.map((widget) => {
+            const WidgetComponent = getWidgetComponent(widget.id)
 
-        {/* Row 2: Hot Deals (7) | Radio (3) */}
-        <div
-          className="widget-grid-container"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(10, 1fr)',
-            gridAutoRows: 'minmax(250px, auto)',
-            gap: '1.5rem',
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: '1.5rem',
-            alignItems: 'start',
-            justifyItems: 'stretch'
-          }}
-        >
-          <div className="widget-item widget-small" style={{ gridColumn: 'span 7', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <EnhancedHotDealsWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ gridColumn: 'span 3', minHeight: '250px', maxHeight: '350px', overflow: 'hidden' }}>
-            <RadioWidget />
-          </div>
-        </div>
+            if (!widget.isVisible || !WidgetComponent) return null
 
-        {/* Remaining Widgets Grid - keep existing layout */}
-        <div 
-          className="widget-grid-container"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gridAutoRows: 'minmax(250px, auto)',
-            gap: '1.5rem',
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: '1.5rem',
-            alignItems: 'start',
-            justifyItems: 'stretch'
-          }}
-        >
-          {/* Row 2: Large widget + Medium widget */}
-          <div className="widget-item widget-large" style={{ 
-            gridColumn: 'span 2', 
-            minHeight: '400px', 
-            maxHeight: '500px', 
-            overflow: 'hidden' 
-          }}>
-            <NewsHeroWidget />
-          </div>
-          <div className="widget-item widget-medium" style={{ 
-            minHeight: '400px', 
-            maxHeight: '500px', 
-            overflow: 'hidden' 
-          }}>
-            <YouTubeWidget />
-          </div>
+            return (
+              <div key={widget.id} className="widget-container" style={{ gridArea: widget.gridArea }}>
+                {/* Edit Mode Overlay */}
+                {isEditMode && (
+                  <div className="admin-overlay">
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 bg-white/90 backdrop-blur-sm"
+                        onClick={() => handleToggleWidget(widget.id)}
+                      >
+                        {widget.isVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 bg-white/90 backdrop-blur-sm cursor-move"
+                      >
+                        <Move className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
-          {/* Row 3: Medium widgets */}
-          <div className="widget-item widget-medium" style={{ 
-            gridColumn: 'span 2', 
-            minHeight: '300px', 
-            maxHeight: '400px', 
-            overflow: 'hidden' 
-          }}>
-            <BusinessSpotlightWidget />
-          </div>
-          <div className="widget-item widget-medium" style={{ 
-            gridColumn: 'span 2', 
-            minHeight: '300px', 
-            maxHeight: '400px', 
-            overflow: 'hidden' 
-          }}>
-            <CuratorSocialWidget />
-          </div>
+                {/* Widget Content */}
+                <Card className="h-full w-full">
+                  <div className="widget-content">
+                    <WidgetComponent />
+                  </div>
+                </Card>
 
-          {/* Row 4: Small widgets - Auto-fit */}
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <SocialFeedWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <TrendingWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <EventsCalendarWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <ForumActivityWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <PhotoGalleryWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <GoogleReviewsWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <LiveEventsWidget />
-          </div>
-          <div className="widget-item widget-small" style={{ minHeight: '200px', maxHeight: '300px', overflow: 'hidden' }}>
-            <QuickLinksWidget />
-          </div>
-
-          {/* Row 5: Extra large widget - Full width */}
-          <div className="widget-item widget-xlarge" style={{ 
-            gridColumn: '1 / -1', 
-            minHeight: '300px', 
-            maxHeight: '400px', 
-            overflow: 'hidden' 
-          }}>
-            <TrafficWidget />
-          </div>
+                {/* Widget Label in Edit Mode */}
+                {isEditMode && (
+                  <div className="absolute -bottom-6 left-0 right-0 text-center">
+                    <Badge variant="secondary" className="text-xs">
+                      {widget.name}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
 
-      {/* Apple-style Footer */}
-      <div className="text-center py-6 text-sm text-gray-500 border-t border-gray-100/50 bg-white/50 backdrop-blur-sm">
-        <div className="flex items-center justify-center space-x-6">
-          <span className="font-medium">Pattaya1 Dashboard v0.5</span>
-          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-          <span>Active Widgets: {visibleWidgets.length}</span>
-          <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-          <Button
-            variant="link"
-            size="sm"
-            onClick={() => window.open("/admin", "_blank")}
-            className="text-xs p-0 h-auto font-medium text-blue-600 hover:text-blue-700"
+      {/* Status Footer */}
+      <div className="text-center py-4 text-sm text-gray-500 border-t border-gray-200 bg-white/80">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          <span>Pattaya1 Dashboard - Static Grid Layout</span>
+          <Badge variant="secondary">V0.1 Stable</Badge>
+          <span>•</span>
+          <span>{widgets.length} Total Widgets</span>
+          <span>•</span>
+          <span>{visibleWidgets.length} Visible</span>
+        </div>
+        
+        {/* DMCA Protection Badge */}
+        <div className="mt-3 flex justify-center">
+          <a 
+            href="//www.dmca.com/Protection/Status.aspx?ID=21b30fa5-25de-439b-9c20-c5a88c0f9f12" 
+            title="DMCA.com Protection Status" 
+            className="dmca-badge hover:opacity-80 transition-opacity duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Admin Panel
-          </Button>
+            <img 
+              src="https://images.dmca.com/Badges/DMCA_badge_grn_60w.png?ID=21b30fa5-25de-439b-9c20-c5a88c0f9f12" 
+              alt="DMCA.com Protection Status"
+              className="h-6 w-auto"
+            />
+          </a>
         </div>
       </div>
 
-      {/* Apple-style CSS for widget grid */}
+      {/* CSS Grid Styles */}
       <style jsx>{`
-        .widget-grid-container {
+        .static-widget-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          grid-auto-rows: minmax(250px, auto);
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: repeat(8, minmax(200px, auto));
           gap: 1.5rem;
           max-width: 1400px;
           margin: 0 auto;
@@ -608,7 +610,7 @@ export function ModularHomepage() {
           justify-items: stretch;
         }
 
-        .widget-item {
+        .widget-container {
           position: relative;
           height: 100%;
           display: flex;
@@ -620,118 +622,77 @@ export function ModularHomepage() {
           box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
 
-        .widget-item:hover {
+        .widget-container:hover {
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
           transform: translateY(-1px);
         }
 
-        .widget-item > * {
+        .widget-content {
           height: 100%;
           width: 100%;
+          overflow: hidden;
         }
 
-        .widget-small {
-          min-height: 200px;
-          max-height: 350px;
+        .admin-overlay {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.2s ease;
         }
 
-        .widget-medium {
-          min-height: 300px;
-          max-height: 400px;
+        .admin-mode .widget-container:hover .admin-overlay {
+          opacity: 1;
         }
 
-        .widget-large {
-          min-height: 400px;
-          max-height: 500px;
+        .admin-mode .widget-container {
+          border: 2px dashed rgba(59, 130, 246, 0.3);
         }
 
-        .widget-xlarge {
-          min-height: 300px;
-          max-height: 400px;
+        .admin-mode .widget-container:hover {
+          border-color: rgba(59, 130, 246, 0.6);
         }
 
         /* Responsive breakpoints */
         @media (max-width: 1400px) {
-          .widget-grid-container {
+          .static-widget-grid {
             max-width: 1200px;
             gap: 1.25rem;
           }
         }
 
         @media (max-width: 1200px) {
-          .widget-grid-container {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          .static-widget-grid {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(10, minmax(180px, auto));
             gap: 1rem;
           }
         }
 
         @media (max-width: 900px) {
-          .widget-grid-container {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          .static-widget-grid {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(15, minmax(160px, auto));
             gap: 0.875rem;
           }
         }
 
         @media (max-width: 768px) {
-          .widget-grid-container {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          .static-widget-grid {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(20, minmax(140px, auto));
             gap: 0.75rem;
             padding: 0 0.75rem;
             padding-bottom: 6rem;
           }
-
-          .widget-small,
-          .widget-medium,
-          .widget-large {
-            min-height: 160px;
-          }
-
-          .widget-small {
-            max-height: 180px;
-          }
-
-          .widget-medium {
-            max-height: 200px;
-          }
-
-          .widget-large {
-            max-height: 250px;
-          }
-
-          .widget-xlarge {
-            max-height: 300px;
-          }
         }
 
         @media (max-width: 480px) {
-          .widget-grid-container {
-            grid-template-columns: 1fr;
+          .static-widget-grid {
             gap: 0.5rem;
             padding: 0 0.5rem;
             padding-bottom: 7rem;
-          }
-
-          .widget-small,
-          .widget-medium,
-          .widget-large,
-          .widget-xlarge {
-            min-height: 140px;
-          }
-
-          .widget-small {
-            max-height: 300px;
-          }
-
-          .widget-medium {
-            max-height: 350px;
-          }
-
-          .widget-large {
-            max-height: 400px;
-          }
-
-          .widget-xlarge {
-            max-height: 350px;
           }
         }
       `}</style>
