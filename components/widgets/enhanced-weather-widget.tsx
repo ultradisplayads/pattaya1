@@ -737,11 +737,11 @@ export function EnhancedWeatherWidget() {
             </div>
           </div>
 
-          {/* Weather Details - Responsive grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30 hover:from-blue-100/50 hover:to-blue-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1 bg-blue-100/50 rounded-full group-hover:bg-blue-200/50 transition-colors duration-300 flex-shrink-0">
-                <Droplets className="w-3 h-3 text-blue-600" />
+          {/* Weather Details - Optimized responsive grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50/50 to-blue-100/30 backdrop-blur-sm rounded-lg border border-blue-200/30 hover:from-blue-100/50 hover:to-blue-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1.5 bg-blue-100/50 rounded-full group-hover:bg-blue-200/50 transition-colors duration-300 flex-shrink-0">
+                <Droplets className="w-4 h-4 text-blue-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-blue-900 transition-colors duration-300">{weather.current.humidity}%</div>
@@ -749,9 +749,9 @@ export function EnhancedWeatherWidget() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1 bg-gray-100/50 rounded-full group-hover:bg-gray-200/50 transition-colors duration-300 flex-shrink-0">
-                <Wind className="w-3 h-3 text-gray-600" />
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50/50 to-gray-100/30 backdrop-blur-sm rounded-lg border border-gray-200/30 hover:from-gray-100/50 hover:to-gray-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1.5 bg-gray-100/50 rounded-full group-hover:bg-gray-200/50 transition-colors duration-300 flex-shrink-0">
+                <Wind className="w-4 h-4 text-gray-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-gray-800 transition-colors duration-300">
@@ -761,9 +761,9 @@ export function EnhancedWeatherWidget() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-purple-50/50 to-purple-100/30 backdrop-blur-sm rounded-lg border border-purple-200/30 hover:from-purple-100/50 hover:to-purple-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1 bg-purple-100/50 rounded-full group-hover:bg-purple-200/50 transition-colors duration-300 flex-shrink-0">
-                <Gauge className="w-3 h-3 text-purple-600" />
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-50/50 to-purple-100/30 backdrop-blur-sm rounded-lg border border-purple-200/30 hover:from-purple-100/50 hover:to-purple-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1.5 bg-purple-100/50 rounded-full group-hover:bg-purple-200/50 transition-colors duration-300 flex-shrink-0">
+                <Gauge className="w-4 h-4 text-purple-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-purple-900 transition-colors duration-300">{weather.current.pressure} hPa</div>
@@ -771,9 +771,9 @@ export function EnhancedWeatherWidget() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-2.5 bg-gradient-to-r from-green-50/50 to-green-100/30 backdrop-blur-sm rounded-lg border border-green-200/30 hover:from-green-100/50 hover:to-green-200/30 transition-all duration-300 hover:scale-105 group">
-              <div className="p-1 bg-green-100/50 rounded-full group-hover:bg-green-200/50 transition-colors duration-300 flex-shrink-0">
-                <Eye className="w-3 h-3 text-green-600" />
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50/50 to-green-100/30 backdrop-blur-sm rounded-lg border border-green-200/30 hover:from-green-100/50 hover:to-green-200/30 transition-all duration-300 hover:scale-105 group">
+              <div className="p-1.5 bg-green-100/50 rounded-full group-hover:bg-green-200/50 transition-colors duration-300 flex-shrink-0">
+                <Eye className="w-4 h-4 text-green-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-gray-900 group-hover:text-green-900 transition-colors duration-300">{weather.current.visibility} km</div>
