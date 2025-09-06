@@ -21,6 +21,8 @@ export function buildStrapiUrl(path: string): string {
 
 // Helper function to build API URLs
 export function buildApiUrl(endpoint: string): string {
+  if (!endpoint) return STRAPI_CONFIG.apiUrl
+  
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
   return `${STRAPI_CONFIG.apiUrl}/${cleanEndpoint}`
 } 

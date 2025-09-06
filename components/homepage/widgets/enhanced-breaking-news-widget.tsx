@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { IsolatedVoteButton } from "@/components/ui/isolated-vote-button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { useStrapiArticles } from '@/hooks/use-strapi-articles'
+import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiBreakingNews {
   id: number

@@ -22,6 +22,21 @@ export function StickyActionBar({ theme, onThemeToggle }: StickyActionBarProps) 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[var(--z-sticky-bar)] bg-white/80 backdrop-blur-xl border-t border-gray-100/50 p-3 shadow-[0_-1px_3px_0_rgba(0,0,0,0.1),0_-1px_2px_0_rgba(0,0,0,0.06)] font-sans antialiased">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
+      <div className="mt-3 flex justify-center">
+          <a 
+            href="//www.dmca.com/Protection/Status.aspx?ID=21b30fa5-25de-439b-9c20-c5a88c0f9f12" 
+            title="DMCA.com Protection Status" 
+            className="dmca-badge hover:opacity-80 transition-opacity duration-200"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img 
+              src="https://images.dmca.com/Badges/DMCA_badge_grn_60w.png?ID=21b30fa5-25de-439b-9c20-c5a88c0f9f12" 
+              alt="DMCA.com Protection Status"
+              className="h-6 w-auto"
+            />
+          </a>
+        </div>
         <div className="flex items-center space-x-3">
           {quickActions.map((action, index) => (
             <Button
