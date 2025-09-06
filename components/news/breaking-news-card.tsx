@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React, { useState } from 'react';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { IsolatedVoteButton } from "@/components/ui/isolated-vote-button";
 import { NewsArticle } from '@/lib/news-api';
 import { Pin, ThumbsUp, ThumbsDown, ExternalLink, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -77,17 +78,22 @@ export function BreakingNewsCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {article.ImageURL && (
-          <div className="relative aspect-video rounded-lg overflow-hidden">
+        {((article as any).image || article.ImageURL) && (
+          <div className="w-full">
             <img
-              src={article.ImageURL}
-              alt={article.Title}
-              className="w-full h-full object-cover"
+              src={(article as any).image || article.ImageURL}
+              alt={(article as any).imageAlt || article.Title}
+              className="w-full h-32 object-cover rounded-xl shadow-sm"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
             />
+            {(article as any).imageCaption && (
+              <p className="text-xs text-gray-500 italic mt-1">
+                {(article as any).imageCaption}
+              </p>
+            )}
           </div>
         )}
 
@@ -105,6 +111,13 @@ export function BreakingNewsCard({
               {formatDistanceToNow(new Date(article.PublishedAt), { addSuffix: true })}
             </div>
           </div>
+          <IsolatedVoteButton 
+            article={article}
+            onVoteUpdate={(articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => {
+              // Update parent component state if needed
+              console.log(`Vote updated for article ${articleKey}:`, voteData);
+            }}
+          />
         </div>
 
         {showActions && (

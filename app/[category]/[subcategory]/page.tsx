@@ -1,9 +1,10 @@
 import { DirectoryPage } from "@/components/directory/directory-page"
 
-export default function SubcategoryPage({
+export default async function SubcategoryPage({
   params,
 }: {
-  params: { category: string; subcategory: string }
+  params: Promise<{ category: string; subcategory: string }>
 }) {
-  return <DirectoryPage category={params.category} subcategory={params.subcategory} />
+  const { category, subcategory } = await params
+  return <DirectoryPage category={category} subcategory={subcategory} />
 }

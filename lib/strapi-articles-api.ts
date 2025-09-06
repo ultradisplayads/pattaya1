@@ -7,6 +7,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Ignore SSL certificate validation for development
+  httpsAgent: process.env.NODE_ENV === 'development' ? new (require('https').Agent)({
+    rejectUnauthorized: false
+  }) : undefined,
 });
 
 export interface StrapiArticle {

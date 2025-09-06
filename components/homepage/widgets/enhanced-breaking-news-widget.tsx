@@ -1,21 +1,26 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { AlertTriangle, Clock, ExternalLink, Zap, ChevronLeft, ChevronRight, Newspaper } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { ChevronLeft, ChevronRight, ExternalLink, Clock, AlertTriangle, Newspaper, Zap } from "lucide-react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { IsolatedVoteButton } from "@/components/ui/isolated-vote-button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { useStrapiArticles } from '@/hooks/use-strapi-articles'
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiBreakingNews {
   id: number
+  documentId?: string
   Title: string
   Summary: string
   Description: string
   URL: string
   ImageURL?: string
+  image?: string
+  imageAlt?: string
+  imageCaption?: string
   PublishedAt: string
   PublishedTimestamp: string
   apiSource: string
@@ -49,34 +54,58 @@ interface StrapiAdvertisement {
   publishedAt: string
 }
 
+interface Advertisement {
+  id: number
+  title: string
+  content: string
+  url: string
+  image?: {
+    url: string
+    alternativeText?: string
+  }
+  sponsor: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export function EnhancedBreakingNewsWidget() {
   const [news, setNews] = useState<StrapiBreakingNews[]>([])
-  const [advertisements, setAdvertisements] = useState<StrapiAdvertisement[]>([])
+  const [advertisements, setAdvertisements] = useState<Advertisement[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showAds, setShowAds] = useState(true)
   const [lastFetchTime, setLastFetchTime] = useState<Date>(new Date())
   const [hasNewData, setHasNewData] = useState(false)
+  const [lastPinnedCount, setLastPinnedCount] = useState(0)
   
   // Use Strapi articles as fallback
   const { articles: strapiArticles } = useStrapiArticles()
 
   const loadBreakingNews = async () => {
-    console.log('[Widget] loadBreakingNews function called')
     try {
       setLoading(true)
       const apiUrl = "/api/breaking-news/live"
-      console.log('[Widget] Fetching from:', apiUrl)
-      const response = await fetch(apiUrl)
-      console.log('[Widget] Response status:', response.status, response.ok)
+      // Add cache-busting parameter to ensure fresh data
+      const response = await fetch(`${apiUrl}?t=${Date.now()}`)
       if (response.ok) {
         const result = await response.json()
-        const data = result.data || result // Handle both old and new API formats
+        const regularData = result.data || [] // Regular news
+        const pinnedData = result.pinnedNews || [] // Pinned news
         
-        if (data && data.length > 0) {
-          console.log('[Widget] API returned', data.length, 'news items')
-          // Transform the API response to match our interface
-          const transformedNews = data.map((item: any) => {
+        if (regularData && regularData.length > 0) {
+          // Check for new pinned items
+          const currentPinnedCount = regularData.filter((item: any) => item.isPinned).length;
+          if (currentPinnedCount > lastPinnedCount) {
+            console.log(`🔥 NEW PINNED NEWS DETECTED! Count increased from ${lastPinnedCount} to ${currentPinnedCount}`);
+            setHasNewData(true);
+            setTimeout(() => setHasNewData(false), 5000);
+          }
+          setLastPinnedCount(currentPinnedCount);
+          
+          // Transform the regular news API response to match our interface
+          const transformedNews = regularData.map((item: any) => {
             const baseItem = {
               id: parseInt(item.id),
               Title: item.title,
@@ -84,6 +113,9 @@ export function EnhancedBreakingNewsWidget() {
               Description: item.summary,
               URL: item.url,
               ImageURL: item.imageUrl,
+              image: item.image,
+              imageAlt: item.imageAlt,
+              imageCaption: item.imageCaption,
               PublishedAt: item.timestamp,
               PublishedTimestamp: item.timestamp,
               apiSource: item.source,
@@ -91,9 +123,9 @@ export function EnhancedBreakingNewsWidget() {
               Category: item.category,
               Severity: item.severity as "low" | "medium" | "high" | "critical",
               IsBreaking: item.isBreaking,
-              upvotes: 0,
-              downvotes: 0,
-              isPinned: false,
+              upvotes: item.upvotes || 0,
+              downvotes: item.downvotes || 0,
+              isPinned: item.isPinned || false,
               moderationStatus: 'approved' as const,
               isHidden: false,
               createdAt: item.timestamp,
@@ -125,20 +157,30 @@ export function EnhancedBreakingNewsWidget() {
             );
           
           if (hasNewContent) {
-            console.log('[Widget] New data detected! Setting fresh news items')
             setHasNewData(true)
             setLastFetchTime(new Date())
             // Reset hasNewData flag after 3 seconds
             setTimeout(() => setHasNewData(false), 3000)
           }
+          // Since API now merges pinned news into main data array, just set the news directly
+          console.log('Transformed news with isPinned flags:', transformedNews.map((item: StrapiBreakingNews) => ({ id: item.id, title: item.Title, isPinned: item.isPinned })));
+          console.log('Total items received from API:', regularData.length);
+          console.log('Pinned items in data:', transformedNews.filter((item: StrapiBreakingNews) => item.isPinned).length);
           
-          console.log('[Widget] Setting', transformedNews.length, 'news items in state')
-          setNews(transformedNews)
+          // Auto-scroll to first pinned item when new pinned news is detected
+          if (hasNewData && currentPinnedCount > 0) {
+            const firstPinnedIndex = transformedNews.findIndex((item: StrapiBreakingNews) => item.isPinned);
+            if (firstPinnedIndex !== -1) {
+              setCurrentIndex(firstPinnedIndex);
+              console.log(`🎯 Auto-scrolled to first pinned news at index ${firstPinnedIndex}`);
+            }
+          }
+          
+          setNews(transformedNews);
         } else {
-          setNews([])
+          setNews([]);
         }
       } else {
-        console.log('[Widget] API request failed with status:', response.status)
         // Fallback to Strapi articles if breaking news fails
         if (strapiArticles.length > 0) {
           const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
@@ -192,7 +234,6 @@ export function EnhancedBreakingNewsWidget() {
         }
       }
     } catch (error) {
-      console.error('[Widget] Error loading breaking news:', error)
       // Fallback to Strapi articles on error
       if (strapiArticles.length > 0) {
         const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
@@ -249,6 +290,7 @@ export function EnhancedBreakingNewsWidget() {
     }
   }
 
+
   const loadAdvertisements = async () => {
     try {
       const response = await fetch(buildApiUrl("sponsored-posts?filters[Active][$eq]=true&sort=createdAt:desc"))
@@ -261,38 +303,42 @@ export function EnhancedBreakingNewsWidget() {
           setAdvertisements([])
         }
       } else {
-        console.error("Failed to load advertisements from Strapi:", response.status)
         setAdvertisements([])
       }
     } catch (error) {
-      console.error("Failed to load advertisements from Strapi:", error)
       setAdvertisements([])
     }
   }
 
   // Initial load
   useEffect(() => {
-    console.log('[Widget] Initial load triggered')
     loadBreakingNews()
     loadAdvertisements()
+    
+    // Set up interval to refresh data every 2 seconds for instant real-time updates
+    const interval = setInterval(() => {
+      loadBreakingNews()
+      loadAdvertisements()
+    }, 2000)
+    
+    return () => clearInterval(interval)
   }, [])
 
-  // Auto-rotate every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const totalItems = news.length + (showAds ? advertisements.length : 0)
-        return totalItems > 0 ? (prev + 1) % totalItems : 0
-      })
-    }, 5000)
+  // Auto-rotate disabled - manual navigation only
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setCurrentIndex((prev) => {
+  //       const totalItems = news.length + (showAds ? advertisements.length : 0)
+  //       return totalItems > 0 ? (prev + 1) % totalItems : 0
+  //     })
+  //   }, 5000)
 
-    return () => clearInterval(interval)
-  }, [news.length, advertisements.length, showAds])
+  //   return () => clearInterval(interval)
+  // }, [news.length, advertisements.length, showAds])
 
   // Auto-refresh data every 30 seconds to catch fresh news immediately
   useEffect(() => {
     const refreshInterval = setInterval(() => {
-      console.log('[Widget] Auto-refreshing data - checking for fresh news')
       loadBreakingNews()
       loadAdvertisements()
     }, 30 * 1000) // 30 seconds in milliseconds
@@ -313,14 +359,12 @@ export function EnhancedBreakingNewsWidget() {
 
   const allItems = useMemo(() => {
     // Use the unified news array that now contains both news and sponsored content
-    console.log('[Widget] All items from unified feed:', news.length, 'items')
     return news
   }, [news])
 
   const currentItem = allItems[currentIndex]
   const isAdvertisement = currentItem && ((currentItem as any).type === 'sponsored' || 'Sponsor' in currentItem)
   
-  console.log('[Widget] Current state - allItems:', allItems.length, 'currentIndex:', currentIndex, 'currentItem:', (currentItem as any)?.Title || (currentItem as any)?.Tiltle || 'none')
 
   if (!currentItem) {
     return (
@@ -386,15 +430,20 @@ export function EnhancedBreakingNewsWidget() {
   }
 
   return (
-    <Card 
-      className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300" 
-      onClick={handleItemClick}
-    >
-      {/* Global Sponsorship Banner */}
-      <SponsorshipBanner widgetType="breaking-news" />
+    <div className="space-y-4">
+      {/* Regular Breaking News */}
+      <Card 
+        className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300" 
+        onClick={handleItemClick}
+      >
       <CardHeader className="pb-3 px-5 pt-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
+            {currentItem?.isPinned && (
+              <Badge className="bg-blue-500/10 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5">
+                📌 PINNED
+              </Badge>
+            )}
             <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasNewData ? 'bg-green-500' : 'bg-red-500'}`}></div>
             <span className="text-sm font-semibold text-gray-900">Breaking News</span>
             <Badge className={`text-xs font-medium border rounded-full px-2 py-0.5 ${hasNewData ? 'bg-green-500/10 text-green-600 border-green-200' : 'bg-red-500/10 text-red-600 border-red-200'}`}>
@@ -458,19 +507,21 @@ export function EnhancedBreakingNewsWidget() {
               </Button>
             </div>
 
-            <div className="flex space-x-3">
+            <div className="space-y-3">
               {(currentItem as any).ImageURL && (
-                <img
-                  src={(currentItem as any).ImageURL}
-                  alt={(currentItem as any).Title}
-                  className="w-16 h-12 rounded-xl object-cover flex-shrink-0 shadow-sm"
-                />
+                <div className="w-full">
+                  <img
+                    src={(currentItem as any).ImageURL}
+                    alt={(currentItem as any).Title}
+                    className="w-full h-32 rounded-xl object-cover shadow-sm"
+                  />
+                </div>
               )}
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 leading-tight">
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
                   {(currentItem as any).Title}
                 </h4>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2 leading-relaxed">
+                <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
                   {(currentItem as any).Summary}
                 </p>
                 <div className="text-xs text-gray-500 font-medium">
@@ -481,51 +532,53 @@ export function EnhancedBreakingNewsWidget() {
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge className={`text-xs font-medium border rounded-full px-2 py-0.5 ${getSeverityColor((currentItem as StrapiBreakingNews).Severity)}`}>
-                  {(currentItem as StrapiBreakingNews).Category}
-                </Badge>
-                {(currentItem as StrapiBreakingNews).IsBreaking && (
-                  <Badge className="bg-red-500/10 text-red-600 text-xs font-medium border border-red-200 rounded-full px-2 py-0.5 animate-pulse">
-                    <Zap className="w-2 h-2 mr-1" />
-                    BREAKING
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1 text-xs text-gray-400 font-medium">
-                  <Clock className="w-3 h-3" />
-                  <span>{formatTimeAgo((currentItem as StrapiBreakingNews).PublishedTimestamp)}</span>
+            <div className="flex gap-3">
+              {(currentItem as StrapiBreakingNews).image && (
+                <div className="flex-shrink-0">
+                  <img 
+                    src={(currentItem as StrapiBreakingNews).image} 
+                    alt={(currentItem as StrapiBreakingNews).imageAlt || (currentItem as StrapiBreakingNews).Title}
+                    className="w-16 h-12 rounded object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    window.open((currentItem as StrapiBreakingNews).URL, "_blank")
-                  }}
-                  className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 text-gray-400" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
-                {(currentItem as StrapiBreakingNews).Title}
-              </h4>
-              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                {(currentItem as StrapiBreakingNews).Summary}
-              </p>
-              <div className="text-xs text-gray-500 font-medium">
-                Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
+              )}
+              <div className="flex-1 space-y-2">
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
+                  {(currentItem as StrapiBreakingNews).Title}
+                </h4>
+                <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
+                  {(currentItem as StrapiBreakingNews).Summary}
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-gray-500 font-medium">
+                    Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
+                  </div>
+                  
+                  {/* Vote Buttons */}
+                  <IsolatedVoteButton 
+                    article={currentItem}
+                    onVoteUpdate={(articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => {
+                      console.log(`Updating news item ${articleKey} with:`, voteData);
+                      setNews(prevNews => 
+                        prevNews.map(item => 
+                          item.id === articleKey 
+                            ? { ...item, upvotes: voteData.upvotes, downvotes: voteData.downvotes }
+                            : item
+                        )
+                      );
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         )}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   )
 }
