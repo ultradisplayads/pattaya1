@@ -622,7 +622,7 @@ export function EnhancedWeatherWidget() {
         className={`group transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.02] cursor-pointer overflow-hidden ${
           hasAlerts 
             ? 'bg-gradient-to-br from-red-50 via-red-100 to-red-50 border-red-200 shadow-lg' 
-            : 'bg-gradient-to-br from-white via-blue-50/30 to-white border-gray-100/50 shadow-sm'
+            : 'bg-gradient-to-br from-purple-100 via-purple-50 to-pink-100 border-purple-200/50 shadow-sm'
         } shadow-sm backdrop-blur-xl`}
         onClick={() => setIsModalOpen(true)}
       >
@@ -631,14 +631,15 @@ export function EnhancedWeatherWidget() {
         
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-100/20 rounded-full animate-pulse"></div>
-          <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-blue-100/20 rounded-full animate-pulse delay-300"></div>
+          <div className="absolute -top-10 -right-10 w-20 h-20 bg-purple-200/30 rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-pink-200/30 rounded-full animate-pulse delay-300"></div>
+          <div className="absolute top-1/2 right-1/4 w-12 h-12 bg-purple-300/20 rounded-full animate-bounce delay-500"></div>
         </div>
 
         <CardHeader className="pb-4 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
               <span className="text-sm font-medium text-gray-900">Weather</span>
               {hasAlerts && (
                 <Badge variant="destructive" className="ml-2 animate-pulse">

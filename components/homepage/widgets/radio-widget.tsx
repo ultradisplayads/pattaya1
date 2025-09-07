@@ -1362,8 +1362,23 @@ export function RadioWidget({ className }: { className?: string }) {
 
   if (loading) {
     return (
-      <Card className="top-row-widget bg-white/95 backdrop-blur-xl border-0 shadow-sm">
-        <CardHeader className="pb-6">
+      <Card className="top-row-widget bg-gradient-to-br from-orange-100 via-red-50 to-pink-100 backdrop-blur-xl border-0 shadow-sm relative overflow-hidden">
+        {/* Animated Music Background Elements for Loading */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-4 left-4 animate-bounce delay-100">
+            <Music className="w-5 h-5 text-orange-400/60" />
+          </div>
+          <div className="absolute top-8 right-6 animate-bounce delay-300">
+            <Radio className="w-4 h-4 text-red-400/60" />
+          </div>
+          <div className="absolute bottom-6 left-8 animate-bounce delay-500">
+            <Headphones className="w-3 h-3 text-pink-400/60" />
+          </div>
+          <div className="absolute -top-4 -right-4 w-12 h-12 bg-orange-200/20 rounded-full animate-ping"></div>
+          <div className="absolute -bottom-6 -left-6 w-8 h-8 bg-pink-200/20 rounded-full animate-ping delay-500"></div>
+        </div>
+        
+        <CardHeader className="pb-6 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></div>
@@ -1395,10 +1410,49 @@ export function RadioWidget({ className }: { className?: string }) {
   return (
     <>
       <Card 
-        className="top-row-widget overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
+        className="top-row-widget overflow-y-auto bg-gradient-to-br from-orange-100 via-red-50 to-pink-100 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
         onClick={handleWidgetClick}
         data-radio-widget="true"
       >
+        {/* Animated Music Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Musical Notes */}
+          <div className="absolute top-4 left-4 animate-bounce delay-100">
+            <Music className="w-6 h-6 text-orange-400/60" />
+          </div>
+          <div className="absolute top-8 right-6 animate-bounce delay-300">
+            <Radio className="w-5 h-5 text-red-400/60" />
+          </div>
+          <div className="absolute bottom-6 left-8 animate-bounce delay-500">
+            <Headphones className="w-4 h-4 text-pink-400/60" />
+          </div>
+          <div className="absolute bottom-4 right-4 animate-bounce delay-700">
+            <Volume2 className="w-5 h-5 text-orange-400/60" />
+          </div>
+          
+          {/* Sound Waves */}
+          <div className="absolute top-1/2 left-2 w-1 h-8 bg-orange-300/30 rounded-full animate-pulse"></div>
+          <div className="absolute top-1/2 left-4 w-1 h-6 bg-red-300/30 rounded-full animate-pulse delay-100"></div>
+          <div className="absolute top-1/2 left-6 w-1 h-10 bg-pink-300/30 rounded-full animate-pulse delay-200"></div>
+          <div className="absolute top-1/2 left-8 w-1 h-4 bg-orange-300/30 rounded-full animate-pulse delay-300"></div>
+          
+          {/* Floating Music Elements */}
+          <div className="absolute top-1/4 right-8 animate-ping delay-1000">
+            <Activity className="w-4 h-4 text-red-400/50" />
+          </div>
+          <div className="absolute bottom-1/4 left-12 animate-ping delay-1500">
+            <Signal className="w-3 h-3 text-pink-400/50" />
+          </div>
+          <div className="absolute top-3/4 right-12 animate-ping delay-2000">
+            <Zap className="w-4 h-4 text-orange-400/50" />
+          </div>
+          
+          {/* Pulsing Circles */}
+          <div className="absolute -top-4 -right-4 w-16 h-16 bg-orange-200/20 rounded-full animate-ping"></div>
+          <div className="absolute -bottom-6 -left-6 w-12 h-12 bg-pink-200/20 rounded-full animate-ping delay-500"></div>
+          <div className="absolute top-1/3 right-1/4 w-8 h-8 bg-red-200/20 rounded-full animate-ping delay-1000"></div>
+        </div>
+
         {/* Global Sponsorship Banner - At the very top */}
         <SponsorshipBanner widgetType="radio" />
 
