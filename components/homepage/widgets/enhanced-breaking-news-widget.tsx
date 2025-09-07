@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { IsolatedVoteButton } from "@/components/ui/isolated-vote-button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
-import { useStrapiArticles } from '@/hooks/use-strapi-articles'
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiBreakingNews {
@@ -70,7 +69,11 @@ interface Advertisement {
   publishedAt: string
 }
 
-export function EnhancedBreakingNewsWidget() {
+interface EnhancedBreakingNewsWidgetProps {
+  limit?: number
+}
+
+export function EnhancedBreakingNewsWidget({ limit = 10 }: EnhancedBreakingNewsWidgetProps = {}) {
   const [news, setNews] = useState<StrapiBreakingNews[]>([])
   const [advertisements, setAdvertisements] = useState<Advertisement[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -80,23 +83,33 @@ export function EnhancedBreakingNewsWidget() {
   const [hasNewData, setHasNewData] = useState(false)
   const [lastPinnedCount, setLastPinnedCount] = useState(0)
   
-  // Use Strapi articles as fallback
-  const { articles: strapiArticles } = useStrapiArticles()
 
   const loadBreakingNews = async () => {
     try {
       setLoading(true)
-      const apiUrl = "/api/breaking-news/live"
+      const apiUrl = "http://localhost:1337/api/breaking-news/live"
       // Add cache-busting parameter to ensure fresh data
       const response = await fetch(`${apiUrl}?t=${Date.now()}`)
       if (response.ok) {
         const result = await response.json()
-        const regularData = result.data || [] // Regular news
-        const pinnedData = result.pinnedNews || [] // Pinned news
+        const regularData = result.data || [] // Mixed news + sponsored content
+        const pinnedNewsData = result.pinnedNews || [] // Separate pinned news array
         
-        if (regularData && regularData.length > 0) {
+        console.log(`📊 API Response: ${regularData.length} regular items + ${pinnedNewsData.length} pinned items from http://localhost:1337/api/breaking-news/live`)
+        
+        // Keep pinned news separate - don't merge with regular news
+        const markedPinnedNews = pinnedNewsData.map((item: any) => ({ ...item, isPinned: true }));
+        // Only use regular data for main carousel
+        const allNewsData = regularData;
+        
+        console.log(`📌 Pinned items found: ${pinnedNewsData.length}`);
+        if (pinnedNewsData.length > 0) {
+          console.log(`📌 Pinned items:`, pinnedNewsData.map((item: any) => ({ id: item.id, title: item.title?.substring(0, 50) + '...' })));
+        }
+        
+        if (allNewsData && allNewsData.length > 0) {
           // Check for new pinned items
-          const currentPinnedCount = regularData.filter((item: any) => item.isPinned).length;
+          const currentPinnedCount = pinnedNewsData.length;
           if (currentPinnedCount > lastPinnedCount) {
             console.log(`🔥 NEW PINNED NEWS DETECTED! Count increased from ${lastPinnedCount} to ${currentPinnedCount}`);
             setHasNewData(true);
@@ -104,55 +117,67 @@ export function EnhancedBreakingNewsWidget() {
           }
           setLastPinnedCount(currentPinnedCount);
           
-          // Transform the regular news API response to match our interface
-          const transformedNews = regularData.map((item: any) => {
-            const baseItem = {
-              id: parseInt(item.id),
-              Title: item.title,
-              Summary: item.summary,
-              Description: item.summary,
-              URL: item.url,
-              ImageURL: item.imageUrl,
+          // Transform regular news (excluding pinned)
+          const transformedRegularNews = allNewsData.map((item: any) => {
+            const existingItem = news.find((existing: StrapiBreakingNews) => existing.id === item.id);
+            return {
+              id: item.id || item.documentId,
+              Title: item.title || item.Title || item.headline || '',
+              Summary: item.summary || item.Summary || item.description || '',
+              Description: item.description || item.Description || item.summary || '',
+              URL: item.url || item.URL || '#',
+              ImageURL: item.imageUrl || item.ImageURL,
               image: item.image,
               imageAlt: item.imageAlt,
               imageCaption: item.imageCaption,
-              PublishedAt: item.timestamp,
-              PublishedTimestamp: item.timestamp,
-              apiSource: item.source,
-              Source: item.source,
-              Category: item.category,
-              Severity: item.severity as "low" | "medium" | "high" | "critical",
-              IsBreaking: item.isBreaking,
-              upvotes: item.upvotes || 0,
-              downvotes: item.downvotes || 0,
-              isPinned: item.isPinned || false,
-              moderationStatus: 'approved' as const,
-              isHidden: false,
-              createdAt: item.timestamp,
-              updatedAt: item.timestamp,
-              publishedAt: item.timestamp
+              Source: item.source || item.Source || 'Unknown',
+              upvotes: existingItem?.upvotes || item.upvotes || 0,
+              downvotes: existingItem?.downvotes || item.downvotes || 0,
+              isPinned: false, // Regular news is never pinned
+              isSponsored: item.isSponsored || false,
+              sponsorName: item.sponsorName,
+              sponsorLogo: item.sponsorLogo,
+              sponsorUrl: item.sponsorUrl,
+              createdAt: item.createdAt || item.publishedAt || new Date().toISOString(),
+              updatedAt: item.updatedAt || new Date().toISOString()
             };
-
-            // Preserve sponsored post metadata
-            if (item.type === 'sponsored') {
-              return {
-                ...baseItem,
-                type: item.type,
-                sponsorName: item.sponsorName,
-                sponsorLogo: item.sponsorLogo,
-                displayPosition: item.displayPosition
-              };
-            }
-
-            return baseItem;
           });
           
+          // Transform pinned news separately
+          const transformedPinnedNews = markedPinnedNews.map((item: any) => {
+            const existingItem = news.find((existing: StrapiBreakingNews) => existing.id === item.id);
+            return {
+              id: item.id || item.documentId,
+              Title: item.title || item.Title || item.headline || '',
+              Summary: item.summary || item.Summary || item.description || '',
+              Description: item.description || item.Description || item.summary || '',
+              URL: item.url || item.URL || '#',
+              ImageURL: item.imageUrl || item.ImageURL,
+              image: item.image,
+              imageAlt: item.imageAlt,
+              imageCaption: item.imageCaption,
+              Source: item.source || item.Source || 'Unknown',
+              upvotes: existingItem?.upvotes || item.upvotes || 0,
+              downvotes: existingItem?.downvotes || item.downvotes || 0,
+              isPinned: true,
+              isSponsored: item.isSponsored || false,
+              sponsorName: item.sponsorName,
+              sponsorLogo: item.sponsorLogo,
+              sponsorUrl: item.sponsorUrl,
+              createdAt: item.createdAt || item.publishedAt || new Date().toISOString(),
+              updatedAt: item.updatedAt || new Date().toISOString()
+            };
+          });
+
+          // Store all news in state but filter for display
+          const transformedNews = [...transformedRegularNews, ...transformedPinnedNews];
+
           // Check if we have new data by comparing with existing news
           const hasNewContent = news.length === 0 || 
             transformedNews.some((newItem: StrapiBreakingNews) => 
               !news.find((existingItem: StrapiBreakingNews) => 
                 existingItem.id === newItem.id && 
-                existingItem.updatedAt === newItem.updatedAt
+                existingItem.Title === newItem.Title
               )
             );
           
@@ -162,10 +187,24 @@ export function EnhancedBreakingNewsWidget() {
             // Reset hasNewData flag after 3 seconds
             setTimeout(() => setHasNewData(false), 3000)
           }
-          // Since API now merges pinned news into main data array, just set the news directly
+          
           console.log('Transformed news with isPinned flags:', transformedNews.map((item: StrapiBreakingNews) => ({ id: item.id, title: item.Title, isPinned: item.isPinned })));
-          console.log('Total items received from API:', regularData.length);
-          console.log('Pinned items in data:', transformedNews.filter((item: StrapiBreakingNews) => item.isPinned).length);
+          console.log('Total items from API:', allNewsData.length, `(${pinnedNewsData.length} pinned + ${regularData.length} regular)`);
+          console.log('Pinned items in final data:', transformedNews.filter((item: StrapiBreakingNews) => item.isPinned).length);
+          console.log('📊 Live Vote Counts:', transformedNews.map((item: StrapiBreakingNews) => ({ 
+            id: item.id, 
+            title: item.Title?.substring(0, 30) + '...', 
+            upvotes: item.upvotes, 
+            downvotes: item.downvotes 
+          })));
+          console.log('🖼️ Image URLs:', transformedNews.map((item: StrapiBreakingNews) => ({ 
+            id: item.id, 
+            ImageURL: item.ImageURL, 
+            image: item.image,
+            hasImage: !!(item.ImageURL || item.image)
+          })));
+          
+          // Pinned news is already at the top from the array merge, no need to sort again
           
           // Auto-scroll to first pinned item when new pinned news is detected
           if (hasNewData && currentPinnedCount > 0) {
@@ -177,114 +216,18 @@ export function EnhancedBreakingNewsWidget() {
           }
           
           setNews(transformedNews);
+          console.log(`🎯 Frontend Display: ${transformedNews.length} items rendered in widget`);
         } else {
+          console.log(`📊 API Response: 0 items received from http://localhost:1337/api/breaking-news/live`)
           setNews([]);
         }
       } else {
-        // Fallback to Strapi articles if breaking news fails
-        if (strapiArticles.length > 0) {
-          const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
-            id: article.id,
-            Title: article.title || 'Untitled Article',
-            Summary: article.description || '',
-            Description: article.description || '',
-            URL: `/articles/${article.slug || article.id}`,
-            ImageURL: article.cover?.url,
-            PublishedAt: article.publishedAt || article.createdAt,
-            PublishedTimestamp: article.publishedAt || article.createdAt,
-            apiSource: article.author?.name || 'Pattaya1',
-            Source: article.author?.name || 'Pattaya1',
-            Category: article.category?.name || 'News',
-            Severity: 'medium' as const,
-            IsBreaking: false,
-            upvotes: 0,
-            downvotes: 0,
-            isPinned: false,
-            moderationStatus: 'approved' as const,
-            isHidden: false,
-            createdAt: article.createdAt,
-            updatedAt: article.updatedAt,
-            publishedAt: article.publishedAt
-          }));
-          setNews(transformedArticles);
-        } else {
-          setNews([{
-            id: 1,
-            Title: 'Breaking: Latest News from Pattaya',
-            Summary: 'Stay updated with the latest breaking news and developments.',
-            Description: 'Stay updated with the latest breaking news and developments.',
-            URL: '#',
-            ImageURL: undefined,
-            PublishedAt: new Date().toISOString(),
-            PublishedTimestamp: new Date().toISOString(),
-            apiSource: 'Pattaya1 News',
-            Source: 'Pattaya1 News',
-            Category: 'Breaking News',
-            Severity: 'medium' as const,
-            IsBreaking: true,
-            upvotes: 0,
-            downvotes: 0,
-            isPinned: false,
-            moderationStatus: 'approved' as const,
-            isHidden: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            publishedAt: new Date().toISOString()
-          }])
-        }
+        console.log(`❌ API Error: Failed to fetch from http://localhost:1337/api/breaking-news/live (Status: ${response.status})`)
+        setNews([]);
       }
     } catch (error) {
-      // Fallback to Strapi articles on error
-      if (strapiArticles.length > 0) {
-        const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
-          id: article.id,
-          Title: article.title || 'Untitled Article',
-          Summary: article.description || '',
-          Description: article.description || '',
-          URL: `/articles/${article.slug || article.id}`,
-          ImageURL: article.cover?.url,
-          PublishedAt: article.publishedAt || article.createdAt,
-          PublishedTimestamp: article.publishedAt || article.createdAt,
-          apiSource: article.author?.name || 'Pattaya1',
-          Source: article.author?.name || 'Pattaya1',
-          Category: article.category?.name || 'News',
-          Severity: 'medium' as const,
-          IsBreaking: false,
-          upvotes: 0,
-          downvotes: 0,
-          isPinned: false,
-          moderationStatus: 'approved' as const,
-          isHidden: false,
-          createdAt: article.createdAt,
-          updatedAt: article.updatedAt,
-          publishedAt: article.publishedAt
-        }));
-        setNews(transformedArticles);
-      } else {
-        setNews([{
-          id: 1,
-          Title: 'Breaking: Latest News from Pattaya',
-          Summary: 'Stay updated with the latest breaking news and developments.',
-          Description: 'Stay updated with the latest breaking news and developments.',
-          URL: '#',
-          ImageURL: undefined,
-        PublishedAt: new Date().toISOString(),
-        PublishedTimestamp: new Date().toISOString(),
-        apiSource: 'Pattaya1 News',
-        Source: 'Pattaya1 News',
-        Category: 'Breaking News',
-        Severity: 'medium' as const,
-        IsBreaking: true,
-        upvotes: 0,
-        downvotes: 0,
-        isPinned: false,
-        moderationStatus: 'approved' as const,
-        isHidden: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        publishedAt: new Date().toISOString()
-        }])
-      }
+      console.error('Failed to load breaking news:', error);
+      setNews([]);
     } finally {
       setLoading(false)
     }
@@ -310,17 +253,10 @@ export function EnhancedBreakingNewsWidget() {
     }
   }
 
-  // Initial load
+  // Initial load with reduced refresh rate
   useEffect(() => {
     loadBreakingNews()
-    loadAdvertisements()
-    
-    // Set up interval to refresh data every 2 seconds for instant real-time updates
-    const interval = setInterval(() => {
-      loadBreakingNews()
-      loadAdvertisements()
-    }, 2000)
-    
+    const interval = setInterval(loadBreakingNews, 30000) // Reduced refresh rate to 30 seconds
     return () => clearInterval(interval)
   }, [])
 
@@ -358,8 +294,8 @@ export function EnhancedBreakingNewsWidget() {
   }
 
   const allItems = useMemo(() => {
-    // Use the unified news array that now contains both news and sponsored content
-    return news
+    // Filter out pinned items from main carousel - only show regular news
+    return news.filter(item => !item.isPinned)
   }, [news])
 
   const currentItem = allItems[currentIndex]
@@ -558,11 +494,11 @@ export function EnhancedBreakingNewsWidget() {
                     Source: <span className="text-gray-700">{(currentItem as StrapiBreakingNews).Source}</span>
                   </div>
                   
-                  {/* Vote Buttons */}
+                  {/* Vote Buttons with Live Counts */}
                   <IsolatedVoteButton 
                     article={currentItem}
                     onVoteUpdate={(articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => {
-                      console.log(`Updating news item ${articleKey} with:`, voteData);
+                      console.log(`📊 Live Vote Update - ID ${articleKey}: +${voteData.upvotes} / -${voteData.downvotes} (Score: ${voteData.voteScore})`);
                       setNews(prevNews => 
                         prevNews.map(item => 
                           item.id === articleKey 
@@ -579,6 +515,137 @@ export function EnhancedBreakingNewsWidget() {
         )}
       </CardContent>
       </Card>
+
+      {/* Pinned News Carousel Section */}
+      {news.filter(item => item.isPinned).length > 0 && (
+        <PinnedNewsCarousel 
+          pinnedNews={news.filter(item => item.isPinned)}
+          onVoteUpdate={(articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => {
+            console.log(`📊 Pinned Vote Update - ID ${articleKey}: +${voteData.upvotes} / -${voteData.downvotes}`);
+            setNews(prevNews => 
+              prevNews.map(item => 
+                item.id === articleKey 
+                  ? { ...item, upvotes: voteData.upvotes, downvotes: voteData.downvotes }
+                  : item
+              )
+            );
+          }}
+        />
+      )}
     </div>
   )
+}
+
+// Pinned News Carousel Component
+function PinnedNewsCarousel({ pinnedNews, onVoteUpdate }: { 
+  pinnedNews: StrapiBreakingNews[], 
+  onVoteUpdate: (articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => void 
+}) {
+  const [currentPinnedIndex, setCurrentPinnedIndex] = useState(0);
+
+  const goToPreviousPinned = () => {
+    setCurrentPinnedIndex((prev) => (prev - 1 + pinnedNews.length) % pinnedNews.length);
+  };
+
+  const goToNextPinned = () => {
+    setCurrentPinnedIndex((prev) => (prev + 1) % pinnedNews.length);
+  };
+
+  const currentPinnedItem = pinnedNews[currentPinnedIndex];
+
+  if (!currentPinnedItem) return null;
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center space-x-2 mb-3">
+        <Badge className="bg-blue-500/10 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5">
+          📌 PINNED NEWS
+        </Badge>
+        <span className="text-xs text-gray-500">
+          {pinnedNews.length} pinned item(s)
+        </span>
+      </div>
+      
+      <Card className="bg-blue-50/30 border border-blue-200/50 rounded-xl hover:bg-blue-50/50 transition-all duration-300 cursor-pointer"
+            onClick={() => window.open(currentPinnedItem.URL, '_blank')}>
+        <CardHeader className="pb-2 px-4 pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Badge className="bg-blue-500 text-white text-xs font-medium rounded-full px-2 py-0.5">
+                📌 PINNED
+              </Badge>
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold text-blue-900">Breaking News</span>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPreviousPinned();
+                }}
+                className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </Button>
+              <span className="text-xs text-blue-600 px-1 font-medium">
+                {currentPinnedIndex + 1}/{pinnedNews.length}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNextPinned();
+                }}
+                className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 pb-4">
+          <div className="flex gap-3">
+            {currentPinnedItem.image && (
+              <div className="flex-shrink-0">
+                <img 
+                  src={currentPinnedItem.image} 
+                  alt={currentPinnedItem.imageAlt || currentPinnedItem.Title}
+                  className="w-16 h-12 rounded object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            
+            <div className="flex-1 min-w-0">
+              <h5 className="text-sm font-semibold text-blue-900 line-clamp-2 mb-1">
+                {currentPinnedItem.Title}
+              </h5>
+              <p className="text-xs text-blue-700 line-clamp-2 mb-2">
+                {currentPinnedItem.Summary}
+              </p>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-blue-600">
+                  Source: <span className="text-blue-800 font-medium">{currentPinnedItem.Source}</span>
+                </div>
+                
+                <IsolatedVoteButton 
+                  article={currentPinnedItem}
+                  onVoteUpdate={onVoteUpdate}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
