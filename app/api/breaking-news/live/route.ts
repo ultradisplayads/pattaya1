@@ -5,13 +5,14 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const isBreaking = searchParams.get('IsBreaking')
+    const limit = parseInt(searchParams.get('limit') || '10')
     
     let newsData: any[] = []
     let pinnedNewsData: any[] = []
     
     try {
-      // Fetch regular breaking news
-      const localApiUrl = `http://localhost:1337/api/breaking-news/live`
+      // Fetch regular breaking news - get all available articles
+      const localApiUrl = `http://localhost:1337/api/breaking-news-plural?populate=*&sort=PublishedTimestamp:desc&pagination[limit]=100`
       console.log('Fetching breaking news from:', localApiUrl)
       const newsResponse = await fetch(localApiUrl, {
         headers: {
@@ -24,11 +25,28 @@ export async function GET(request: Request) {
       
       if (newsResponse.ok) {
         const newsResult = await newsResponse.json()
-        newsData = newsResult.data || []
+        newsData = newsResult.data?.map((item: any) => ({
+          id: item.id.toString(),
+          title: item.Title || item.attributes?.Title,
+          summary: item.Summary || item.attributes?.Summary,
+          category: item.Category || item.attributes?.Category,
+          severity: item.Severity || item.attributes?.Severity,
+          timestamp: item.PublishedTimestamp || item.attributes?.PublishedTimestamp,
+          source: item.Source || item.attributes?.Source,
+          url: item.URL || item.attributes?.URL,
+          isBreaking: item.IsBreaking || item.attributes?.IsBreaking,
+          type: 'news',
+          image: item.ImageURL || item.attributes?.ImageURL || item.image,
+          imageAlt: item.imageAlt || item.attributes?.imageAlt || '',
+          imageCaption: item.imageCaption || item.attributes?.imageCaption || '',
+          upvotes: item.upvotes || item.attributes?.upvotes || 0,
+          downvotes: item.downvotes || item.attributes?.downvotes || 0,
+          isPinned: item.isPinned || item.attributes?.isPinned || false
+        })) || []
       }
       
-      // Fetch pinned news from Strapi backend - check both isPinned and pinnedAt fields
-      const pinnedApiUrl = `http://localhost:1337/api/breaking-news-plural?populate=*&filters[$or][0][isPinned][$eq]=true&filters[$or][1][pinnedAt][$notNull]=true&sort=PublishedTimestamp:desc`
+      // Fetch pinned news from Strapi backend - use isPinned field only
+      const pinnedApiUrl = `http://localhost:1337/api/breaking-news-plural?populate=*&filters[isPinned][$eq]=true&sort=PublishedTimestamp:desc&pagination[limit]=${limit}`
       console.log('Fetching pinned news from:', pinnedApiUrl)
       const pinnedResponse = await fetch(pinnedApiUrl, {
         headers: {
@@ -136,8 +154,18 @@ export async function GET(request: Request) {
       console.log('No pinned news items found');
     }
 
-    // Merge pinned news into regular content at the beginning
-    const allContent = [...pinnedNewsFromApi, ...regularContent];
+    // Merge pinned news into regular content at the beginning and apply limit
+    let allContent = [...pinnedNewsFromApi, ...regularContent];
+    
+    // Apply limit to total content (keeping pinned items at top)
+    if (allContent.length > limit) {
+      // Keep all pinned items + fill remaining slots with regular content
+      const pinnedCount = pinnedNewsFromApi.length;
+      const remainingSlots = Math.max(0, limit - pinnedCount);
+      const regularContentLimited = regularContent.slice(0, remainingSlots);
+      allContent = [...pinnedNewsFromApi, ...regularContentLimited];
+      console.log(`Applied limit ${limit}: ${pinnedCount} pinned + ${regularContentLimited.length} regular = ${allContent.length} total`);
+    }
     
     return NextResponse.json({
       data: allContent,
