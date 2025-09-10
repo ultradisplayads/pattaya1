@@ -11,8 +11,8 @@ export async function GET(request: Request) {
     let pinnedNewsData: any[] = []
     
     try {
-      // Fetch regular breaking news - get all available articles
-      const localApiUrl = `http://localhost:1337/api/breaking-news-plural?populate=*&sort=PublishedTimestamp:desc&pagination[limit]=100`
+      // Fetch regular breaking news
+      const localApiUrl = `https://api.pattaya1.com/api/breaking-news/live`
       console.log('Fetching breaking news from:', localApiUrl)
       const newsResponse = await fetch(localApiUrl, {
         headers: {
@@ -45,8 +45,8 @@ export async function GET(request: Request) {
         })) || []
       }
       
-      // Fetch pinned news from Strapi backend - use isPinned field only
-      const pinnedApiUrl = `http://localhost:1337/api/breaking-news-plural?populate=*&filters[isPinned][$eq]=true&sort=PublishedTimestamp:desc&pagination[limit]=${limit}`
+      // Fetch pinned news from Strapi backend - check both isPinned and pinnedAt fields
+      const pinnedApiUrl = `https://api.pattaya1.com/api/breaking-news-plural?populate=*&filters[$or][0][isPinned][$eq]=true&filters[$or][1][pinnedAt][$notNull]=true&sort=PublishedTimestamp:desc`
       console.log('Fetching pinned news from:', pinnedApiUrl)
       const pinnedResponse = await fetch(pinnedApiUrl, {
         headers: {
@@ -75,6 +75,7 @@ export async function GET(request: Request) {
           imageCaption: item.imageCaption || item.attributes?.imageCaption || '',
           upvotes: item.upvotes || item.attributes?.upvotes || 0,
           downvotes: item.downvotes || item.attributes?.downvotes || 0,
+          userVote: item.userVotes?.['anonymous'] || null,
           isPinned: true
         })) || []
         
@@ -92,7 +93,7 @@ export async function GET(request: Request) {
     // Create sponsored posts with proper sponsor names
     let sponsoredData = []
     try {
-      const localSponsoredUrl = `http://localhost:1337/api/sponsored-posts?populate=*&filters[IsActive][$eq]=true`
+      const localSponsoredUrl = `https://api.pattaya1.com/api/sponsored-posts?populate=*&filters[IsActive][$eq]=true`
       console.log('Fetching sponsored posts from:', localSponsoredUrl)
       const sponsoredResponse = await fetch(localSponsoredUrl, {
         headers: {
@@ -153,28 +154,17 @@ export async function GET(request: Request) {
     } else {
       console.log('No pinned news items found');
     }
-
-    // Merge pinned news into regular content at the beginning and apply limit
-    let allContent = [...pinnedNewsFromApi, ...regularContent];
-    
-    // Apply limit to total content (keeping pinned items at top)
-    if (allContent.length > limit) {
-      // Keep all pinned items + fill remaining slots with regular content
-      const pinnedCount = pinnedNewsFromApi.length;
-      const remainingSlots = Math.max(0, limit - pinnedCount);
-      const regularContentLimited = regularContent.slice(0, remainingSlots);
-      allContent = [...pinnedNewsFromApi, ...regularContentLimited];
-      console.log(`Applied limit ${limit}: ${pinnedCount} pinned + ${regularContentLimited.length} regular = ${allContent.length} total`);
-    }
+    // DO NOT merge pinned news into regular content - keep them separate
+    // The frontend will handle displaying them in separate rows
     
     return NextResponse.json({
-      data: allContent,
-      pinnedNews: pinnedNewsFromApi,
+      data: regularContent, // Only regular news (non-pinned)
+      pinnedNews: pinnedNewsFromApi, // Only pinned news
       meta: {
-        total: allContent.length,
-        newsCount: allContent.filter((item: any) => item.type === 'news').length,
-        sponsoredCount: allContent.filter((item: any) => item.type === 'sponsored').length,
-        breakingCount: allContent.filter((item: any) => item.isBreaking).length,
+        total: regularContent.length + pinnedNewsFromApi.length,
+        newsCount: regularContent.filter((item: any) => item.type === 'news').length,
+        sponsoredCount: regularContent.filter((item: any) => item.type === 'sponsored').length,
+        breakingCount: regularContent.filter((item: any) => item.isBreaking).length,
         pinnedCount: pinnedNewsFromApi.length,
         pinnedItems: pinnedNewsFromApi.map((item: any) => ({
           id: item.id,

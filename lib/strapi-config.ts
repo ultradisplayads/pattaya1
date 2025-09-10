@@ -1,7 +1,7 @@
 // Strapi configuration and URL utilities
 export const STRAPI_CONFIG = {
-  baseUrl: "http://localhost:1337",
-  apiUrl: "http://localhost:1337/api",
+  baseUrl: "https://api.pattaya1.com",
+  apiUrl: "https://api.pattaya1.com/api",
 }
 
 // Helper function to build full URLs for Strapi assets

@@ -125,11 +125,11 @@ export function EnhancedHotDealsWidget() {
 
   if (isLoading) {
     return (
-      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+      <Card className="min-h-[24rem] max-h-[24rem] bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex flex-col overflow-hidden">
         <CardHeader className="pb-3 px-5 pt-5">
           <CardTitle className="text-[15px] font-semibold text-gray-900 tracking-tight">Hot Deals</CardTitle>
         </CardHeader>
-        <CardContent className="px-5 pb-5">
+        <CardContent className="px-5 pb-5 flex-1 overflow-y-auto">
           <div className="space-y-4">
             {[1, 2].map((i) => (
               <div key={i} className="animate-pulse">
@@ -147,7 +147,7 @@ export function EnhancedHotDealsWidget() {
   }
 
   return (
-    <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out flex flex-col">
+    <Card className="min-h-[18rem] max-h-[18rem] bg-white/80 backdrop-blur-sm border-0 shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_40px_rgb(0,0,0,0.12)] transition-all duration-300 ease-out flex flex-col">
       {/* Global Sponsorship Banner */}
       <SponsorshipBanner widgetType="hot-deals" />
       <CardHeader className="pb-2 px-4 pt-4 flex-shrink-0">
@@ -168,7 +168,7 @@ export function EnhancedHotDealsWidget() {
 
 
         {/* Deals List */}
-        <div className="space-y-2 pt-1 flex-1 overflow-y-auto">
+        <div className="space-y-2 pt-1">
           {filteredDeals.slice(0, 3).map((deal) => (
             <div key={deal.id} className="transform scale-95 hover:scale-100 transition-transform duration-200">
               <DealCard

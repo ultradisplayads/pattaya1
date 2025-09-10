@@ -1410,7 +1410,7 @@ export function RadioWidget({ className }: { className?: string }) {
   return (
     <>
       <Card 
-        className="top-row-widget overflow-y-auto bg-gradient-to-br from-orange-100 via-red-50 to-pink-100 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300 relative cursor-pointer"
+        className="top-row-widget overflow-y-auto bg-gradient-to-br from-purple-500/10 via-pink-500/15 to-indigo-500/10 border-purple-200/50 shadow-lg hover:shadow-xl transition-all duration-300 relative cursor-pointer backdrop-blur-xl"
         onClick={handleWidgetClick}
         data-radio-widget="true"
       >
@@ -1455,6 +1455,52 @@ export function RadioWidget({ className }: { className?: string }) {
 
         {/* Global Sponsorship Banner - At the very top */}
         <SponsorshipBanner widgetType="radio" />
+        
+        {/* Vibrant animated background with music-related Lucide icons */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Primary gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-400/5 via-pink-500/8 to-indigo-600/5 animate-pulse"></div>
+          
+          {/* Floating animated music icons */}
+          <div className="absolute top-4 right-4 opacity-20">
+            <Music className="w-8 h-8 text-purple-400 animate-bounce delay-100" />
+          </div>
+          <div className="absolute top-8 left-6 opacity-15">
+            <Radio className="w-6 h-6 text-pink-400 animate-spin" style={{animationDuration: '8s'}} />
+          </div>
+          <div className="absolute bottom-6 right-8 opacity-20">
+            <Headphones className="w-7 h-7 text-indigo-400 animate-pulse delay-300" />
+          </div>
+          <div className="absolute bottom-4 left-4 opacity-15">
+            <Volume2 className="w-5 h-5 text-purple-300 animate-bounce delay-500" />
+          </div>
+          <div className="absolute top-1/2 left-2 opacity-10">
+            <Zap className="w-6 h-6 text-pink-400 animate-pulse delay-700" />
+          </div>
+          <div className="absolute top-1/3 right-2 opacity-15">
+            <Activity className="w-5 h-5 text-indigo-400 animate-bounce delay-900" />
+          </div>
+          <div className="absolute top-1/4 left-1/3 opacity-12">
+            <Signal className="w-4 h-4 text-purple-500 animate-pulse delay-400" />
+          </div>
+          <div className="absolute bottom-1/3 right-1/4 opacity-18">
+            <TrendingUp className="w-5 h-5 text-pink-500 animate-bounce delay-600" />
+          </div>
+          
+          {/* Geometric shapes with gradients */}
+          <div className="absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-full animate-pulse delay-300"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-br from-pink-400/10 to-indigo-500/10 rounded-full animate-pulse delay-500"></div>
+          
+          {/* Subtle musical note pattern */}
+          <div className="absolute inset-0 opacity-5" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(147, 51, 234, 0.3) 1px, transparent 0)`,
+            backgroundSize: '20px 20px'
+          }}></div>
+          
+          {/* Animated border glow */}
+          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400/20 via-pink-500/20 to-indigo-400/20 animate-pulse opacity-50"></div>
+        </div>
 
       {/* Widget-Level Sponsor Banner - Always Visible */}
       {sponsoredBanner.isSponsored && (
@@ -1497,11 +1543,16 @@ export function RadioWidget({ className }: { className?: string }) {
 
 
 
-      <CardHeader className="pb-4 sm:pb-6">
+      <CardHeader className="pb-4 sm:pb-6 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-            <span className="text-[15px] font-medium text-gray-900">Radio</span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-ping opacity-75"></div>
+            </div>
+            <span className="text-[15px] font-semibold text-gray-900 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Radio
+            </span>
             
             {/* Current Station Indicator */}
             {currentStation && stations.length > 1 && (
@@ -1534,10 +1585,18 @@ export function RadioWidget({ className }: { className?: string }) {
                 handleUserInteraction()
                 toggleMute()
               }}
-              className="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600"
+              className={`h-8 w-8 rounded-full transition-all duration-300 hover:scale-110 ${
+                isMuted 
+                  ? "bg-red-100 hover:bg-red-200 text-red-600" 
+                  : "bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-600"
+              }`}
               title={isMuted ? "Unmute" : "Mute"}
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? (
+                <VolumeX className="w-4 h-4 animate-pulse" />
+              ) : (
+                <Volume2 className="w-4 h-4 animate-bounce" />
+              )}
             </Button>
           </div>
         </div>
@@ -1584,7 +1643,7 @@ export function RadioWidget({ className }: { className?: string }) {
 
         {/* Current Station Display */}
         {currentStation && (
-          <div className="bg-gray-50/50 rounded-lg p-4">
+          <div className="bg-gradient-to-r from-purple-50/60 to-pink-50/40 backdrop-blur-sm rounded-xl p-4 border border-purple-200/40 shadow-sm relative z-10">
             {/* Playing indicator for sponsored stations */}
             {currentStation.isSponsored && isPlaying && (
               <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded-lg">
@@ -1685,8 +1744,8 @@ export function RadioWidget({ className }: { className?: string }) {
           </div>
         )}
 
-        {/* Main Controls - Responsive Layout */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4">
+        {/* Main Controls - Enhanced with vibrant styling */}
+        <div className="flex items-center justify-center gap-3 sm:gap-4 relative z-10">
           {/* Previous Button */}
           <Button
             variant="ghost"
@@ -1697,13 +1756,13 @@ export function RadioWidget({ className }: { className?: string }) {
             }}
             disabled={!canPlayPrevious()}
             title={canPlayPrevious() ? "Previous station" : "No previous station available"}
-            className={`h-10 w-10 rounded-full transition-all duration-200 ${
+            className={`h-10 w-10 rounded-full transition-all duration-300 ${
               canPlayPrevious()
-                ? "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:scale-105"
+                ? "bg-gradient-to-r from-indigo-100 to-purple-100 hover:from-indigo-200 hover:to-purple-200 text-indigo-600 hover:scale-110 shadow-sm"
                 : "bg-gray-50 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <SkipBack className="w-4 h-4" />
+            <SkipBack className="w-4 h-4 animate-pulse" />
           </Button>
 
           {/* Play/Pause Button */}
@@ -1724,19 +1783,23 @@ export function RadioWidget({ className }: { className?: string }) {
                 console.log('No current station available')
               }
             }}
-            className={`h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 ${
+            className={`h-14 w-14 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 relative ${
               currentStation && validateStreamUrl(currentStation.streamUrl)
-                ? "bg-purple-500 hover:bg-purple-600 text-white hover:scale-105"
+                ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white hover:scale-110"
                 : "bg-gray-400 text-gray-200 cursor-not-allowed"
             }`}
             disabled={!currentStation || !validateStreamUrl(currentStation.streamUrl)}
           >
+            {/* Glow effect for play button */}
+            {currentStation && validateStreamUrl(currentStation.streamUrl) && (
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400/30 to-pink-400/30 rounded-full animate-ping"></div>
+            )}
             {isLoading ? (
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : isPlaying ? (
-              <Pause className="w-6 h-6" />
+              <Pause className="w-6 h-6 animate-pulse" />
             ) : (
-              <Play className="w-6 h-6 ml-0.5" />
+              <Play className="w-6 h-6 ml-0.5 animate-bounce" />
             )}
           </Button>
 
@@ -1750,34 +1813,36 @@ export function RadioWidget({ className }: { className?: string }) {
             }}
             disabled={!canPlayNext()}
             title={canPlayNext() ? "Next station" : "No next station available"}
-            className={`h-10 w-10 rounded-full transition-all duration-200 ${
+            className={`h-10 w-10 rounded-full transition-all duration-300 ${
               canPlayNext()
-                ? "bg-gray-100 hover:bg-gray-200 text-gray-600 hover:scale-105"
+                ? "bg-gradient-to-r from-pink-100 to-indigo-100 hover:from-pink-200 hover:to-indigo-200 text-pink-600 hover:scale-110 shadow-sm"
                 : "bg-gray-50 text-gray-300 cursor-not-allowed"
             }`}
           >
-            <SkipForward className="w-4 h-4" />
+            <SkipForward className="w-4 h-4 animate-pulse" />
           </Button>
         </div>
 
 
       <Separator className="my-2" />
 
-        {/* Station Cards - Scrollable Layout */}
-        <div className="space-y-3">
+        {/* Station Cards - Enhanced scrollable layout */}
+        <div className="space-y-3 relative z-10">
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-gray-700">Other Stations:</span>
-            <span className="text-[11px] text-gray-500">{stations.length} total</span>
+            <span className="text-[13px] font-semibold text-gray-700 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Other Stations:
+            </span>
+            <span className="text-[11px] text-gray-500 font-medium">{stations.length} total</span>
           </div>
           
           <div className="max-h-32 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {stations.filter(station => station.id !== currentStation?.id).slice(0, 6).map((station) => (
               <div
                 key={station.id}
-                className={`flex items-center gap-3 p-2 rounded-lg border transition-all duration-200 cursor-pointer hover:bg-gray-50 ${
+                className={`flex items-center gap-3 p-2 rounded-xl border transition-all duration-300 cursor-pointer hover:scale-105 ${
                   currentStation?.id === station.id
-                    ? "bg-purple-50 border-purple-200"
-                    : "bg-white border-gray-200 hover:border-gray-300"
+                    ? "bg-gradient-to-r from-purple-100/60 to-pink-100/40 border-purple-300/50 shadow-sm"
+                    : "bg-gradient-to-r from-white/80 to-gray-50/60 border-gray-200/50 hover:border-purple-300/50 hover:shadow-sm backdrop-blur-sm"
                 }`}
                 onClick={() => {
                   handleUserInteraction()
@@ -1857,9 +1922,9 @@ export function RadioWidget({ className }: { className?: string }) {
           </div>
         </div>
 
-        {/* Quick Select - Compact */}
-        <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium text-gray-600">Quick:</span>
+        {/* Quick Select - Enhanced compact */}
+        <div className="flex items-center gap-2 relative z-10">
+          <span className="text-[12px] font-semibold text-gray-600 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Quick:</span>
           <div className="flex gap-1 flex-wrap">
             {stations.slice(0, 4).map((station) => (
               <Button
@@ -1870,10 +1935,10 @@ export function RadioWidget({ className }: { className?: string }) {
                   handleUserInteraction()
                   playStation(station)
                 }}
-                className={`h-6 px-2 rounded-full text-[10px] transition-all duration-200 ${
+                className={`h-6 px-2 rounded-full text-[10px] transition-all duration-300 hover:scale-110 ${
                   currentStation?.id === station.id
-                    ? "bg-purple-100 text-purple-700 font-medium"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-gradient-to-r from-purple-200 to-pink-200 text-purple-800 font-bold shadow-sm"
+                    : "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 hover:from-purple-100 hover:to-pink-100 hover:text-purple-700"
                 }`}
               >
                 {station.frequency}
@@ -1882,12 +1947,15 @@ export function RadioWidget({ className }: { className?: string }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 relative z-10">
           {/* Error indicator with retry */}
           {error && (
-            <div className="flex items-center gap-2 text-[11px] text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
-              <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
-              <span className="font-medium">Connection issue</span>
+            <div className="flex items-center gap-2 text-[11px] text-amber-600 bg-gradient-to-r from-amber-50 to-orange-50 px-2 py-1 rounded-full border border-amber-200/50">
+              <div className="relative">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                <span className="absolute inset-0 w-1.5 h-1.5 bg-amber-400 rounded-full animate-ping opacity-50"></span>
+              </div>
+              <span className="font-semibold">Connection issue</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1897,10 +1965,10 @@ export function RadioWidget({ className }: { className?: string }) {
                     playStation(currentStation)
                   }
                 }}
-                className="h-4 w-4 p-0 text-amber-600 hover:text-amber-700"
+                className="h-4 w-4 p-0 text-amber-600 hover:text-amber-700 hover:scale-110 transition-all duration-300"
                 title="Retry playback"
               >
-                <RefreshCw className="w-3 h-3" />
+                <RefreshCw className="w-3 h-3 animate-spin" />
               </Button>
             </div>
           )}
@@ -1908,8 +1976,8 @@ export function RadioWidget({ className }: { className?: string }) {
           {/* All Stations Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7 px-2 rounded-full text-[11px]">
-                <MoreVertical className="w-3 h-3 mr-1" />
+              <Button variant="outline" size="sm" className="h-7 px-2 rounded-full text-[11px] bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200/50 hover:from-purple-100 hover:to-pink-100 transition-all duration-300 hover:scale-105">
+                <MoreVertical className="w-3 h-3 mr-1 animate-pulse" />
                 <span className="hidden sm:inline">All Stations</span>
                 <span className="sm:hidden">Stations</span>
               </Button>
