@@ -5,6 +5,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const isBreaking = searchParams.get('IsBreaking')
+    const limit = parseInt(searchParams.get('limit') || '10')
     
     let newsData: any[] = []
     let pinnedNewsData: any[] = []
@@ -24,7 +25,24 @@ export async function GET(request: Request) {
       
       if (newsResponse.ok) {
         const newsResult = await newsResponse.json()
-        newsData = newsResult.data || []
+        newsData = newsResult.data?.map((item: any) => ({
+          id: item.id.toString(),
+          title: item.Title || item.attributes?.Title,
+          summary: item.Summary || item.attributes?.Summary,
+          category: item.Category || item.attributes?.Category,
+          severity: item.Severity || item.attributes?.Severity,
+          timestamp: item.PublishedTimestamp || item.attributes?.PublishedTimestamp,
+          source: item.Source || item.attributes?.Source,
+          url: item.URL || item.attributes?.URL,
+          isBreaking: item.IsBreaking || item.attributes?.IsBreaking,
+          type: 'news',
+          image: item.ImageURL || item.attributes?.ImageURL || item.image,
+          imageAlt: item.imageAlt || item.attributes?.imageAlt || '',
+          imageCaption: item.imageCaption || item.attributes?.imageCaption || '',
+          upvotes: item.upvotes || item.attributes?.upvotes || 0,
+          downvotes: item.downvotes || item.attributes?.downvotes || 0,
+          isPinned: item.isPinned || item.attributes?.isPinned || false
+        })) || []
       }
       
       // Fetch pinned news from Strapi backend - check both isPinned and pinnedAt fields
@@ -136,7 +154,6 @@ export async function GET(request: Request) {
     } else {
       console.log('No pinned news items found');
     }
-
     // DO NOT merge pinned news into regular content - keep them separate
     // The frontend will handle displaying them in separate rows
     

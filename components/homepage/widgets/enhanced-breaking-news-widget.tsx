@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SimpleVoteButton } from "@/components/ui/simple-vote-button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
-import { useStrapiArticles } from '@/hooks/use-strapi-articles'
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
 interface StrapiBreakingNews {
@@ -71,7 +70,6 @@ interface Advertisement {
   updatedAt: string
   publishedAt: string
 }
-
 export function EnhancedBreakingNewsWidget() {
   const [regularNews, setRegularNews] = useState<StrapiBreakingNews[]>([])
   const [pinnedNews, setPinnedNews] = useState<StrapiBreakingNews[]>([])
@@ -97,13 +95,11 @@ export function EnhancedBreakingNewsWidget() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [isModalOpen])
   
-  // Use Strapi articles as fallback
-  const { articles: strapiArticles } = useStrapiArticles()
 
   const loadBreakingNews = async () => {
     try {
       setLoading(true)
-      const apiUrl = "/api/breaking-news/live"
+      const apiUrl = "http://localhost:1337/api/breaking-news/live"
       // Add cache-busting parameter to ensure fresh data
       const response = await fetch(`${apiUrl}?t=${Date.now()}`)
       if (response.ok) {
@@ -360,7 +356,7 @@ export function EnhancedBreakingNewsWidget() {
     }
   }
 
-  // Initial load
+  // Initial load with reduced refresh rate
   useEffect(() => {
     loadBreakingNews()
     loadAdvertisements()
@@ -650,7 +646,6 @@ export function EnhancedBreakingNewsWidget() {
         )}
       </CardContent>
       </Card>
-
       {/* Row 2: Pinned News with Rolling Ticker */}
       {pinnedNews.length > 0 && (
         <>
@@ -986,4 +981,118 @@ export function EnhancedBreakingNewsWidget() {
       </Dialog>
     </div>
   )
+}
+
+// Pinned News Carousel Component
+function PinnedNewsCarousel({ pinnedNews, onVoteUpdate }: { 
+  pinnedNews: StrapiBreakingNews[], 
+  onVoteUpdate: (articleKey: string | number, voteData: {upvotes: number, downvotes: number, voteScore: number}) => void 
+}) {
+  const [currentPinnedIndex, setCurrentPinnedIndex] = useState(0);
+
+  const goToPreviousPinned = () => {
+    setCurrentPinnedIndex((prev) => (prev - 1 + pinnedNews.length) % pinnedNews.length);
+  };
+
+  const goToNextPinned = () => {
+    setCurrentPinnedIndex((prev) => (prev + 1) % pinnedNews.length);
+  };
+
+  const currentPinnedItem = pinnedNews[currentPinnedIndex];
+
+  if (!currentPinnedItem) return null;
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center space-x-2 mb-3">
+        <Badge className="bg-blue-500/10 text-blue-600 text-xs font-medium border border-blue-200 rounded-full px-2 py-0.5">
+          📌 PINNED NEWS
+        </Badge>
+        <span className="text-xs text-gray-500">
+          {pinnedNews.length} pinned item(s)
+        </span>
+      </div>
+      
+      <Card className="bg-blue-50/30 border border-blue-200/50 rounded-xl hover:bg-blue-50/50 transition-all duration-300 cursor-pointer"
+            onClick={() => window.open(currentPinnedItem.URL, '_blank')}>
+        <CardHeader className="pb-2 px-4 pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Badge className="bg-blue-500 text-white text-xs font-medium rounded-full px-2 py-0.5">
+                📌 PINNED
+              </Badge>
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold text-blue-900">Breaking News</span>
+            </div>
+            
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPreviousPinned();
+                }}
+                className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </Button>
+              <span className="text-xs text-blue-600 px-1 font-medium">
+                {currentPinnedIndex + 1}/{pinnedNews.length}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNextPinned();
+                }}
+                className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-100"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 pb-4">
+          <div className="flex gap-3">
+            {currentPinnedItem.image && (
+              <div className="flex-shrink-0">
+                <img 
+                  src={currentPinnedItem.image} 
+                  alt={currentPinnedItem.imageAlt || currentPinnedItem.Title}
+                  className="w-16 h-12 rounded object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
+            
+            <div className="flex-1 min-w-0">
+              <h5 className="text-sm font-semibold text-blue-900 line-clamp-2 mb-1">
+                {currentPinnedItem.Title}
+              </h5>
+              <p className="text-xs text-blue-700 line-clamp-2 mb-2">
+                {currentPinnedItem.Summary}
+              </p>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-blue-600">
+                  Source: <span className="text-blue-800 font-medium">{currentPinnedItem.Source}</span>
+                </div>
+                
+                <IsolatedVoteButton 
+                  article={currentPinnedItem}
+                  onVoteUpdate={onVoteUpdate}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
