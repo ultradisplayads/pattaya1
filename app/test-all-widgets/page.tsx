@@ -91,7 +91,7 @@ export default function TestAllWidgetsPage() {
             Testing Instructions
           </h3>
           <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-            <li>Go to Strapi admin: <a href="http://localhost:1337/admin" target="_blank" className="underline">http://localhost:1337/admin</a></li>
+            <li>Go to Strapi admin: <a href="https://api.pattaya1.com/admin" target="_blank" className="underline">https://api.pattaya1.com/admin</a></li>
             <li>Navigate to Content Manager → Global Sponsorship</li>
             <li>Create a new sponsorship entry with multiple titles</li>
             <li>Set "Is Active" to true</li>
