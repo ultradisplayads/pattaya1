@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { InView } from 'react-intersection-observer';
+import { trackLayoutChange, trackWidgetResize, trackWidgetDrag, widgetTracker } from '../lib/widget-tracker';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -114,6 +115,9 @@ const DynamicDashboard = () => {
     setLayout(newLayout);
     setHasUnsavedChanges(true);
     console.log('Layout changed:', newLayout);
+    
+    // Track widget positions and placements
+    trackLayoutChange(newLayout, widgets, 'layout-change');
   };
 
   /**
@@ -248,6 +252,17 @@ const DynamicDashboard = () => {
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
+        // Initialize widget tracker with grid info
+        widgetTracker.initializeGrid({
+          totalRows: 10,
+          totalColumns: 12,
+          gridWidth: 1200,
+          gridHeight: 500,
+          rowHeight: 50,
+          margin: [10, 10],
+          containerPadding: [10, 10]
+        });
+
         // Load widget configurations (simulating Strapi fetch)
         setWidgets(mockWidgetConfigs);
         
@@ -266,18 +281,26 @@ const DynamicDashboard = () => {
           });
           setLayout(mergedLayout);
           console.log('Loaded saved layout:', mergedLayout);
+          
+          // Track initial layout
+          trackLayoutChange(mergedLayout, mockWidgetConfigs, 'initial');
         } else {
           // Generate default layout
           const defaultLayout = generateDefaultLayout(mockWidgetConfigs);
           setLayout(defaultLayout);
           console.log('Generated default layout:', defaultLayout);
+          
+          // Track initial layout
+          trackLayoutChange(defaultLayout, mockWidgetConfigs, 'initial');
         }
         
       } catch (error) {
         console.error('Failed to initialize dashboard:', error);
         // Fallback to default layout
         setWidgets(mockWidgetConfigs);
-        setLayout(generateDefaultLayout(mockWidgetConfigs));
+        const fallbackLayout = generateDefaultLayout(mockWidgetConfigs);
+        setLayout(fallbackLayout);
+        trackLayoutChange(fallbackLayout, mockWidgetConfigs, 'initial');
       }
     };
 
@@ -353,6 +376,36 @@ const DynamicDashboard = () => {
           >
             {isLoading ? 'Saving...' : 'Save Layout'}
           </button>
+          <button 
+            className="track-btn"
+            onClick={() => {
+              const positions = widgetTracker.getCurrentPositions();
+              console.log('📊 Current Widget Positions:', positions);
+              console.table(positions.map(p => ({
+                'Widget': p.name,
+                'ID': p.id,
+                'Position': `(${p.x}, ${p.y})`,
+                'Size': `${p.w}×${p.h}`,
+                'Row/Col': `${p.row}/${p.column}`,
+                'Span': `${p.rowSpan}×${p.columnSpan}`
+              })));
+            }}
+          >
+            📊 Log Positions
+          </button>
+          <button 
+            className="export-btn"
+            onClick={() => {
+              const layoutData = widgetTracker.exportLayout();
+              console.log('📋 Exported Layout:', layoutData);
+              // Copy to clipboard
+              navigator.clipboard.writeText(layoutData).then(() => {
+                alert('Layout data copied to clipboard!');
+              });
+            }}
+          >
+            📋 Export Layout
+          </button>
         </div>
       </div>
 
@@ -361,8 +414,40 @@ const DynamicDashboard = () => {
         className="layout"
         layouts={{ lg: layout }}
         onLayoutChange={handleLayoutChange}
-        onDragStop={saveLayoutToApi}
-        onResizeStop={saveLayoutToApi}
+        onDragStop={(layout, oldItem, newItem, placeholder, e, element) => {
+          saveLayoutToApi(layout);
+          // Track individual widget drag
+          const widget = widgets.find(w => w.id === newItem.i);
+          trackWidgetDrag(newItem.i, { x: newItem.x, y: newItem.y }, widget?.name);
+          // Stop continuous tracking
+          widgetTracker.stopContinuousLogging();
+        }}
+        onResizeStop={(layout, oldItem, newItem, placeholder, e, element) => {
+          saveLayoutToApi(layout);
+          // Track individual widget resize
+          const widget = widgets.find(w => w.id === newItem.i);
+          trackWidgetResize(newItem.i, newItem, widget?.name);
+          // Stop continuous tracking
+          widgetTracker.stopContinuousLogging();
+        }}
+        onDragStart={(layout, oldItem, newItem, placeholder, e, element) => {
+          // Start continuous tracking during drag
+          widgetTracker.startContinuousLogging();
+        }}
+        onResizeStart={(layout, oldItem, newItem, placeholder, e, element) => {
+          // Start continuous tracking during resize
+          widgetTracker.startContinuousLogging();
+        }}
+        onDrag={(layout, oldItem, newItem, placeholder, e, element) => {
+          // Track during drag
+          const widget = widgets.find(w => w.id === newItem.i);
+          trackWidgetDrag(newItem.i, { x: newItem.x, y: newItem.y }, widget?.name);
+        }}
+        onResize={(layout, oldItem, newItem, placeholder, e, element) => {
+          // Track during resize
+          const widget = widgets.find(w => w.id === newItem.i);
+          trackWidgetResize(newItem.i, newItem, widget?.name);
+        }}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
         rowHeight={50}
@@ -471,6 +556,29 @@ const DynamicDashboard = () => {
         .save-btn:disabled {
           background: #ccc;
           cursor: not-allowed;
+        }
+
+        .track-btn, .export-btn {
+          padding: 10px 15px;
+          background: #2196F3;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: bold;
+          margin-left: 10px;
+        }
+
+        .track-btn:hover, .export-btn:hover {
+          background: #1976D2;
+        }
+
+        .export-btn {
+          background: #FF9800;
+        }
+
+        .export-btn:hover {
+          background: #F57C00;
         }
 
         .widget-container {

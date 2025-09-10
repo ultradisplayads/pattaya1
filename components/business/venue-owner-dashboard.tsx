@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Building2, Calendar, Percent, CreditCard, BarChart3, Upload, Clock, Bell, Save, Eye } from "lucide-react"
+import { Building2, Calendar, Percent, CreditCard, BarChart3, Upload, Clock, Bell, Save, Eye, Monitor, Download } from "lucide-react"
+import { widgetTracker, getCurrentWidgetPositions, exportWidgetLayout } from "@/lib/widget-tracker"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +19,17 @@ export function VenueOwnerDashboard() {
 
   useEffect(() => {
     loadBusinessData()
+    
+    // Initialize widget tracker for dashboard monitoring
+    widgetTracker.initializeGrid({
+      totalRows: 20,
+      totalColumns: 12,
+      gridWidth: 1200,
+      gridHeight: 1000,
+      rowHeight: 50,
+      margin: [8, 8],
+      containerPadding: [8, 8]
+    });
   }, [])
 
   const loadBusinessData = async () => {

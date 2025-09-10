@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import { InView } from 'react-intersection-observer';
 import { Settings, BarChart3, Eye, EyeOff, ToggleLeft, ToggleRight, Activity, Sparkles, Save, RotateCcw, Move, Maximize2, X, GripVertical } from "lucide-react"
+import { trackLayoutChange, trackWidgetResize, trackWidgetDrag, widgetTracker } from "@/lib/widget-tracker"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -208,7 +209,7 @@ export function DynamicModularHomepage() {
         "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
-        "traffic": { allowResize: false, allowDrag: false, allowDelete: false, isLocked: true },
+        "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
       };
       
       console.log('Using fallback admin widget configs:', defaultConfigs);
@@ -227,24 +228,24 @@ export function DynamicModularHomepage() {
       // Check if there's a saved layout for this widget
       const savedItem = savedLayout?.find(item => item.i === widget.id);
       
-      // Default grid positions based on original layout
+      // Default grid positions based on your specified layout
       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        "weather": { x: 0, y: 0, w: 3, h: 4 },
-        "breaking-news": { x: 3, y: 0, w: 6, h: 3 },
-        "radio": { x: 9, y: 0, w: 3, h: 4 },
-        "hot-deals": { x: 3, y: 3, w: 6, h: 3 },
-        "news-hero": { x: 0, y: 4, w: 6, h: 4 },
-        "business-spotlight": { x: 6, y: 4, w: 6, h: 3 },
-        "social-feed": { x: 6, y: 7, w: 3, h: 3 },
-        "trending": { x: 9, y: 7, w: 3, h: 3 },
-        "youtube": { x: 0, y: 8, w: 3, h: 3 },
-        "events-calendar": { x: 3, y: 8, w: 3, h: 3 },
-        "quick-links": { x: 9, y: 10, w: 3, h: 3 },
-        "photo-gallery": { x: 0, y: 11, w: 6, h: 4 },
-        "forum-activity": { x: 6, y: 10, w: 6, h: 3 },
-        "google-reviews": { x: 6, y: 13, w: 3, h: 3 },
-        "curator-social": { x: 9, y: 13, w: 3, h: 3 },
-        "traffic": { x: 0, y: 15, w: 12, h: 3 },
+        "weather": { x: 0, y: 0, w: 2, h: 11 },
+        "breaking-news": { x: 2, y: 0, w: 7, h: 5 },
+        "radio": { x: 9, y: 0, w: 3, h: 11 },
+        "hot-deals": { x: 3, y: 11, w: 4, h: 6 },
+        "news-hero": { x: 2, y: 5, w: 7, h: 6 },
+        "business-spotlight": { x: 7, y: 23, w: 3, h: 6 },
+        "social-feed": { x: 7, y: 11, w: 3, h: 12 },
+        "trending": { x: 0, y: 21, w: 3, h: 8 },
+        "youtube": { x: 3, y: 17, w: 4, h: 12 },
+        "events-calendar": { x: 4, y: 29, w: 2, h: 9 },
+        "quick-links": { x: 10, y: 23, w: 2, h: 6 },
+        "photo-gallery": { x: 0, y: 29, w: 4, h: 9 },
+        "forum-activity": { x: 6, y: 29, w: 3, h: 9 },
+        "google-reviews": { x: 10, y: 11, w: 2, h: 12 },
+        "curator-social": { x: 9, y: 29, w: 3, h: 9 },
+        "traffic": { x: 0, y: 11, w: 3, h: 10 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -267,6 +268,17 @@ export function DynamicModularHomepage() {
   }, []);
 
   useEffect(() => {
+    // Initialize widget tracker with grid info
+    widgetTracker.initializeGrid({
+      totalRows: 20,
+      totalColumns: 12,
+      gridWidth: 1200,
+      gridHeight: 1000,
+      rowHeight: 50,
+      margin: [8, 8],
+      containerPadding: [8, 8]
+    });
+    
     initializeWidgets()
   }, [])
 
@@ -557,6 +569,9 @@ export function DynamicModularHomepage() {
       setWidgets(defaultWidgets);
       setLayout(generatedLayout);
       
+      // Track initial layout
+      trackLayoutChange(generatedLayout, defaultWidgets, 'initial');
+      
       console.log('Dynamic widgets initialized successfully')
       setLoading(false)
     } catch (error) {
@@ -575,8 +590,38 @@ export function DynamicModularHomepage() {
   }
 
   const handleResetLayout = () => {
-    initializeWidgets()
-    localStorage.removeItem("pattaya1-dynamic-layout")
+    // Reset to the exact layout positions you specified
+    const resetLayout: LayoutItem[] = [
+      { i: "weather", x: 0, y: 0, w: 2, h: 11, isDraggable: true, isResizable: true, static: false },
+      { i: "breaking-news", x: 2, y: 0, w: 7, h: 5, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 0, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 3, y: 11, w: 4, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "news-hero", x: 2, y: 5, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "business-spotlight", x: 7, y: 23, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "social-feed", x: 7, y: 11, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "trending", x: 0, y: 21, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 3, y: 17, w: 4, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "events-calendar", x: 4, y: 29, w: 2, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "quick-links", x: 10, y: 23, w: 2, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "photo-gallery", x: 0, y: 29, w: 4, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 6, y: 29, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "google-reviews", x: 10, y: 11, w: 2, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "curator-social", x: 9, y: 29, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 0, y: 11, w: 3, h: 10, isDraggable: true, isResizable: true, static: false }
+    ];
+    
+    setLayout(resetLayout);
+    
+    // Track the reset layout
+    trackLayoutChange(resetLayout, widgets, 'initial');
+    
+    // Clear saved layout from localStorage
+    localStorage.removeItem("pattaya1-dynamic-layout");
+    
+    // Save the reset layout to API
+    saveLayoutToApi(resetLayout);
+    
+    console.log('🔄 Layout reset to default positions');
   }
 
   /**
@@ -584,21 +629,29 @@ export function DynamicModularHomepage() {
    */
   const handleLayoutChange = useCallback((newLayout: LayoutItem[]) => {
     setLayout(newLayout);
-  }, []);
+    // Track widget positions and placements
+    trackLayoutChange(newLayout, widgets, 'layout-change');
+  }, [widgets]);
 
   /**
    * Handle drag stop - save layout to API
    */
-  const handleDragStop = useCallback(async (newLayout: LayoutItem[]) => {
+  const handleDragStop = useCallback(async (newLayout: LayoutItem[], oldItem: LayoutItem, newItem: LayoutItem) => {
     await saveLayoutToApi(newLayout);
-  }, [saveLayoutToApi]);
+    // Track individual widget drag
+    const widget = widgets.find(w => w.id === newItem.i);
+    trackWidgetDrag(newItem.i, { x: newItem.x, y: newItem.y }, widget?.name);
+  }, [saveLayoutToApi, widgets]);
 
   /**
    * Handle resize stop - save layout to API
    */
-  const handleResizeStop = useCallback(async (newLayout: LayoutItem[]) => {
+  const handleResizeStop = useCallback(async (newLayout: LayoutItem[], oldItem: LayoutItem, newItem: LayoutItem) => {
     await saveLayoutToApi(newLayout);
-  }, [saveLayoutToApi]);
+    // Track individual widget resize
+    const widget = widgets.find(w => w.id === newItem.i);
+    trackWidgetResize(newItem.i, newItem, widget?.name);
+  }, [saveLayoutToApi, widgets]);
 
   /**
    * Handle widget deletion
@@ -774,9 +827,77 @@ export function DynamicModularHomepage() {
                 Save Layout
               </Button>
 
-              <Button variant="outline" size="sm" onClick={handleResetLayout} className="text-xs sm:text-sm">
+              <Button variant="outline" size="sm" onClick={handleResetLayout} className="text-xs sm:text-sm bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100">
                 <RotateCcw className="w-4 h-4 mr-2" />
-                Reset
+                Reset to Default
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const positions = widgetTracker.getCurrentPositions();
+                  console.log('📊 Current Widget Positions:', positions);
+                  console.table(positions.map(p => ({
+                    'Widget': p.name,
+                    'ID': p.id,
+                    'Position': `(${p.x}, ${p.y})`,
+                    'Size': `${p.w}×${p.h}`,
+                    'Row/Col': `${p.row}/${p.column}`,
+                    'Span': `${p.rowSpan}×${p.columnSpan}`,
+                    'Operation': p.operation
+                  })));
+                }}
+                className="text-xs sm:text-sm bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              >
+                📊 Log Positions
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  const layoutData = widgetTracker.exportLayout();
+                  console.log('📋 Exported Layout:', layoutData);
+                  navigator.clipboard.writeText(layoutData).then(() => {
+                    alert('Layout data copied to clipboard!');
+                  });
+                }}
+                className="text-xs sm:text-sm bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              >
+                📋 Export Layout
+              </Button>
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  console.log('🎯 Widget Positions & Spans:');
+                  console.log('=====================================');
+                  
+                  layout.forEach((item, index) => {
+                    const widget = widgets.find(w => w.id === item.i);
+                    console.log(`${index + 1}. ${widget?.name || 'Unknown Widget'} (${item.i})`);
+                    console.log(`   📍 Position: (${item.x}, ${item.y})`);
+                    console.log(`   📏 Size: ${item.w} × ${item.h} grid units`);
+                    console.log(`   📊 Row Span: ${item.h} rows`);
+                    console.log(`   📊 Column Span: ${item.w} columns`);
+                    console.log(`   🔧 Draggable: ${item.isDraggable ? '✅' : '❌'}`);
+                    console.log(`   🔧 Resizable: ${item.isResizable ? '✅' : '❌'}`);
+                    console.log(`   🔒 Static: ${item.static ? '🔒' : '🔓'}`);
+                    console.log('   ─────────────────────────────────');
+                  });
+                  
+                  console.log(`\n📈 Grid Summary:`);
+                  console.log(`   Total Widgets: ${layout.length}`);
+                  console.log(`   Grid Columns: 12`);
+                  console.log(`   Max Row: ${Math.max(...layout.map(item => item.y + item.h), 0)}`);
+                  console.log(`   Total Grid Cells: ${12 * (Math.max(...layout.map(item => item.y + item.h), 0) + 1)}`);
+                  console.log(`   Occupied Cells: ${layout.reduce((total, item) => total + (item.w * item.h), 0)}`);
+                }}
+                className="text-xs sm:text-sm bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"
+              >
+                🎯 Log Positions & Spans
               </Button>
 
               <div className="flex items-center gap-2">

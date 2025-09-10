@@ -3,6 +3,7 @@
 import type React from "react"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { WidgetResizer, type WidgetDimensions } from "@/lib/widget-resize"
+import { trackWidgetResize, trackWidgetDrag } from "@/lib/widget-tracker"
 import { GripVertical, Minimize2, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -53,6 +54,8 @@ export function ResizableWidgetWrapper({
       resizerRef.current = new WidgetResizer(containerRef.current, dimensions, (newDimensions) => {
         setCurrentDimensions(newDimensions)
         onResize?.(newDimensions)
+        // Track widget resize
+        trackWidgetResize(widgetId, newDimensions, title)
       })
 
       return () => {
@@ -103,6 +106,8 @@ export function ResizableWidgetWrapper({
 
     containerRef.current.style.transform = `translate(${newX}px, ${newY}px)`
     onMove?.({ x: newX, y: newY })
+    // Track widget drag
+    trackWidgetDrag(widgetId, { x: newX, y: newY }, title)
   }
 
   const handleMouseUp = () => {
