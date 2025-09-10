@@ -47,6 +47,12 @@ interface Widget {
   isResizable: boolean
   allowUserResizingAndMoving: boolean
   isMandatory: boolean
+  adminSettings: {
+    allowResize: boolean
+    allowDrag: boolean
+    allowDelete: boolean
+    isLocked: boolean
+  }
   settings: {
     apiKeys?: Record<string, string>
     refreshInterval?: number
@@ -81,12 +87,10 @@ export function DynamicModularHomepage() {
   const [modalContent, setModalContent] = useState<{id: string, name: string, content: string} | null>(null)
 
   /**
-   * Mock API function to save user layout to backend
+   * Save user layout to backend API
    */
   const saveLayoutToApi = useCallback(async (currentLayout: LayoutItem[]) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       const simplifiedLayout = currentLayout.map(item => ({
         i: item.i,
         x: item.x,
@@ -95,36 +99,122 @@ export function DynamicModularHomepage() {
         h: item.h
       }));
       
-      console.log('Saving layout to API:', simplifiedLayout);
+      const response = await fetch('/api/users/me/layout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify({ layout: simplifiedLayout })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('Layout saved to API:', result);
       
       // Save to localStorage as fallback
       localStorage.setItem("pattaya1-dynamic-layout", JSON.stringify(simplifiedLayout));
       
-      return { success: true, data: simplifiedLayout };
+      return { success: true, data: result };
     } catch (error) {
       console.error('Failed to save layout:', error);
+      // Fallback to localStorage
+      const simplifiedLayout = currentLayout.map(item => ({
+        i: item.i,
+        x: item.x,
+        y: item.y,
+        w: item.w,
+        h: item.h
+      }));
+      localStorage.setItem("pattaya1-dynamic-layout", JSON.stringify(simplifiedLayout));
       return { success: false, error };
     }
   }, []);
 
   /**
-   * Mock API function to load user's saved layout
+   * Load user's saved layout from backend API
    */
   const loadUserLayout = useCallback(async () => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      const response = await fetch('/api/users/me/layout', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
       
-      // Try to load from localStorage first
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Loading user layout from API:', result);
+        return { success: true, data: result.layout || null };
+      }
+      
+      // Fallback to localStorage if API fails
       const savedLayout = localStorage.getItem("pattaya1-dynamic-layout");
       if (savedLayout) {
         const parsedLayout = JSON.parse(savedLayout);
-        console.log('Loading user layout from localStorage:', parsedLayout);
+        console.log('Loading user layout from localStorage fallback:', parsedLayout);
         return { success: true, data: parsedLayout };
       }
       
       return { success: false, data: null };
     } catch (error) {
       console.error('Failed to load user layout:', error);
+      // Fallback to localStorage
+      const savedLayout = localStorage.getItem("pattaya1-dynamic-layout");
+      if (savedLayout) {
+        const parsedLayout = JSON.parse(savedLayout);
+        return { success: true, data: parsedLayout };
+      }
+      return { success: false, error };
+    }
+  }, []);
+
+  /**
+   * Fetch admin widget configurations from Strapi backend
+   */
+  const fetchAdminWidgetConfigs = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/widget-configs', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Loading admin widget configs from Strapi:', result);
+        return { success: true, data: result };
+      }
+      
+      // Fallback to default configurations if API fails
+      const defaultConfigs = {
+        "weather": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "breaking-news": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "radio": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "hot-deals": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "news-hero": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "business-spotlight": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "social-feed": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "trending": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "youtube": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "events-calendar": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "quick-links": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "photo-gallery": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "traffic": { allowResize: false, allowDrag: false, allowDelete: false, isLocked: true },
+      };
+      
+      console.log('Using fallback admin widget configs:', defaultConfigs);
+      return { success: true, data: defaultConfigs };
+    } catch (error) {
+      console.error('Failed to fetch admin widget configs:', error);
       return { success: false, error };
     }
   }, []);
@@ -159,15 +249,19 @@ export function DynamicModularHomepage() {
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
       
+      // Use admin settings to determine if widget can be dragged/resized
+      const canDrag = widget.adminSettings.allowDrag && !widget.adminSettings.isLocked;
+      const canResize = widget.adminSettings.allowResize && !widget.adminSettings.isLocked;
+      
       return {
         i: widget.id,
         x: savedItem?.x ?? defaultPos.x,
         y: savedItem?.y ?? defaultPos.y,
         w: savedItem?.w ?? defaultPos.w,
         h: savedItem?.h ?? defaultPos.h,
-        isDraggable: widget.allowUserResizingAndMoving,
-        isResizable: widget.allowUserResizingAndMoving,
-        static: !widget.allowUserResizingAndMoving
+        isDraggable: canDrag,
+        isResizable: canResize,
+        static: !canDrag || widget.adminSettings.isLocked
       };
     });
   }, []);
@@ -194,8 +288,19 @@ export function DynamicModularHomepage() {
   const initializeWidgets = async () => {
     try {
       console.log('Initializing dynamic widgets...')
+      
+      // Fetch admin configurations from Strapi
+      const adminConfigsResult = await fetchAdminWidgetConfigs();
+      const adminConfigs: Record<string, any> = adminConfigsResult.success ? (adminConfigsResult.data || {}) : {};
+      
+      // Helper function to add admin settings to widgets
+      const addAdminSettings = (widget: any) => ({
+        ...widget,
+        adminSettings: adminConfigs[widget.id] || { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false }
+      });
+
       const defaultWidgets: Widget[] = [
-        {
+        addAdminSettings({
           id: "weather",
           name: "Weather Widget",
           type: "weather",
@@ -210,8 +315,8 @@ export function DynamicModularHomepage() {
             apiKeys: { openweather: process.env.OPENWEATHER_API_KEY || "" },
             refreshInterval: 600000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "breaking-news",
           name: "Breaking News",
           type: "news",
@@ -226,8 +331,8 @@ export function DynamicModularHomepage() {
             refreshInterval: 300000,
             advertisements: { enabled: true, slots: 2, content: [] },
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "radio",
           name: "Radio Player",
           type: "media",
@@ -241,8 +346,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 30000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "hot-deals",
           name: "Hot Deals",
           type: "business",
@@ -257,8 +362,8 @@ export function DynamicModularHomepage() {
             refreshInterval: 1800000,
             advertisements: { enabled: true, slots: 3, content: [] },
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "news-hero",
           name: "News Hero",
           type: "news",
@@ -272,8 +377,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 300000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "business-spotlight",
           name: "Business Spotlight",
           type: "business",
@@ -287,8 +392,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 600000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "social-feed",
           name: "Social Media Feed",
           type: "social",
@@ -302,8 +407,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 120000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "trending",
           name: "Trending Topics",
           type: "social",
@@ -317,8 +422,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 300000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "youtube",
           name: "YouTube Videos",
           type: "media",
@@ -333,8 +438,8 @@ export function DynamicModularHomepage() {
             apiKeys: { youtube: process.env.YOUTUBE_API_KEY || "" },
             refreshInterval: 900000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "events-calendar",
           name: "Events Calendar",
           type: "events",
@@ -348,8 +453,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 300000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "quick-links",
           name: "Quick Links",
           type: "navigation",
@@ -363,8 +468,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 3600000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "photo-gallery",
           name: "Photo Gallery",
           type: "media",
@@ -378,8 +483,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 600000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "forum-activity",
           name: "Forum Activity",
           type: "social",
@@ -393,8 +498,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 180000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "google-reviews",
           name: "Google Reviews",
           type: "business",
@@ -408,8 +513,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 900000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "curator-social",
           name: "Curator Social",
           type: "social",
@@ -423,8 +528,8 @@ export function DynamicModularHomepage() {
           settings: {
             refreshInterval: 300000,
           },
-        },
-        {
+        }),
+        addAdminSettings({
           id: "traffic",
           name: "Traffic Updates",
           type: "transport",
@@ -433,13 +538,13 @@ export function DynamicModularHomepage() {
           category: "Information",
           isVisible: true,
           isResizable: true,
-          allowUserResizingAndMoving: true, // Allow resizing and moving
+          allowUserResizingAndMoving: true,
           isMandatory: true,
           settings: {
             apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
           },
-        },
+        }),
       ]
 
       // Load user's saved layout
@@ -581,14 +686,20 @@ export function DynamicModularHomepage() {
                       </Badge>
                     </div>
                     <div className="widget-actions flex gap-1">
-                      {/* Drag Handle - Only show if widget is draggable */}
-                      {widget.allowUserResizingAndMoving && (
+                      {/* Drag Handle - Only show if admin allows dragging */}
+                      {widget.adminSettings.allowDrag && !widget.adminSettings.isLocked && (
                         <button
                           className="drag-handle p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors cursor-move"
                           title="Drag to move widget"
                         >
                           <GripVertical className="w-3 h-3" />
                         </button>
+                      )}
+                      {/* Lock indicator for locked widgets */}
+                      {widget.adminSettings.isLocked && (
+                        <div className="p-1.5 rounded-md bg-yellow-500/20" title="Widget locked by admin">
+                          🔒
+                        </div>
                       )}
                       <button
                         className="expand-btn p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
@@ -597,7 +708,8 @@ export function DynamicModularHomepage() {
                       >
                         <Maximize2 className="w-3 h-3" />
                       </button>
-                      {!widget.isMandatory && (
+                      {/* Delete button - only show if admin allows deletion and widget is not mandatory */}
+                      {widget.adminSettings.allowDelete && !widget.isMandatory && !widget.adminSettings.isLocked && (
                         <button
                           className="delete-btn p-1.5 rounded-md bg-red-500/20 hover:bg-red-500/30 transition-colors"
                           onClick={() => handleDeleteWidget(widget.id)}
@@ -721,16 +833,23 @@ export function DynamicModularHomepage() {
                       onClick={() => handleToggleWidget(widget.id)}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <Badge 
-                          variant={widget.isVisible ? "default" : "secondary"} 
-                          className={`text-xs font-medium ${
-                            widget.isVisible 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          {widget.size}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={widget.isVisible ? "default" : "secondary"} 
+                            className={`text-xs font-medium ${
+                              widget.isVisible 
+                                ? 'bg-blue-500 text-white' 
+                                : 'bg-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {widget.size}
+                          </Badge>
+                          {widget.adminSettings.isLocked && (
+                            <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-700 border-yellow-300">
+                              🔒 Locked
+                            </Badge>
+                          )}
+                        </div>
                         {widget.isVisible ? (
                           <Eye className="h-4 w-4 text-blue-600" />
                         ) : (
