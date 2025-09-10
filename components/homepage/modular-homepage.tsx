@@ -26,6 +26,7 @@ import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
+import ThreeWidgetSearchLayout from "../search/three-widget-search-layout"
 
 interface Widget {
   id: string
@@ -512,6 +513,13 @@ export function ModularHomepage() {
           </div>
         </div>
       )}
+
+      {/* Search Widget Section */}
+      <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-h-[600px]">
+          <ThreeWidgetSearchLayout variant="compact" />
+        </div>
+      </div>
 
       {/* Widget Grid */}
       <div className="p-4">
