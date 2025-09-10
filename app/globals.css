@@ -1,6 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Dynamic Modular Homepage - Edit Mode Styles */
+@layer components {
+  /* Hide resize handles when not in edit mode */
+  .layout.view-mode .react-resizable-handle {
+    display: none !important;
+  }
+  
+  /* Show resize handles when in edit mode */
+  .layout.edit-mode .react-resizable-handle {
+    display: block;
+  }
+  
+  /* Ensure drag handles are only visible in edit mode */
+  .layout.view-mode .drag-handle {
+    display: none !important;
+  }
+  
+  .layout.edit-mode .drag-handle {
+    display: block;
+  }
+}
 /* Breaking News Image Styles */
 @layer components {
   .news-image-container {
