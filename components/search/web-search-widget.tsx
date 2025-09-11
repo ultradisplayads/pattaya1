@@ -340,9 +340,13 @@ export default function WebSearchWidget() {
                     className="block"
                   >
                     <img
-                      src={result.thumbnail.src}
+                      src={result.link}
                       alt={result.title}
                       className="w-full h-24 object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
                     />
                     <div className="p-2">
                       <p className="text-xs text-gray-900 line-clamp-2">{result.title}</p>

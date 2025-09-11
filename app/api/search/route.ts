@@ -2,7 +2,8 @@ import { NextResponse } from "next/server"
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const query = searchParams.get("q") || ""
+  const query = searchParams.get("query") || searchParams.get("q") || ""
+  const contentType = searchParams.get("contentType") || ""
   const category = searchParams.get("category") || ""
   const rating = Number.parseFloat(searchParams.get("rating") || "0")
   const distance = Number.parseFloat(searchParams.get("distance") || "20")
@@ -10,7 +11,86 @@ export async function GET(request: Request) {
   const hasDeals = searchParams.get("hasDeals") === "true"
   const verified = searchParams.get("verified") === "true"
 
-  // Simulate search results
+  // Handle flight-specific search
+  if (contentType === "flight-tracker" || query.toLowerCase().includes("flight") || /^[A-Z]{2}\d+$/.test(query.toUpperCase())) {
+    try {
+      // Search all flights from Strapi API
+      const flightResponse = await fetch(`http://localhost:1337/api/flight-trackers`)
+      
+      if (flightResponse.ok) {
+        const flightData = await flightResponse.json()
+        
+        // Filter flights based on query
+        const filteredFlights = flightData.data.filter((flight: any) => {
+          const searchTerm = query.toLowerCase()
+          return (
+            flight.FlightNumber?.toLowerCase().includes(searchTerm) ||
+            flight.Airline?.toLowerCase().includes(searchTerm) ||
+            flight.Airport?.toLowerCase().includes(searchTerm) ||
+            searchTerm === "flight"
+          )
+        })
+        
+        return NextResponse.json({
+          results: filteredFlights.map((flight: any) => ({
+            id: flight.id,
+            type: "flight",
+            flightNumber: flight.FlightNumber,
+            airline: flight.Airline,
+            airport: flight.Airport,
+            flightStatus: flight.FlightStatus,
+            flightType: flight.FlightType,
+            terminal: flight.Terminal,
+            gate: flight.Gate,
+            scheduledTime: flight.ScheduledTime,
+            estimatedTime: flight.EstimatedTime,
+            title: `${flight.FlightNumber} - ${flight.Airline}`,
+            description: `${flight.FlightType === 'arrival' ? 'Arriving from' : 'Departing to'} ${flight.Airport} - Terminal ${flight.Terminal}, Gate ${flight.Gate}`
+          })),
+          total: filteredFlights.length,
+          contentType: "flight-tracker",
+          query: { query, contentType }
+        })
+      }
+    } catch (error) {
+      console.error('Flight search error:', error)
+    }
+  }
+
+  // Handle airport search (BKK, DMK, etc.)
+  if (/^[A-Z]{3}$/.test(query.toUpperCase())) {
+    try {
+      const airportCode = query.toUpperCase()
+      const flightResponse = await fetch(`http://localhost:1337/api/flight-tracker/airports/${airportCode}`)
+      
+      if (flightResponse.ok) {
+        const flightData = await flightResponse.json()
+        return NextResponse.json({
+          results: flightData.data.map((flight: any) => ({
+            id: flight.id,
+            type: "airport-flight",
+            flightNumber: flight.flightNumber,
+            airline: flight.airline,
+            airport: flight.airport,
+            flightStatus: flight.flightStatus,
+            flightType: flight.flightType,
+            terminal: flight.terminal,
+            gate: flight.gate,
+            title: `${flight.flightNumber} - ${flight.airline}`,
+            description: `${flight.flightType === 'arrival' ? 'Arrival' : 'Departure'} - Terminal ${flight.terminal}, Gate ${flight.gate}`
+          })),
+          total: flightData.data.length,
+          contentType: "airport-search",
+          airport: airportCode,
+          query: { query, contentType }
+        })
+      }
+    } catch (error) {
+      console.error('Airport search error:', error)
+    }
+  }
+
+  // Default business/location search results
   const allResults = [
     {
       id: "1",
@@ -108,6 +188,7 @@ export async function GET(request: Request) {
     results: filteredResults,
     total: filteredResults.length,
     query: {
+      query: query,
       q: query,
       category,
       rating,

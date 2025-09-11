@@ -2,7 +2,7 @@
 
 import CompactComprehensiveSearchWidget from "./compact-comprehensive-search-widget"
 import WebSearchWidget from "./web-search-widget"
-import TrendingSearchWidget from "./trending-search-widget"
+import TravelSearchWidget from "./travel-search-widget"
 
 interface ThreeWidgetSearchLayoutProps {
   variant?: 'compact' | 'full'
@@ -34,13 +34,9 @@ export default function ThreeWidgetSearchLayout({ variant = 'compact' }: ThreeWi
           <WebSearchWidget />
         </div>
 
-        {/* Widget 3: Placeholder for future widget */}
-        <div className="bg-gray-50 rounded-lg shadow-sm border border-gray-200 border-dashed flex items-center justify-center h-[500px]">
-          <div className="text-center text-gray-500">
-            <div className="text-4xl mb-2">+</div>
-            <div className="font-medium">Widget #3</div>
-            <div className="text-sm">Coming Soon</div>
-          </div>
+        {/* Widget 3: Travel Search */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <TravelSearchWidget />
         </div>
       </div>
 
