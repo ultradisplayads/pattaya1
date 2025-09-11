@@ -251,6 +251,20 @@ export default function TravelSearchWidget() {
     }
   }
 
+  const generateBookingUrl = (searchData: typeof hotelSearch) => {
+    const baseUrl = 'https://www.booking.com/searchresults.html'
+    const params = new URLSearchParams({
+      ss: searchData.destination,
+      checkin: searchData.checkIn,
+      checkout: searchData.checkOut,
+      group_adults: searchData.guests.toString(),
+      group_children: '0',
+      no_rooms: '1',
+      selected_currency: 'THB'
+    })
+    return `${baseUrl}?${params.toString()}`
+  }
+
   const trackClick = async (type: string, searchParams: any) => {
     if (!widget) return
 
@@ -290,14 +304,19 @@ export default function TravelSearchWidget() {
         adults: hotelSearch.guests.toString()
       })
 
-      const response = await fetch(`http://localhost:1337/api/travel-widget/hotel-search?${params}`)
+      const response = await fetch(`/api/travel-widget/hotel-search?${params}`)
 
       if (response.ok) {
         const data = await response.json()
         console.log('Hotel search response:', data)
-        if (data.success && data.data.searchUrl) {
-          console.log('Opening hotel URL:', data.data.searchUrl)
-          window.open(data.data.searchUrl, '_blank')
+        // Redirect to external booking source (Booking.com)
+        if (data.data && Array.isArray(data.data)) {
+          console.log('Hotel search results:', data.data)
+          
+          // Generate Booking.com URL with search parameters
+          const bookingUrl = generateBookingUrl(hotelSearch)
+          console.log('Redirecting to Booking.com:', bookingUrl)
+          window.open(bookingUrl, '_blank')
           
           // Track the click
           trackClick('hotel', hotelSearch)
