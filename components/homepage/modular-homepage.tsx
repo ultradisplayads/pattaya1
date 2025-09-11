@@ -24,6 +24,8 @@ import { TrafficWidget } from "./widgets/traffic-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
+import ThreeWidgetSearchLayout from "../search/three-widget-search-layout"
+import FlightTrackerWidget from "../search/flight-tracker-widget"
 
 interface Widget {
   id: string
@@ -494,6 +496,26 @@ export function ModularHomepage() {
           </div>
         </div>
       )}
+
+      {/* Search Widget Section */}
+      <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="min-h-[400px]">
+          <ThreeWidgetSearchLayout variant="compact" />
+        </div>
+      </div>
+
+      {/* Flight Tracker Widget Section */}
+      <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-100">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Live Flight Tracker</h2>
+            <p className="text-gray-600">Real-time flight information for Thai airports</p>
+          </div>
+          <div className="max-w-2xl mx-auto">
+            <FlightTrackerWidget />
+          </div>
+        </div>
+      </div>
 
       {/* Widget Grid */}
       <div className="p-4">

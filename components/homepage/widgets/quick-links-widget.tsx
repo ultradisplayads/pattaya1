@@ -50,7 +50,13 @@ export function QuickLinksWidget() {
   const loadQuickLinks = async () => {
     try {
       setLoading(true)
-      const response = await fetch(buildApiUrl("quick-links?populate=*"))
+      // Try local API first, fallback to Strapi if needed
+      let response = await fetch('/api/quick-links')
+      
+      // If local API fails, try Strapi
+      if (!response.ok) {
+        response = await fetch(buildApiUrl("quick-links?populate=*"))
+      }
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
