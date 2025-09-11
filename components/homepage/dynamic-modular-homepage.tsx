@@ -29,6 +29,8 @@ import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
+import { CinemaWidget } from "./widgets/cinema-widget"
+import { FoodWidget } from "@/components/widgets/food-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
 
 // Import CSS for react-grid-layout
@@ -211,7 +213,9 @@ export function DynamicModularHomepage() {
         "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "cinema": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "food": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
       };
       
       console.log('Using fallback admin widget configs:', defaultConfigs);
@@ -247,8 +251,10 @@ export function DynamicModularHomepage() {
         "forum-activity": { x: 6, y: 37, w: 6, h: 5 },
         "google-reviews": { x: 6, y: 42, w: 3, h: 12 },
         "curator-social": { x: 9, y: 42, w: 3, h: 12 },
+        "cinema": { x: 0, y: 42, w: 6, h: 12 },
         "currency-converter": { x: 8, y: 54, w: 4, h: 10 },
         "traffic": { x: 0, y: 54, w: 8, h: 10 },
+        "food": { x: 0, y: 66, w: 6, h: 16 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -560,6 +566,21 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
+          id: "cinema",
+          name: "Cinema Showtimes",
+          type: "entertainment",
+          description: "Current movie showtimes and cinema information",
+          size: "medium",
+          category: "Entertainment",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 600000,
+          },
+        }),
+        addAdminSettings({
           id: "traffic",
           name: "Traffic Updates",
           type: "transport",
@@ -573,6 +594,21 @@ export function DynamicModularHomepage() {
           settings: {
             apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
+          id: "food",
+          name: "Pattaya Dining",
+          type: "food",
+          description: "Discover Pattaya restaurants, deals and table booking",
+          size: "large",
+          category: "Food",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 600000,
           },
         }),
       ]
@@ -625,8 +661,10 @@ export function DynamicModularHomepage() {
       { i: "forum-activity", x: 6, y: 37, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
       { i: "google-reviews", x: 6, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
       { i: "curator-social", x: 9, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "cinema", x: 0, y: 42, w: 6, h: 12, isDraggable: true, isResizable: true, static: false },
       { i: "currency-converter", x: 8, y: 54, w: 4, h: 10, isDraggable: true, isResizable: true, static: false },
-      { i: "traffic", x: 0, y: 54, w: 8, h: 10, isDraggable: true, isResizable: true, static: false }
+      { i: "traffic", x: 0, y: 54, w: 8, h: 10, isDraggable: true, isResizable: true, static: false },
+      { i: "food", x: 0, y: 66, w: 6, h: 16, isDraggable: true, isResizable: true, static: false }
     ];
     
     setLayout(resetLayout);
@@ -726,6 +764,8 @@ export function DynamicModularHomepage() {
       "photo-gallery": PhotoGalleryWidget,
       "curator-social": CuratorSocialWidget,
       "currency-converter": CurrencyConverterWidget,
+      "cinema": CinemaWidget,
+      "food": FoodWidget,
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,

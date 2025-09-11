@@ -9,6 +9,7 @@ import { TrendingTags } from "./trending-tags"
 import { RecommendedPicks } from "./recommended-picks"
 import { DealsSection } from "./deals-section"
 import { CurrencyConverterWidget } from "./currency-converter-widget"
+import { FoodWidget } from "./food-widget"
 
 interface WidgetGridProps {
   theme: "primary" | "nightlife"
@@ -58,6 +59,11 @@ export function WidgetGrid({ theme }: WidgetGridProps) {
 
       {/* Deals Section */}
       <DealsSection theme={theme} />
+
+      {/* Dining Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <FoodWidget />
+      </div>
     </div>
   )
 }

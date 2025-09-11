@@ -181,6 +181,31 @@ class StrapiAPI {
     return this.request('/test/status')
   }
 
+  // Restaurants
+  async getRestaurants(): Promise<any[]> {
+    const res = await this.request<{ data: any[] }>('/restaurants?populate=image')
+    return res.data
+  }
+
+  // Create booking for restaurant
+  async createRestaurantBooking(payload: {
+    restaurant: number
+    customer_name: string
+    customer_email: string
+    customer_phone: string
+    booking_date_time?: string
+    quantity?: number
+    notes?: string
+  }, token?: string): Promise<any> {
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    return this.request('/bookings', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data: payload })
+    })
+  }
+
   // Confirm user in Strapi after successful email OTP verification
   async confirmUser(email: string, token?: string): Promise<{ ok: boolean; message?: string }> {
     const headers: Record<string, string> = {}
@@ -286,6 +311,61 @@ class StrapiAPI {
         }
       }),
     })
+  }
+
+  // Fetch left panel auth marketing content from existing single type "about"
+  // This avoids backend changes. Admin can edit content in About.
+  async getAuthPanelContent(): Promise<{
+    title: string
+    bullets: Array<{ icon?: string; text: string }>
+    appLinks?: { appStoreUrl?: string; playStoreUrl?: string }
+  }> {
+    try {
+      // Using About single type as a simple CMS surface
+      const res = await this.request<any>('/about?populate=blocks')
+      const blocks = res?.data?.attributes?.blocks || []
+
+      // Heuristics: pick first rich-text block for title/paragraphs
+      let title: string = 'Benefits of a Free Account'
+      const bullets: Array<{ icon?: string; text: string }> = []
+
+      for (const block of blocks) {
+        if (block?.__component?.includes('rich-text')) {
+          const body: string = block?.body || ''
+          const lines = body.split('\n').map((l: string) => l.trim()).filter(Boolean)
+          if (lines.length) {
+            title = lines[0]
+            for (const line of lines.slice(1)) {
+              bullets.push({ text: line })
+            }
+          }
+          break
+        }
+      }
+
+      // Fallbacks if About is empty
+      if (!bullets.length) {
+        bullets.push(
+          { text: 'A personalised calendar with your favourite listings' },
+          { text: 'Alerts to stay up-to-date with competitions and fixtures' },
+          { text: 'Bespoke emails with content you will love' },
+          { text: 'Seamless access on web and app' },
+        )
+      }
+
+      return { title, bullets }
+    } catch (e) {
+      // Graceful fallback
+      return {
+        title: 'Benefits of a Free Account',
+        bullets: [
+          { text: 'A personalised calendar with your favourite listings' },
+          { text: 'Alerts to stay up-to-date with competitions and fixtures' },
+          { text: 'Bespoke emails with content you will love' },
+          { text: 'Seamless access on web and app' },
+        ],
+      }
+    }
   }
 }
 
