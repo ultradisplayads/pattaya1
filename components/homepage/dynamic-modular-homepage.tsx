@@ -30,6 +30,8 @@ import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
+import ThreeWidgetSearchLayout from "../search/three-widget-search-layout"
+import FlightTrackerWidget from "../search/flight-tracker-widget"
 
 // Import CSS for react-grid-layout
 import 'react-grid-layout/css/styles.css';
@@ -1046,6 +1048,34 @@ export function DynamicModularHomepage() {
         >
           {widgets.map(renderWidget)}
         </ResponsiveGridLayout>
+      </div>
+
+      {/* Search Widgets Section */}
+      <div className="bg-white/90 backdrop-blur-sm border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Search & Discovery</h2>
+            <p className="text-gray-600">Find what you're looking for with our comprehensive search tools</p>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 min-h-[400px]">
+            <ThreeWidgetSearchLayout />
+          </div>
+        </div>
+      </div>
+
+      {/* Flight Tracker Section */}
+      <div className="bg-gray-50/90 backdrop-blur-sm border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Flight Tracker</h2>
+            <p className="text-gray-600">Track flights in real-time and search for flight information</p>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+            <FlightTrackerWidget />
+          </div>
+        </div>
       </div>
 
       {/* Expand Modal */}

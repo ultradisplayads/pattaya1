@@ -517,7 +517,7 @@ export function ModularHomepage() {
 
       {/* Search Widget Section */}
       <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-h-[600px]">
+        <div className="min-h-[400px]">
           <ThreeWidgetSearchLayout variant="compact" />
         </div>
       </div>

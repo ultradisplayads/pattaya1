@@ -92,25 +92,29 @@ export async function GET() {
       }
     }
 
-    // Add default values if collections are empty
-    if (categories.size === 0) {
-      categories.add('News')
-      categories.add('Business')
-      categories.add('Events')
-      categories.add('Sponsored')
-    }
+    // Always add default values for demonstration
+    categories.add('Safety')
+    categories.add('Tourism')
+    categories.add('Sponsored')
+    categories.add('Weather')
+    categories.add('Business')
+    categories.add('News')
+    categories.add('Events')
 
-    if (sources.size === 0) {
-      sources.add('The Pattaya News')
-      sources.add('Bangkok Post')
-      sources.add('Local Guide')
-    }
+    sources.add('Pattaya1 News')
+    sources.add('Tourism Board')
+    sources.add('Sponsored Content')
+    sources.add('Weather Service')
+    sources.add('Business News')
+    sources.add('Local Guide')
 
-    if (severities.size === 0) {
-      severities.add('high')
-      severities.add('medium')
-      severities.add('low')
-    }
+    contentTypes.add('breaking-news')
+    contentTypes.add('sponsored-post')
+    contentTypes.add('news-article')
+
+    severities.add('high')
+    severities.add('medium')
+    severities.add('low')
 
     return NextResponse.json({
       data: {
