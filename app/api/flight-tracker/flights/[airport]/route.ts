@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ airport: string }> }
+  { params }: { params: { airport: string } }
 ) {
   try {
-    const { airport } = await params
+    const airport = params.airport
     
     // Mock response for live flights endpoint
     // Since AviationStack API limit is reached, return empty data with proper structure

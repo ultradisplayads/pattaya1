@@ -214,6 +214,8 @@ export function DynamicModularHomepage() {
         "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
+        "search-widgets": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "flight-tracker": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
       };
       
       console.log('Using fallback admin widget configs:', defaultConfigs);
@@ -251,6 +253,8 @@ export function DynamicModularHomepage() {
         "curator-social": { x: 9, y: 42, w: 3, h: 12 },
         "currency-converter": { x: 8, y: 54, w: 4, h: 10 },
         "traffic": { x: 0, y: 54, w: 8, h: 10 },
+        "search-widgets": { x: 0, y: 64, w: 12, h: 12 },
+        "flight-tracker": { x: 0, y: 76, w: 12, h: 10 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -577,6 +581,36 @@ export function DynamicModularHomepage() {
             refreshInterval: 300000,
           },
         }),
+        addAdminSettings({
+          id: "search-widgets",
+          name: "Search Widgets",
+          type: "search",
+          description: "Comprehensive search with site search, web search, and travel search",
+          size: "xlarge",
+          category: "Search",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
+          id: "flight-tracker",
+          name: "Flight Tracker",
+          type: "travel",
+          description: "Live flight tracking and airport information",
+          size: "large",
+          category: "Travel",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 30000,
+          },
+        }),
       ]
 
       // Load user's saved layout
@@ -731,6 +765,8 @@ export function DynamicModularHomepage() {
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,
+      "search-widgets": ThreeWidgetSearchLayout,
+      "flight-tracker": FlightTrackerWidget,
     }
     return componentMap[widgetId] || null
   }
@@ -1048,34 +1084,6 @@ export function DynamicModularHomepage() {
         >
           {widgets.map(renderWidget)}
         </ResponsiveGridLayout>
-      </div>
-
-      {/* Search Widgets Section */}
-      <div className="bg-white/90 backdrop-blur-sm border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Search & Discovery</h2>
-            <p className="text-gray-600">Find what you're looking for with our comprehensive search tools</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 min-h-[400px]">
-            <ThreeWidgetSearchLayout />
-          </div>
-        </div>
-      </div>
-
-      {/* Flight Tracker Section */}
-      <div className="bg-gray-50/90 backdrop-blur-sm border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Flight Tracker</h2>
-            <p className="text-gray-600">Track flights in real-time and search for flight information</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-            <FlightTrackerWidget />
-          </div>
-        </div>
       </div>
 
       {/* Expand Modal */}
