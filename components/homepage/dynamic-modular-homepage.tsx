@@ -27,6 +27,7 @@ import { TrafficWidget } from "./widgets/traffic-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { NewCurrencyConverterWidget } from "../widgets/new-currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
+import SportsFixturesWidget from "../widgets/sports-fixtures-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
 
 // Import CSS for react-grid-layout
@@ -245,6 +246,7 @@ export function DynamicModularHomepage() {
         "google-reviews": { x: 6, y: 39, w: 3, h: 8 },
         "currency-converter": { x: 9, y: 39, w: 3, h: 12 },
         "traffic": { x: 0, y: 47, w: 9, h: 10 },
+        "sports-fixtures": { x: 9, y: 51, w: 3, h: 12 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -556,6 +558,22 @@ export function DynamicModularHomepage() {
             refreshInterval: 300000,
           },
         }),
+        addAdminSettings({
+          id: "sports-fixtures",
+          name: "Sports Fixtures",
+          type: "sports",
+          description: "Live sports fixtures and results",
+          size: "medium",
+          category: "Sports",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 300000,
+            advertisements: { enabled: true, slots: 2, content: [] },
+          },
+        }),
       ]
 
       // Load user's saved layout
@@ -707,6 +725,7 @@ export function DynamicModularHomepage() {
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,
+      "sports-fixtures": SportsFixturesWidget,
     }
     return componentMap[widgetId] || null
   }
