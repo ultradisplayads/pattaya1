@@ -1,7 +1,7 @@
 // Strapi configuration and URL utilities
 export const STRAPI_CONFIG = {
-  baseUrl: "https://api.pattaya1.com",
-  apiUrl: "https://api.pattaya1.com/api",
+  baseUrl: process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com" : "http://localhost:1337",
+  apiUrl: process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com/api" : "http://localhost:1337/api",
 }
 
 // Helper function to build full URLs for Strapi assets

@@ -27,6 +27,7 @@ import { TrafficWidget } from "./widgets/traffic-widget"
 import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { CuratorSocialWidget } from "../widgets/curator-social-widget"
+import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
 
@@ -209,6 +210,7 @@ export function DynamicModularHomepage() {
         "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
       };
       
@@ -230,22 +232,23 @@ export function DynamicModularHomepage() {
       
       // Default grid positions based on your specified layout
       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        "weather": { x: 0, y: 0, w: 2, h: 11 },
-        "breaking-news": { x: 2, y: 0, w: 7, h: 5 },
-        "radio": { x: 9, y: 0, w: 3, h: 11 },
-        "hot-deals": { x: 3, y: 11, w: 4, h: 6 },
-        "news-hero": { x: 2, y: 5, w: 7, h: 6 },
-        "business-spotlight": { x: 7, y: 23, w: 3, h: 6 },
-        "social-feed": { x: 7, y: 11, w: 3, h: 12 },
-        "trending": { x: 0, y: 21, w: 3, h: 8 },
-        "youtube": { x: 3, y: 17, w: 4, h: 12 },
-        "events-calendar": { x: 4, y: 29, w: 2, h: 9 },
-        "quick-links": { x: 10, y: 23, w: 2, h: 6 },
-        "photo-gallery": { x: 0, y: 29, w: 4, h: 9 },
-        "forum-activity": { x: 6, y: 29, w: 3, h: 9 },
-        "google-reviews": { x: 10, y: 11, w: 2, h: 12 },
-        "curator-social": { x: 9, y: 29, w: 3, h: 9 },
-        "traffic": { x: 0, y: 11, w: 3, h: 10 },
+        "weather": { x: 0, y: 0, w: 2, h: 14 },
+        "breaking-news": { x: 2, y: 0, w: 7, h: 8 },
+        "radio": { x: 9, y: 0, w: 3, h: 14 },
+        "hot-deals": { x: 2, y: 8, w: 7, h: 6 },
+        "news-hero": { x: 0, y: 14, w: 6, h: 11 },
+        "business-spotlight": { x: 6, y: 14, w: 6, h: 8 },
+        "social-feed": { x: 6, y: 22, w: 3, h: 15 },
+        "trending": { x: 9, y: 22, w: 3, h: 8 },
+        "youtube": { x: 0, y: 25, w: 3, h: 12 },
+        "events-calendar": { x: 3, y: 25, w: 3, h: 12 },
+        "quick-links": { x: 9, y: 30, w: 3, h: 7 },
+        "photo-gallery": { x: 0, y: 37, w: 6, h: 17 },
+        "forum-activity": { x: 6, y: 37, w: 6, h: 5 },
+        "google-reviews": { x: 6, y: 42, w: 3, h: 12 },
+        "curator-social": { x: 9, y: 42, w: 3, h: 12 },
+        "currency-converter": { x: 8, y: 54, w: 4, h: 10 },
+        "traffic": { x: 0, y: 54, w: 8, h: 10 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -542,6 +545,21 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
+          id: "currency-converter",
+          name: "Currency Converter",
+          type: "finance",
+          description: "Real-time currency conversion with exchange rates",
+          size: "small",
+          category: "Finance",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
           id: "traffic",
           name: "Traffic Updates",
           type: "transport",
@@ -592,22 +610,23 @@ export function DynamicModularHomepage() {
   const handleResetLayout = () => {
     // Reset to the exact layout positions you specified
     const resetLayout: LayoutItem[] = [
-      { i: "weather", x: 0, y: 0, w: 2, h: 11, isDraggable: true, isResizable: true, static: false },
-      { i: "breaking-news", x: 2, y: 0, w: 7, h: 5, isDraggable: true, isResizable: true, static: false },
-      { i: "radio", x: 9, y: 0, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
-      { i: "hot-deals", x: 3, y: 11, w: 4, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "news-hero", x: 2, y: 5, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "business-spotlight", x: 7, y: 23, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "social-feed", x: 7, y: 11, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "trending", x: 0, y: 21, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "youtube", x: 3, y: 17, w: 4, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "events-calendar", x: 4, y: 29, w: 2, h: 9, isDraggable: true, isResizable: true, static: false },
-      { i: "quick-links", x: 10, y: 23, w: 2, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "photo-gallery", x: 0, y: 29, w: 4, h: 9, isDraggable: true, isResizable: true, static: false },
-      { i: "forum-activity", x: 6, y: 29, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
-      { i: "google-reviews", x: 10, y: 11, w: 2, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "curator-social", x: 9, y: 29, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
-      { i: "traffic", x: 0, y: 11, w: 3, h: 10, isDraggable: true, isResizable: true, static: false }
+      { i: "weather", x: 0, y: 0, w: 2, h: 14, isDraggable: true, isResizable: true, static: false },
+      { i: "breaking-news", x: 2, y: 0, w: 7, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 0, w: 3, h: 14, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 2, y: 8, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "news-hero", x: 0, y: 14, w: 6, h: 11, isDraggable: true, isResizable: true, static: false },
+      { i: "business-spotlight", x: 6, y: 14, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "social-feed", x: 6, y: 22, w: 3, h: 15, isDraggable: true, isResizable: true, static: false },
+      { i: "trending", x: 9, y: 22, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 0, y: 25, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "events-calendar", x: 3, y: 25, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "quick-links", x: 9, y: 30, w: 3, h: 7, isDraggable: true, isResizable: true, static: false },
+      { i: "photo-gallery", x: 0, y: 37, w: 6, h: 17, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 6, y: 37, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
+      { i: "google-reviews", x: 6, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "curator-social", x: 9, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "currency-converter", x: 8, y: 54, w: 4, h: 10, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 0, y: 54, w: 8, h: 10, isDraggable: true, isResizable: true, static: false }
     ];
     
     setLayout(resetLayout);
@@ -706,6 +725,7 @@ export function DynamicModularHomepage() {
       "forum-activity": ForumActivityWidget,
       "photo-gallery": PhotoGalleryWidget,
       "curator-social": CuratorSocialWidget,
+      "currency-converter": CurrencyConverterWidget,
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,
@@ -730,49 +750,51 @@ export function DynamicModularHomepage() {
             <div ref={ref} className="widget-content h-full">
               {inView ? (
                 <div className="widget-loaded h-full flex flex-col">
-                  {/* Widget Header with Controls */}
-                  <div className="widget-header bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 flex justify-between items-center">
-                    <div className="widget-title-section flex items-center gap-2">
-                      <h3 className="widget-title text-sm font-semibold truncate">{widget.name}</h3>
-                      <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
-                        {widget.category}
-                      </Badge>
-                    </div>
-                    <div className="widget-actions flex gap-1">
-                      {/* Drag Handle - Only show if admin allows dragging */}
-                      {widget.adminSettings.allowDrag && !widget.adminSettings.isLocked && (
+                  {/* Widget Header with Controls - Only show in edit mode */}
+                  {isEditMode && (
+                    <div className="widget-header bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 flex justify-between items-center">
+                      <div className="widget-title-section flex items-center gap-2">
+                        <h3 className="widget-title text-sm font-semibold truncate">{widget.name}</h3>
+                        <Badge variant="secondary" className="text-xs bg-white/20 text-white border-white/30">
+                          {widget.category}
+                        </Badge>
+                      </div>
+                      <div className="widget-actions flex gap-1">
+                        {/* Drag Handle - Only show if admin allows dragging and edit mode is on */}
+                        {widget.adminSettings.allowDrag && !widget.adminSettings.isLocked && (
+                          <button
+                            className="drag-handle p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors cursor-move"
+                            title="Drag to move widget"
+                          >
+                            <GripVertical className="w-3 h-3" />
+                          </button>
+                        )}
+                        {/* Lock indicator for locked widgets */}
+                        {widget.adminSettings.isLocked && (
+                          <div className="p-1.5 rounded-md bg-yellow-500/20" title="Widget locked by admin">
+                            🔒
+                          </div>
+                        )}
                         <button
-                          className="drag-handle p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors cursor-move"
-                          title="Drag to move widget"
+                          className="expand-btn p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
+                          onClick={() => handleExpandWidget(widget.id)}
+                          title="Expand widget"
                         >
-                          <GripVertical className="w-3 h-3" />
+                          <Maximize2 className="w-3 h-3" />
                         </button>
-                      )}
-                      {/* Lock indicator for locked widgets */}
-                      {widget.adminSettings.isLocked && (
-                        <div className="p-1.5 rounded-md bg-yellow-500/20" title="Widget locked by admin">
-                          🔒
-                        </div>
-                      )}
-                      <button
-                        className="expand-btn p-1.5 rounded-md bg-white/20 hover:bg-white/30 transition-colors"
-                        onClick={() => handleExpandWidget(widget.id)}
-                        title="Expand widget"
-                      >
-                        <Maximize2 className="w-3 h-3" />
-                      </button>
-                      {/* Delete button - only show if admin allows deletion and widget is not mandatory */}
-                      {widget.adminSettings.allowDelete && !widget.isMandatory && !widget.adminSettings.isLocked && (
-                        <button
-                          className="delete-btn p-1.5 rounded-md bg-red-500/20 hover:bg-red-500/30 transition-colors"
-                          onClick={() => handleDeleteWidget(widget.id)}
-                          title="Delete widget"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
+                        {/* Delete button - only show if admin allows deletion and widget is not mandatory */}
+                        {widget.adminSettings.allowDelete && !widget.isMandatory && !widget.adminSettings.isLocked && (
+                          <button
+                            className="delete-btn p-1.5 rounded-md bg-red-500/20 hover:bg-red-500/30 transition-colors"
+                            onClick={() => handleDeleteWidget(widget.id)}
+                            title="Delete widget"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                   
                   {/* Widget Body */}
                   <div className="widget-body flex-1 p-0">
@@ -1007,7 +1029,7 @@ export function DynamicModularHomepage() {
       {/* Dynamic Grid Layout */}
       <div className="p-2 sm:p-4">
         <ResponsiveGridLayout
-          className="layout"
+          className={`layout ${isEditMode ? 'edit-mode' : 'view-mode'}`}
           layouts={{ lg: layout }}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
@@ -1016,8 +1038,8 @@ export function DynamicModularHomepage() {
           onLayoutChange={handleLayoutChange}
           onDragStop={handleDragStop}
           onResizeStop={handleResizeStop}
-          isDraggable={false}
-          isResizable={true}
+          isDraggable={isEditMode}
+          isResizable={isEditMode}
           margin={[8, 8]}
           containerPadding={[8, 8]}
           draggableHandle=".drag-handle"

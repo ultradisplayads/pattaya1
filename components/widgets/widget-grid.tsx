@@ -8,6 +8,7 @@ import { SocialFeed } from "./social-feed"
 import { TrendingTags } from "./trending-tags"
 import { RecommendedPicks } from "./recommended-picks"
 import { DealsSection } from "./deals-section"
+import { CurrencyConverterWidget } from "./currency-converter-widget"
 
 interface WidgetGridProps {
   theme: "primary" | "nightlife"
@@ -41,9 +42,10 @@ export function WidgetGrid({ theme }: WidgetGridProps) {
       </div>
 
       {/* Secondary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <HappeningNow theme={theme} />
         <SocialFeed theme={theme} />
+        <CurrencyConverterWidget theme={theme} />
       </div>
 
       {/* Trending and Recommendations */}
