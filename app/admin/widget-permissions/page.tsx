@@ -36,7 +36,6 @@ const WIDGET_DESCRIPTIONS = {
   'photo-gallery': 'Photo gallery display',
   'forum-activity': 'Forum activity feed',
   'google-reviews': 'Google reviews display',
-  'curator-social': 'Curator social content',
   'traffic': 'Traffic information'
 };
 
@@ -135,7 +134,6 @@ export default function WidgetPermissionsPage() {
       "photo-gallery": { "allowResize": true, "allowDrag": true, "allowDelete": true, "isLocked": false },
       "forum-activity": { "allowResize": true, "allowDrag": true, "allowDelete": true, "isLocked": false },
       "google-reviews": { "allowResize": true, "allowDrag": true, "allowDelete": true, "isLocked": false },
-      "curator-social": { "allowResize": true, "allowDrag": true, "allowDelete": true, "isLocked": false },
       "traffic": { "allowResize": false, "allowDrag": false, "allowDelete": false, "isLocked": true }
     };
     setWidgetConfigs(defaultConfigs);

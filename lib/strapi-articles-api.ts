@@ -1,155 +1,282 @@
-import axios from 'axios';
+import { STRAPI_CONFIG } from './strapi-config'
 
-const API_BASE = 'https://api.pattaya1.com/api';
-
-const api = axios.create({
-  baseURL: API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  // Ignore SSL certificate validation for development
-  httpsAgent: process.env.NODE_ENV === 'development' ? new (require('https').Agent)({
-    rejectUnauthorized: false
-  }) : undefined,
-});
-
+// Strapi Article Types
 export interface StrapiArticle {
-  id: number;
-  documentId: string;
-  title: string;
-  description: string;
-  slug: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  cover?: any;
-  author?: any;
-  category?: any;
-  blocks?: any[];
+  id: number
+  attributes: {
+    title: string
+    slug: string
+    description: string
+    content?: string
+    publishedAt: string
+    createdAt: string
+    updatedAt: string
+    featuredImage?: {
+      data?: {
+        attributes: {
+          url: string
+          alternativeText?: string
+          caption?: string
+        }
+      }
+    }
+    author?: {
+      data?: {
+        attributes: {
+          name: string
+          email?: string
+          bio?: string
+        }
+      }
+    }
+    category?: {
+      data?: {
+        attributes: {
+          name: string
+          slug: string
+          description?: string
+        }
+      }
+    }
+    tags?: {
+      data?: Array<{
+        attributes: {
+          name: string
+          slug: string
+        }
+      }>
+    }
+  }
 }
 
 export interface Author {
-  id: number;
-  documentId: string;
-  name: string;
-  email?: string;
-  bio?: string;
+  id: number
+  attributes: {
+    name: string
+    email?: string
+    bio?: string
+    avatar?: {
+      data?: {
+        attributes: {
+          url: string
+          alternativeText?: string
+        }
+      }
+    }
+    createdAt: string
+    updatedAt: string
+  }
 }
 
 export interface Category {
-  id: number;
-  documentId: string;
-  name: string;
-  slug: string;
-  description?: string;
+  id: number
+  attributes: {
+    name: string
+    slug: string
+    description?: string
+    createdAt: string
+    updatedAt: string
+  }
 }
 
-export interface ArticleResponse {
-  data: StrapiArticle[];
+export interface StrapiResponse<T> {
+  data: T
   meta: {
     pagination: {
-      page: number;
-      pageSize: number;
-      pageCount: number;
-      total: number;
-    };
-  };
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+  }
 }
 
-export interface SingleArticleResponse {
-  data: StrapiArticle;
-  meta: {};
+export interface StrapiListResponse<T> {
+  data: T[]
+  meta: {
+    pagination: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+  }
 }
 
-export const strapiArticlesApi = {
-  // Get all articles with pagination and population
-  getArticles: async (params?: {
-    page?: number;
-    pageSize?: number;
-    sort?: string;
-    filters?: any;
-  }): Promise<ArticleResponse> => {
-    const queryParams = new URLSearchParams({
-      'populate': '*',
-      'sort': params?.sort || 'publishedAt:desc',
-      'pagination[page]': String(params?.page || 1),
-      'pagination[pageSize]': String(params?.pageSize || 25),
-      ...(params?.filters && { 'filters': JSON.stringify(params.filters) })
-    });
+// Transformed Article Type (for frontend use)
+export interface TransformedArticle {
+  id: number
+  title: string
+  slug: string
+  description: string
+  content?: string
+  publishedAt: string
+  createdAt: string
+  updatedAt: string
+  featuredImage?: string
+  imageAlt?: string
+  author?: string
+  category?: string
+  tags?: string[]
+}
 
-    const response = await api.get(`/articles?${queryParams}`);
-    return response.data;
-  },
+class StrapiArticlesAPI {
+  private baseUrl: string
 
-  // Get single article by ID
-  getArticle: async (id: string | number): Promise<SingleArticleResponse> => {
-    const response = await api.get(`/articles/${id}?populate=*`);
-    return response.data;
-  },
+  constructor() {
+    this.baseUrl = STRAPI_CONFIG.apiUrl
+  }
 
-  // Get all authors
-  getAuthors: async (): Promise<{ data: Author[] }> => {
-    const response = await api.get('/authors?populate=*');
-    return response.data;
-  },
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`
+    
+    const config: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    }
 
-  // Get all categories
-  getCategories: async (): Promise<{ data: Category[] }> => {
-    const response = await api.get('/categories?populate=*');
-    return response.data;
-  },
+    try {
+      console.log('[StrapiArticlesAPI] Request', { url, method: config.method || 'GET' })
+      const response = await fetch(url, config)
+      const text = await response.text()
+      let json: any = null
+      try { 
+        json = text ? JSON.parse(text) : null 
+      } catch (parseError) {
+        console.error('[StrapiArticlesAPI] JSON parse error:', parseError, 'Text:', text)
+      }
+      
+      console.log('[StrapiArticlesAPI] Response', { url, status: response.status, ok: response.ok })
+      
+      if (!response.ok) {
+        const errorData = json || {}
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
 
-  // Get articles by category
-  getArticlesByCategory: async (categorySlug: string): Promise<ArticleResponse> => {
-    const response = await api.get(`/articles?populate=*&filters[category][slug][$eq]=${categorySlug}&sort=publishedAt:desc`);
-    return response.data;
-  },
+      return json as T
+    } catch (error) {
+      const err = error as any
+      const message = err?.message || String(err)
+      console.error('[StrapiArticlesAPI] Request failed', { url, method: config.method || 'GET', message, error: err })
+      throw err
+    }
+  }
 
-  // Get articles by author
-  getArticlesByAuthor: async (authorId: number): Promise<ArticleResponse> => {
-    const response = await api.get(`/articles?populate=*&filters[author][id][$eq]=${authorId}&sort=publishedAt:desc`);
-    return response.data;
-  },
+  // Get articles with pagination and filters
+  async getArticles(params?: {
+    page?: number
+    pageSize?: number
+    sort?: string
+    filters?: any
+  }): Promise<StrapiListResponse<StrapiArticle>> {
+    let query = '/articles?populate=*'
+    
+    if (params?.page) {
+      query += `&pagination[page]=${params.page}`
+    }
+    if (params?.pageSize) {
+      query += `&pagination[pageSize]=${params.pageSize}`
+    }
+    if (params?.sort) {
+      query += `&sort=${params.sort}`
+    }
+    
+    // Add filters if provided
+    if (params?.filters) {
+      Object.entries(params.filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          query += `&filters[${key}][$eq]=${encodeURIComponent(String(value))}`
+        }
+      })
+    }
+
+    return this.request<StrapiListResponse<StrapiArticle>>(query)
+  }
+
+  // Get a single article by ID
+  async getArticle(id: string | number): Promise<StrapiResponse<StrapiArticle>> {
+    return this.request<StrapiResponse<StrapiArticle>>(`/articles/${id}?populate=*`)
+  }
 
   // Search articles
-  searchArticles: async (query: string): Promise<ArticleResponse> => {
-    const response = await api.get(`/articles?populate=*&filters[$or][0][title][$containsi]=${query}&filters[$or][1][description][$containsi]=${query}&sort=publishedAt:desc`);
-    return response.data;
-  },
+  async searchArticles(query: string, params?: {
+    page?: number
+    pageSize?: number
+  }): Promise<StrapiListResponse<StrapiArticle>> {
+    let searchQuery = `/articles?populate=*&filters[$or][0][title][$containsi]=${encodeURIComponent(query)}&filters[$or][1][description][$containsi]=${encodeURIComponent(query)}&filters[$or][2][content][$containsi]=${encodeURIComponent(query)}`
+    
+    if (params?.page) {
+      searchQuery += `&pagination[page]=${params.page}`
+    }
+    if (params?.pageSize) {
+      searchQuery += `&pagination[pageSize]=${params.pageSize}`
+    }
 
-  // Create article (authenticated)
-  createArticle: async (articleData: any, token?: string): Promise<SingleArticleResponse> => {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const response = await api.post('/articles', { data: articleData }, { headers });
-    return response.data;
-  },
+    return this.request<StrapiListResponse<StrapiArticle>>(searchQuery)
+  }
 
-  // Update article (authenticated)
-  updateArticle: async (id: string | number, articleData: any, token?: string): Promise<SingleArticleResponse> => {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const response = await api.put(`/articles/${id}`, { data: articleData }, { headers });
-    return response.data;
-  },
+  // Get articles by category
+  async getArticlesByCategory(categorySlug: string, params?: {
+    page?: number
+    pageSize?: number
+  }): Promise<StrapiListResponse<StrapiArticle>> {
+    let query = `/articles?populate=*&filters[category][slug][$eq]=${encodeURIComponent(categorySlug)}`
+    
+    if (params?.page) {
+      query += `&pagination[page]=${params.page}`
+    }
+    if (params?.pageSize) {
+      query += `&pagination[pageSize]=${params.pageSize}`
+    }
 
-  // Delete article (authenticated)
-  deleteArticle: async (id: string | number, token?: string): Promise<void> => {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    await api.delete(`/articles/${id}`, { headers });
-  },
-};
+    return this.request<StrapiListResponse<StrapiArticle>>(query)
+  }
 
-// Helper function to transform Strapi v5 article to frontend format
-export const transformStrapiArticle = (strapiArticle: StrapiArticle) => ({
-  id: strapiArticle.id.toString(),
-  title: strapiArticle.title,
-  description: strapiArticle.description,
-  slug: strapiArticle.slug,
-  publishedAt: strapiArticle.publishedAt,
-  author: strapiArticle.author?.name || null,
-  category: strapiArticle.category?.name || null,
-  categorySlug: strapiArticle.category?.slug || null,
-  featuredImage: strapiArticle.cover?.url || null,
-  imageAlt: strapiArticle.cover?.alternativeText || null,
-});
+  // Get all authors
+  async getAuthors(): Promise<StrapiListResponse<Author>> {
+    return this.request<StrapiListResponse<Author>>('/authors?populate=*')
+  }
 
-export default strapiArticlesApi;
+  // Get all categories
+  async getCategories(): Promise<StrapiListResponse<Category>> {
+    return this.request<StrapiListResponse<Category>>('/categories')
+  }
+
+  // Get featured articles
+  async getFeaturedArticles(limit: number = 5): Promise<StrapiListResponse<StrapiArticle>> {
+    return this.request<StrapiListResponse<StrapiArticle>>(`/articles?populate=*&filters[featured][$eq]=true&pagination[pageSize]=${limit}&sort=publishedAt:desc`)
+  }
+
+  // Get latest articles
+  async getLatestArticles(limit: number = 10): Promise<StrapiListResponse<StrapiArticle>> {
+    return this.request<StrapiListResponse<StrapiArticle>>(`/articles?populate=*&pagination[pageSize]=${limit}&sort=publishedAt:desc`)
+  }
+}
+
+// Transform Strapi article to frontend-friendly format
+export function transformStrapiArticle(article: StrapiArticle): TransformedArticle {
+  return {
+    id: article.id,
+    title: article.attributes.title,
+    slug: article.attributes.slug,
+    description: article.attributes.description,
+    content: article.attributes.content,
+    publishedAt: article.attributes.publishedAt,
+    createdAt: article.attributes.createdAt,
+    updatedAt: article.attributes.updatedAt,
+    featuredImage: article.attributes.featuredImage?.data?.attributes?.url,
+    imageAlt: article.attributes.featuredImage?.data?.attributes?.alternativeText,
+    author: article.attributes.author?.data?.attributes?.name,
+    category: article.attributes.category?.data?.attributes?.name,
+    tags: article.attributes.tags?.data?.map(tag => tag.attributes.name) || []
+  }
+}
+
+// Create and export the API instance
+export const strapiArticlesApi = new StrapiArticlesAPI()

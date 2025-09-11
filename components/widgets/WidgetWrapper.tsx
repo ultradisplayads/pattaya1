@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { useWidgetPermissions } from '@/hooks/use-widget-permissions';
+import { useWidgetPermissions } from '@/hooks/use-widget-management';
 import { cn } from '@/lib/utils';
 
 interface WidgetWrapperProps {
