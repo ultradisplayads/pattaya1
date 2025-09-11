@@ -96,7 +96,7 @@ export function ReviewsWidget() {
       setLoading(true)
       console.log('Fetching latest reviews from Strapi...')
       
-      const response = await fetch(buildApiUrl("google-reviews/latest?limit=10"))
+      const response = await fetch(buildApiUrl("reviews/latest?limit=10"))
       
       if (response.ok) {
         const data: ReviewsData = await response.json()
@@ -116,7 +116,7 @@ export function ReviewsWidget() {
 
   const loadStats = async () => {
     try {
-      const response = await fetch(buildApiUrl("google-reviews/stats"))
+      const response = await fetch(buildApiUrl("reviews/stats"))
       
       if (response.ok) {
         const data: ReviewsStats = await response.json()
