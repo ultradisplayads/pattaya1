@@ -124,24 +124,24 @@ export function SponsorshipBanner({ widgetType, className = "" }: SponsorshipBan
 
   return (
     <div 
-      className={`w-full p-3 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20 ${className}`}
+      className={`w-full p-2 text-center text-white font-semibold shadow-lg bg-gradient-to-r from-blue-700 to-purple-700 border-b-2 border-white/20 ${className}`}
       style={{
         backgroundColor: sponsorship.defaultColor || undefined
       }}
     >
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1.5 max-w-screen-md mx-auto px-2">
         {sponsorship.sponsorLogo && (
           <img 
             src={sponsorship.sponsorLogo} 
             alt="Sponsor Logo" 
-            className="h-4 w-4 object-contain"
+            className="h-3.5 w-3.5 object-contain"
           />
         )}
         
         {activeTitles.length === 1 ? (
           // Single title - static display
           <span 
-            className="text-sm font-bold text-white"
+            className="text-xs font-bold text-white"
             style={{ color: 'white' }}
           >
             {activeTitles[0].title}
@@ -150,19 +150,20 @@ export function SponsorshipBanner({ widgetType, className = "" }: SponsorshipBan
           // Multiple titles - marquee animation
           <div className="overflow-hidden w-full relative">
             <div 
-              className="flex animate-sponsorship-marquee whitespace-nowrap"
+              className="flex whitespace-nowrap"
               style={{
+                animationName: 'sponsor-marquee',
                 animationDuration: getAnimationDuration(),
                 animationTimingFunction: 'linear',
                 animationIterationCount: 'infinite',
-                width: '200%' // Double width to accommodate duplicates
+                width: '200%'
               }}
             >
               {/* First set of titles */}
               {activeTitles.map((title, index) => (
                 <span
                   key={index}
-                  className="text-sm font-bold mr-8 flex-shrink-0 text-white"
+                  className="text-xs font-bold mr-6 flex-shrink-0 text-white"
                   style={{ color: 'white' }}
                 >
                   {title.title}
@@ -172,13 +173,19 @@ export function SponsorshipBanner({ widgetType, className = "" }: SponsorshipBan
               {activeTitles.map((title, index) => (
                 <span
                   key={`duplicate-${index}`}
-                  className="text-sm font-bold mr-8 flex-shrink-0 text-white"
+                  className="text-xs font-bold mr-6 flex-shrink-0 text-white"
                   style={{ color: 'white' }}
                 >
                   {title.title}
                 </span>
               ))}
             </div>
+            <style jsx>{`
+              @keyframes sponsor-marquee {
+                0% { transform: translateX(0%); }
+                100% { transform: translateX(-50%); }
+              }
+            `}</style>
           </div>
         )}
       </div>
