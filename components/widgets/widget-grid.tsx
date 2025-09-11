@@ -5,6 +5,7 @@ import { EventsMarquee } from "./events-marquee"
 import { NewsCarousel } from "./news-carousel"
 import { HappeningNow } from "./happening-now"
 import { SocialFeed } from "./social-feed"
+import { LiveSocialFeed } from "./live-social-feed"
 import { TrendingTags } from "./trending-tags"
 import { RecommendedPicks } from "./recommended-picks"
 import { DealsSection } from "./deals-section"
@@ -45,7 +46,7 @@ export function WidgetGrid({ theme }: WidgetGridProps) {
       {/* Secondary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <HappeningNow theme={theme} />
-        <SocialFeed theme={theme} />
+        <LiveSocialFeed theme={theme} />
         <CurrencyConverterWidget theme={theme} />
       </div>
 

@@ -1,5 +1,4 @@
 import { RadioWidget } from "@/components/homepage/widgets/radio-widget"
-import { NewsHeroWidget } from "@/components/homepage/widgets/news-hero-widget"
 import { EventsCalendarWidget } from "@/components/homepage/widgets/events-calendar-widget"
 import { SocialFeedWidget } from "@/components/homepage/widgets/social-feed-widget"
 import { BusinessSpotlightWidget } from "@/components/homepage/widgets/business-spotlight-widget"
@@ -33,9 +32,6 @@ export default function TestAllWidgetsPage() {
             <RadioWidget />
           </div>
           
-          <div className="h-80">
-            <NewsHeroWidget />
-          </div>
           
           <div className="h-80">
             <EventsCalendarWidget />
