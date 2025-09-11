@@ -22,7 +22,6 @@ import { ForumActivityWidget } from "./widgets/forum-activity-widget"
 import { EventsCalendarWidget } from "./widgets/events-calendar-widget"
 import { TrafficWidget } from "./widgets/traffic-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
-import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
 
@@ -298,20 +297,6 @@ export function ModularHomepage() {
           },
         },
         {
-          id: "curator-social",
-          name: "Curator Social",
-          type: "social",
-          description: "Curated social media content",
-          size: "small",
-          gridArea: "7 / 4 / 8 / 5",
-          category: "Social",
-          isVisible: true,
-          isResizable: true,
-          settings: {
-            refreshInterval: 300000,
-          },
-        },
-        {
           id: "traffic",
           name: "Traffic Updates",
           type: "transport",
@@ -369,7 +354,6 @@ export function ModularHomepage() {
       "events-calendar": EventsCalendarWidget,
       "forum-activity": ForumActivityWidget,
       "photo-gallery": PhotoGalleryWidget,
-      "curator-social": CuratorSocialWidget,
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,

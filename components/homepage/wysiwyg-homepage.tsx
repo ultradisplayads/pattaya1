@@ -20,7 +20,6 @@ import { EventsCalendarWidget } from "./widgets/events-calendar-widget"
 import { ForumActivityWidget } from "./widgets/forum-activity-widget"
 import { PhotoGalleryWidget } from "./widgets/photo-gallery-widget"
 import { TrafficWidget } from "./widgets/traffic-widget"
-import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 
 interface Widget {
@@ -44,7 +43,6 @@ const widgetComponents = {
   forumActivity: ForumActivityWidget,
   photoGallery: PhotoGalleryWidget,
   traffic: TrafficWidget,
-  curatorSocial: CuratorSocialWidget,
   googleReviews: GoogleReviewsWidget,
 }
 
@@ -61,7 +59,6 @@ const widgetTitles = {
   forumActivity: "Forum Activity",
   photoGallery: "Photo Gallery",
   traffic: "Traffic",
-  curatorSocial: "Curator Social",
   googleReviews: "Google Reviews",
 }
 
@@ -99,14 +96,6 @@ export function WysiwygHomepage() {
         type: "googleReviews",
         title: "Google Reviews",
         dimensions: { width: 300, height: 200, x: 1050, y: 50, minWidth: 250, minHeight: 150 },
-        visible: true,
-        zIndex: 1,
-      },
-      {
-        id: "curatorSocial",
-        type: "curatorSocial",
-        title: "Curator Social",
-        dimensions: { width: 400, height: 250, x: 50, y: 400, minWidth: 300, minHeight: 200 },
         visible: true,
         zIndex: 1,
       },

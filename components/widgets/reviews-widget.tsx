@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, ExternalLink, RefreshCw, MapPin } from "lucide-react"
+import { Star, RefreshCw, MapPin, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { buildApiUrl } from "@/lib/strapi-config"
 import { ReviewCard } from "./review-card"
 
@@ -53,7 +52,7 @@ interface ReviewsStats {
   }
 }
 
-export function GoogleReviewsWidget() {
+export function ReviewsWidget() {
   const [reviewsData, setReviewsData] = useState<ReviewsData | null>(null)
   const [statsData, setStatsData] = useState<ReviewsStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -240,7 +239,11 @@ export function GoogleReviewsWidget() {
           </div>
         )}
 
-        {error && <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded text-center">{error}</div>}
+        {error && (
+          <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded text-center">
+            {error}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -255,7 +258,7 @@ function SkeletonCard() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center space-x-2">
           <Star className="w-4 h-4" />
-          <span>Google Reviews</span>
+          <span>Latest Reviews</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -275,7 +278,7 @@ function EmptyCard() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center space-x-2">
           <Star className="w-4 h-4" />
-          <span>Google Reviews</span>
+          <span>Latest Reviews</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center justify-center">
