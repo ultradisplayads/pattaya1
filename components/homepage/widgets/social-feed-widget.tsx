@@ -73,76 +73,84 @@ export function SocialFeedWidget() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchSocialPosts()
-    const interval = setInterval(fetchSocialPosts, 300000) // Refresh every 5 minutes
-    return () => clearInterval(interval)
+    // Temporarily disabled API fetching - using fallback data only
+    // fetchSocialPosts()
+    // const interval = setInterval(fetchSocialPosts, 300000) // Refresh every 5 minutes
+    // return () => clearInterval(interval)
+    
+    // Use fallback data directly
+    setLoading(true)
+    console.log('Using fallback social media posts (API fetching disabled)')
+    setSocialPosts(getFallbackSocialPosts())
+    setLoading(false)
   }, [])
 
-  const fetchSocialPosts = async () => {
-    try {
-      setLoading(true)
-      console.log('Fetching social media posts from Strapi...')
+  // Temporarily disabled - using fallback data only
+  // const fetchSocialPosts = async () => {
+  //   try {
+  //     setLoading(true)
+  //     console.log('Fetching social media posts from Strapi...')
       
-      // Call Strapi API to get social media posts sorted by timestamp
-      const response = await fetch(buildApiUrl("social-media-posts?populate=*&sort=Timestamp:desc"))
+  //     // Call Strapi API to get social media posts sorted by timestamp
+  //     const response = await fetch(buildApiUrl("social-media-posts?populate=*&sort=Timestamp:desc"))
       
-      if (response.ok) {
-        const data = await response.json()
-        console.log('Strapi social media posts response:', data)
+  //     if (response.ok) {
+  //       const data = await response.json()
+  //       console.log('Strapi social media posts response:', data)
         
-        if (data.data && data.data.length > 0) {
-          // Transform Strapi data to match component interface
-          const transformedPosts: SocialPost[] = data.data.map((strapiPost: any) => {
-            // Get avatar URL with fallback
-            let avatarUrl = "/placeholder.svg?height=40&width=40"
-            if (strapiPost.Avatar) {
-              avatarUrl = buildStrapiUrl(strapiPost.Avatar.url)
-            }
+  //       if (data.data && data.data.length > 0) {
+  //         // Transform Strapi data to match component interface
+  //         const transformedPosts: SocialPost[] = data.data.map((strapiPost: any) => {
+  //           // Get avatar URL with fallback
+  //           let avatarUrl = "/placeholder.svg?height=40&width=40"
+  //           if (strapiPost.Avatar) {
+  //             avatarUrl = buildStrapiUrl(strapiPost.Avatar.url)
+  //           }
 
-            // Get image URL with fallback
-            let imageUrl = undefined
-            if (strapiPost.Image) {
-              imageUrl = buildStrapiUrl(strapiPost.Image.url)
-            }
+  //           // Get image URL with fallback
+  //           let imageUrl = undefined
+  //           if (strapiPost.Image) {
+  //             imageUrl = buildStrapiUrl(strapiPost.Image.url)
+  //           }
 
-            return {
-              id: strapiPost.id.toString(),
-              platform: strapiPost.Platform as any,
-              author: strapiPost.Author,
-              handle: strapiPost.Handle,
-              avatar: avatarUrl,
-              content: strapiPost.Content,
-              timestamp: strapiPost.Timestamp || strapiPost.publishedAt,
-              likes: strapiPost.Likes,
-              comments: strapiPost.Comments,
-              shares: strapiPost.Shares,
-              location: strapiPost.Location,
-              verified: strapiPost.Verified,
-              hashtags: strapiPost.Hashtags || [],
-              image: imageUrl,
-            }
-          })
+  //           return {
+  //             id: strapiPost.id.toString(),
+  //             platform: strapiPost.Platform as any,
+  //             author: strapiPost.Author,
+  //             handle: strapiPost.Handle,
+  //             avatar: avatarUrl,
+  //             content: strapiPost.Content,
+  //             timestamp: strapiPost.Timestamp || strapiPost.publishedAt,
+  //             likes: strapiPost.Likes,
+  //             comments: strapiPost.Comments,
+  //             shares: strapiPost.Shares,
+  //             location: strapiPost.Location,
+  //             verified: strapiPost.Verified,
+  //             hashtags: strapiPost.Hashtags || [],
+  //             image: imageUrl,
+  //           }
+  //         })
           
-          console.log('Transformed social media posts:', transformedPosts)
-          setSocialPosts(transformedPosts)
-        } else {
-          console.log('No social media posts found, using fallback data')
-          // Use fallback data if no posts found
-          setSocialPosts(getFallbackSocialPosts())
-        }
-      } else {
-        console.error("Failed to fetch social media posts from Strapi:", response.status)
-        // Use fallback data on error
-        setSocialPosts(getFallbackSocialPosts())
-      }
-    } catch (error) {
-      console.error("Failed to load social media posts:", error)
-      // Use fallback data on error
-      setSocialPosts(getFallbackSocialPosts())
-    } finally {
-      setLoading(false)
-    }
-  }
+  //         console.log('Transformed social media posts:', transformedPosts)
+  //         setSocialPosts(transformedPosts)
+  //       } else {
+  //         console.log('No social media posts found, using fallback data')
+  //         // Use fallback data if no posts found
+  //         setSocialPosts(getFallbackSocialPosts())
+  //       }
+  //     } else {
+  //       console.error("Failed to fetch social media posts from Strapi:", response.status)
+  //       // Use fallback data on error
+  //       setSocialPosts(getFallbackSocialPosts())
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to load social media posts:", error)
+  //     // Use fallback data on error
+  //     setSocialPosts(getFallbackSocialPosts())
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
 
   const getFallbackSocialPosts = (): SocialPost[] => [
     {
