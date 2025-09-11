@@ -24,7 +24,6 @@ import { TrendingWidget } from "./widgets/trending-widget"
 import { ForumActivityWidget } from "./widgets/forum-activity-widget"
 import { EventsCalendarWidget } from "./widgets/events-calendar-widget"
 import { TrafficWidget } from "./widgets/traffic-widget"
-import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
 import { CuratorSocialWidget } from "../widgets/curator-social-widget"
 import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
@@ -715,7 +714,6 @@ export function DynamicModularHomepage() {
       weather: EnhancedWeatherWidget,
       radio: RadioWidget,
       "google-reviews": GoogleReviewsWidget,
-      "news-hero": NewsHeroWidget,
       youtube: YouTubeWidget,
       "social-feed": SocialFeedWidget,
       trending: TrendingWidget,

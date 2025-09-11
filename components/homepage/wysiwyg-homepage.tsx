@@ -11,7 +11,6 @@ import type { WidgetDimensions } from "@/lib/widget-resize"
 // Import all widgets
 import { EnhancedWeatherWidget } from "../widgets/enhanced-weather-widget"
 import { LiveEventsWidget } from "./widgets/live-events-widget"
-import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { QuickLinksWidget } from "./widgets/quick-links-widget"
 import { TrendingWidget } from "./widgets/trending-widget"
 import { BusinessSpotlightWidget } from "./widgets/business-spotlight-widget"
@@ -36,7 +35,6 @@ interface Widget {
 const widgetComponents = {
         weather: EnhancedWeatherWidget,
   liveEvents: LiveEventsWidget,
-  newsHero: NewsHeroWidget,
   quickLinks: QuickLinksWidget,
   trending: TrendingWidget,
   businessSpotlight: BusinessSpotlightWidget,
