@@ -24,10 +24,14 @@ import { TrendingWidget } from "./widgets/trending-widget"
 import { ForumActivityWidget } from "./widgets/forum-activity-widget"
 import { EventsCalendarWidget } from "./widgets/events-calendar-widget"
 import { TrafficWidget } from "./widgets/traffic-widget"
+import { NewsHeroWidget } from "./widgets/news-hero-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
-import { NewCurrencyConverterWidget } from "../widgets/new-currency-converter-widget"
+import { CuratorSocialWidget } from "../widgets/curator-social-widget"
+import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { ScrollingMarquee } from "./scrolling-marquee"
+import ThreeWidgetSearchLayout from "../search/three-widget-search-layout"
+import FlightTrackerWidget from "../search/flight-tracker-widget"
 
 // Import CSS for react-grid-layout
 import 'react-grid-layout/css/styles.css';
@@ -207,10 +211,11 @@ export function DynamicModularHomepage() {
         "photo-gallery": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "curator-social": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
-        "cinema": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
-        "food": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "search-widgets": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "flight-tracker": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
       };
       
       console.log('Using fallback admin widget configs:', defaultConfigs);
@@ -229,12 +234,12 @@ export function DynamicModularHomepage() {
       // Check if there's a saved layout for this widget
       const savedItem = savedLayout?.find(item => item.i === widget.id);
       
-      // Default grid positions based on the new configuration
+      // Default grid positions based on your specified layout
       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        "weather": { x: 0, y: 0, w: 3, h: 11 },
-        "breaking-news": { x: 3, y: 0, w: 6, h: 6 },
-        "radio": { x: 9, y: 0, w: 3, h: 11 },
-        "hot-deals": { x: 3, y: 6, w: 6, h: 5 },
+        "weather": { x: 0, y: 0, w: 2, h: 14 },
+        "breaking-news": { x: 2, y: 0, w: 7, h: 8 },
+        "radio": { x: 9, y: 0, w: 3, h: 14 },
+        "hot-deals": { x: 2, y: 8, w: 7, h: 6 },
         "news-hero": { x: 0, y: 14, w: 6, h: 11 },
         "business-spotlight": { x: 6, y: 14, w: 6, h: 8 },
         "social-feed": { x: 6, y: 22, w: 3, h: 15 },
@@ -248,6 +253,8 @@ export function DynamicModularHomepage() {
         "curator-social": { x: 9, y: 42, w: 3, h: 12 },
         "currency-converter": { x: 8, y: 54, w: 4, h: 10 },
         "traffic": { x: 0, y: 54, w: 8, h: 10 },
+        "search-widgets": { x: 0, y: 64, w: 12, h: 12 },
+        "flight-tracker": { x: 0, y: 76, w: 12, h: 10 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -274,11 +281,11 @@ export function DynamicModularHomepage() {
     widgetTracker.initializeGrid({
       totalRows: 20,
       totalColumns: 12,
-      gridWidth: 1150,
+      gridWidth: 1200,
       gridHeight: 1000,
       rowHeight: 50,
-      margin: [48, 48],
-      containerPadding: [16, 16]
+      margin: [8, 8],
+      containerPadding: [8, 8]
     });
     
     initializeWidgets()
@@ -529,6 +536,21 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
+          id: "curator-social",
+          name: "Curator Social",
+          type: "social",
+          description: "Curated social media content",
+          size: "small",
+          category: "Social",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
           id: "currency-converter",
           name: "Currency Converter",
           type: "finance",
@@ -541,21 +563,6 @@ export function DynamicModularHomepage() {
           isMandatory: false,
           settings: {
             refreshInterval: 300000,
-          },
-        }),
-        addAdminSettings({
-          id: "cinema",
-          name: "Cinema Showtimes",
-          type: "entertainment",
-          description: "Current movie showtimes and cinema information",
-          size: "medium",
-          category: "Entertainment",
-          isVisible: true,
-          isResizable: true,
-          allowUserResizingAndMoving: true,
-          isMandatory: false,
-          settings: {
-            refreshInterval: 600000,
           },
         }),
         addAdminSettings({
@@ -572,6 +579,36 @@ export function DynamicModularHomepage() {
           settings: {
             apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
+          id: "search-widgets",
+          name: "Search Widgets",
+          type: "search",
+          description: "Comprehensive search with site search, web search, and travel search",
+          size: "xlarge",
+          category: "Search",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 300000,
+          },
+        }),
+        addAdminSettings({
+          id: "flight-tracker",
+          name: "Flight Tracker",
+          type: "travel",
+          description: "Live flight tracking and airport information",
+          size: "large",
+          category: "Travel",
+          isVisible: true,
+          isResizable: true,
+          allowUserResizingAndMoving: true,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 30000,
           },
         }),
       ]
@@ -607,12 +644,12 @@ export function DynamicModularHomepage() {
   }
 
   const handleResetLayout = () => {
-    // Reset to the new default layout positions
+    // Reset to the exact layout positions you specified
     const resetLayout: LayoutItem[] = [
-      { i: "weather", x: 0, y: 0, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
-      { i: "breaking-news", x: 3, y: 0, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "radio", x: 9, y: 0, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
-      { i: "hot-deals", x: 3, y: 6, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
+      { i: "weather", x: 0, y: 0, w: 2, h: 14, isDraggable: true, isResizable: true, static: false },
+      { i: "breaking-news", x: 2, y: 0, w: 7, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 0, w: 3, h: 14, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 2, y: 8, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "news-hero", x: 0, y: 14, w: 6, h: 11, isDraggable: true, isResizable: true, static: false },
       { i: "business-spotlight", x: 6, y: 14, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       { i: "social-feed", x: 6, y: 22, w: 3, h: 15, isDraggable: true, isResizable: true, static: false },
@@ -714,6 +751,7 @@ export function DynamicModularHomepage() {
       weather: EnhancedWeatherWidget,
       radio: RadioWidget,
       "google-reviews": GoogleReviewsWidget,
+      "news-hero": NewsHeroWidget,
       youtube: YouTubeWidget,
       "social-feed": SocialFeedWidget,
       trending: TrendingWidget,
@@ -727,7 +765,8 @@ export function DynamicModularHomepage() {
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,
-      "sports-fixtures": SportsFixturesWidget,
+      "search-widgets": ThreeWidgetSearchLayout,
+      "flight-tracker": FlightTrackerWidget,
     }
     return componentMap[widgetId] || null
   }
@@ -834,17 +873,15 @@ export function DynamicModularHomepage() {
       {/* Control Header */}
       {isEditMode && (
         <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 sm:px-6 py-4 shadow-sm">
-          <div className="flex justify-center">
-            <div className="w-full max-w-[65vw] min-w-[800px]">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-lg font-semibold text-gray-800">Dynamic Widget Layout Editor</h2>
-                  <Badge variant="outline" className="text-blue-600 border-blue-600">
-                    {visibleWidgets.length} Active Widgets
-                  </Badge>
-                </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-semibold text-gray-800">Dynamic Widget Layout Editor</h2>
+              <Badge variant="outline" className="text-blue-600 border-blue-600">
+                {visibleWidgets.length} Active Widgets
+              </Badge>
+            </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Button variant="outline" size="sm" onClick={handleSaveLayout} className="text-xs sm:text-sm">
                 <Save className="w-4 h-4 mr-2" />
                 Save Layout
@@ -929,8 +966,6 @@ export function DynamicModularHomepage() {
                   Edit Mode
                 </label>
               </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -955,9 +990,8 @@ export function DynamicModularHomepage() {
       {/* Apple-style Widget Admin Panel */}
       {showAdmin && (
         <div className="bg-white/60 backdrop-blur-sm border-b border-gray-100/50">
-          <div className="flex justify-center px-4 sm:px-6 py-6">
-            <div className="w-full max-w-[65vw] min-w-[800px]">
-              <Card className="border-gray-100/50 shadow-sm bg-white/80 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+            <Card className="border-gray-100/50 shadow-sm bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-900">
                   <span>Widget Management</span>
@@ -1026,33 +1060,30 @@ export function DynamicModularHomepage() {
                 </div>
               </CardContent>
             </Card>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Dynamic Grid Layout - Centered with 65% width */}
-      <div className="flex justify-center p-2 sm:p-4">
-        <div className="w-full max-w-[65vw] min-w-[800px]">
-          <ResponsiveGridLayout
-            className={`layout ${isEditMode ? 'edit-mode' : 'view-mode'}`}
-            layouts={{ lg: layout }}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-            cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-            rowHeight={50}
-            width={1200}
-            onLayoutChange={handleLayoutChange}
-            onDragStop={handleDragStop}
-            onResizeStop={handleResizeStop}
-            isDraggable={isEditMode}
-            isResizable={isEditMode}
-            margin={[16, 16]}
-            containerPadding={[16, 16]}
-            draggableHandle=".drag-handle"
-          >
-            {widgets.map(renderWidget)}
-          </ResponsiveGridLayout>
-        </div>
+      {/* Dynamic Grid Layout */}
+      <div className="p-2 sm:p-4">
+        <ResponsiveGridLayout
+          className={`layout ${isEditMode ? 'edit-mode' : 'view-mode'}`}
+          layouts={{ lg: layout }}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+          rowHeight={50}
+          width={1200}
+          onLayoutChange={handleLayoutChange}
+          onDragStop={handleDragStop}
+          onResizeStop={handleResizeStop}
+          isDraggable={isEditMode}
+          isResizable={isEditMode}
+          margin={[8, 8]}
+          containerPadding={[8, 8]}
+          draggableHandle=".drag-handle"
+        >
+          {widgets.map(renderWidget)}
+        </ResponsiveGridLayout>
       </div>
 
       {/* Expand Modal */}
