@@ -1,7 +1,11 @@
 // Strapi configuration and URL utilities
+// Prefer env vars; fallback to sensible defaults
+const FALLBACK_BASE = process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com" : "http://localhost:1337"
+const FALLBACK_API = `${FALLBACK_BASE}/api`
+
 export const STRAPI_CONFIG = {
-  baseUrl: process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com" : "http://localhost:1337",
-  apiUrl: process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com/api" : "http://localhost:1337/api",
+  baseUrl: process.env.NEXT_PUBLIC_STRAPI_BASE_URL || FALLBACK_BASE,
+  apiUrl: process.env.NEXT_PUBLIC_STRAPI_API_URL || FALLBACK_API,
 }
 
 // Helper function to build full URLs for Strapi assets
@@ -25,4 +29,4 @@ export function buildApiUrl(endpoint: string): string {
   
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
   return `${STRAPI_CONFIG.apiUrl}/${cleanEndpoint}`
-} 
+}
