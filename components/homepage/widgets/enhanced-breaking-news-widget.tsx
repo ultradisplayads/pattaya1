@@ -99,7 +99,7 @@ export function EnhancedBreakingNewsWidget() {
   const loadBreakingNews = async () => {
     try {
       setLoading(true)
-      const apiUrl = "http://localhost:1337/api/breaking-news/live"
+      const apiUrl = "https://api.pattaya1.com/api/breaking-news/live"
       // Add cache-busting parameter to ensure fresh data
       const response = await fetch(`${apiUrl}?t=${Date.now()}`)
       if (response.ok) {
@@ -496,329 +496,80 @@ export function EnhancedBreakingNewsWidget() {
         </div>
       </div>
 
-      {/* Row 1: Regular Breaking News */}
-      <Card 
-        className="h-full bg-white/95 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300 relative overflow-hidden" 
-        onClick={() => setIsModalOpen(true)}
-      >
-      <CardHeader className="pb-1.5 px-4 pt-2.5 relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasNewData ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <div className={`absolute inset-0 w-1.5 h-1.5 rounded-full animate-ping ${hasNewData ? 'bg-green-400' : 'bg-red-400'} opacity-75`}></div>
-            </div>
-            <span className="text-xs font-semibold text-gray-900">
-              Breaking News
-            </span>
-            <Badge className={`text-[10px] font-medium border rounded-full px-1.5 py-0.5 ${hasNewData ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
-              {hasNewData ? 'LIVE' : 'ON AIR'}
-            </Badge>
-            {hasNewData && (
-              <Badge className="bg-blue-100 text-blue-700 text-[10px] font-medium border border-blue-200 rounded-full px-1.5 py-0.5">
-                FRESH
-              </Badge>
-            )}
-            <div className="flex items-center gap-1">
-              <Wifi className="w-2.5 h-2.5 text-green-500" />
-              <span className="text-[10px] text-gray-500 font-medium">LIVE</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                goToPreviousRegular()
-              }}
-              className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ChevronLeft className="w-2.5 h-2.5 text-gray-500" />
-            </Button>
-            <div className="bg-gray-100 px-1.5 py-0.5 rounded-full">
-              <span className="text-[10px] text-gray-600 font-medium">
-                {currentRegularIndex + 1}/{regularNews.length}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                goToNextRegular()
-              }}
-              className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="px-4 pb-2.5 pt-0 relative z-10">
-        {currentRegularItem && (currentRegularItem as any).type === 'sponsored' ? (
-          <div className="space-y-2">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-1">
-                <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-medium rounded-full px-1.5 py-0.5">
-                  {(currentRegularItem as any).sponsorName || 'Sponsored'}
-                </Badge>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  window.open((currentRegularItem as any).URL, "_blank")
-                }}
-                className="h-4 w-4 p-0 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ExternalLink className="w-2.5 h-2.5 text-gray-400" />
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {(currentRegularItem as any).ImageURL && (
-                <div className="w-full">
-                  <img
-                    src={(currentRegularItem as any).ImageURL}
-                    alt={(currentRegularItem as any).Title}
-                    className="w-full h-20 rounded-lg object-cover shadow-sm"
-                  />
+      {/* Two-column layout: 2:3 ratio */}
+      <Card className="h-full bg-white/95 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl overflow-hidden">
+        <div className="grid grid-cols-5 gap-0 h-full">
+          {/* Left: List (2/5) */}
+          <div className="col-span-2 border-r border-gray-100 p-3 overflow-y-auto" onClick={() => setIsModalOpen(true)}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <div className="relative">
+                  <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasNewData ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <div className={`absolute inset-0 w-1.5 h-1.5 rounded-full animate-ping ${hasNewData ? 'bg-green-400' : 'bg-red-400'} opacity-75`}></div>
                 </div>
-              )}
-              <div className="space-y-1">
-                <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-tight">
-                  {(currentRegularItem as any).Title}
-                </h4>
-                <p className="text-[10px] text-gray-600 line-clamp-2 leading-relaxed">
-                  {(currentRegularItem as any).Summary}
-                </p>
-                <div className="text-[10px] text-gray-500 font-medium">
-                  by <span className="text-gray-700">{(currentRegularItem as any).sponsorName || 'Sponsor'}</span>
+                <span className="text-xs font-semibold text-gray-900">Breaking News</span>
+                <Badge className={`text-[10px] font-medium border rounded-full px-1.5 py-0.5 ${hasNewData ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>{hasNewData ? 'LIVE' : 'ON AIR'}</Badge>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full" onClick={(e) => { e.stopPropagation(); goToPreviousRegular(); }}>
+                  <ChevronLeft className="w-2.5 h-2.5 text-gray-500" />
+                </Button>
+                <div className="bg-gray-100 px-1.5 py-0.5 rounded-full">
+                  <span className="text-[10px] text-gray-600 font-medium">{currentRegularIndex + 1}/{regularNews.length}</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        ) : currentRegularItem ? (
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              {(currentRegularItem as StrapiBreakingNews).image && (
-                <div className="flex-shrink-0">
-                  <img 
-                    src={(currentRegularItem as StrapiBreakingNews).image} 
-                    alt={(currentRegularItem as StrapiBreakingNews).imageAlt || (currentRegularItem as StrapiBreakingNews).Title}
-                    className="w-11 h-7 rounded object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              <div className="flex-1 space-y-1">
-                <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-tight">
-                  {(currentRegularItem as StrapiBreakingNews).Title}
-                </h4>
-                <p className="text-[10px] text-gray-600 line-clamp-2 leading-relaxed">
-                  {(currentRegularItem as StrapiBreakingNews).Summary}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="text-[10px] text-gray-500 font-medium">
-                    Source: <span className="text-gray-700">{(currentRegularItem as StrapiBreakingNews).Source}</span>
-                  </div>
-                  
-                  {/* Vote Buttons */}
-                  <SimpleVoteButton 
-                    article={currentRegularItem}
-                    onVoteUpdate={handleRegularNewsVoteUpdate}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="w-8 h-8 bg-gray-100 rounded-full mx-auto mb-3 animate-pulse"></div>
-            <p className="text-sm text-gray-500 font-medium">No news available</p>
-          </div>
-        )}
-      </CardContent>
-      </Card>
-      {/* Row 2: Pinned News with Rolling Ticker */}
-      {pinnedNews.length > 0 && (
-        <>
-          {/* Pinned News Rolling Ticker */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-0.5 px-3 rounded-t-lg overflow-hidden relative">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 bg-blue-800 px-2 py-0.5 rounded-full">
-                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                <span className="text-xs font-bold uppercase tracking-wider">PINNED</span>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <div className="flex animate-scroll-left whitespace-nowrap">
-                  {pinnedNews.map((item, index) => (
-                    <span key={index} className="text-xs font-medium mr-6">
-                      {item.Title} • 
-                    </span>
-                  ))}
-                  {pinnedNews.map((item, index) => (
-                    <span key={`duplicate-${index}`} className="text-xs font-medium mr-6">
-                      {item.Title} • 
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <Card 
-            className="h-full bg-white/95 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0_0_0_/0.1),0_1px_2px_-1px_rgb(0_0_0_/0.1)] rounded-2xl cursor-pointer hover:shadow-[0_4px_6px_-1px_rgb(0_0_0_/0.1),0_2px_4px_-2px_rgb(0_0_0_/0.1)] transition-all duration-300 relative overflow-hidden" 
-            onClick={() => setIsModalOpen(true)}
-          >
-        <CardHeader className="pb-1.5 px-4 pt-2.5 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${hasNewData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                <div className={`absolute inset-0 w-1.5 h-1.5 rounded-full animate-ping ${hasNewData ? 'bg-green-400' : 'bg-blue-400'} opacity-75`}></div>
-              </div>
-              <span className="text-xs font-semibold text-gray-900">
-                Pinned News
-              </span>
-              <Badge className="bg-blue-100 text-blue-700 text-[10px] font-medium border border-blue-200 rounded-full px-1.5 py-0.5">
-                FEATURED
-              </Badge>
-              <div className="flex items-center gap-1">
-                <Signal className="w-2.5 h-2.5 text-blue-500" />
-                <span className="text-[10px] text-gray-500 font-medium">LIVE</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goToPreviousPinned()
-                }}
-                className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ChevronLeft className="w-2.5 h-2.5 text-gray-500" />
-              </Button>
-              <div className="bg-gray-100 px-1.5 py-0.5 rounded-full">
-                <span className="text-[10px] text-gray-600 font-medium">
-                  {currentPinnedIndex + 1}/{pinnedNews.length}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goToNextPinned()
-                }}
-                className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="px-4 pb-2.5 pt-0">
-          {currentPinnedItem && (currentPinnedItem as any).type === 'sponsored' ? (
-            <div className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs font-medium rounded-full px-2 py-0.5">
-                    {(currentPinnedItem as any).sponsorName || 'Sponsored'}
-                  </Badge>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    window.open((currentPinnedItem as any).URL, "_blank")
-                  }}
-                  className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 text-gray-400" />
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0 hover:bg-gray-100 rounded-full" onClick={(e) => { e.stopPropagation(); goToNextRegular(); }}>
+                  <ChevronRight className="w-2.5 h-2.5 text-gray-500" />
                 </Button>
               </div>
+            </div>
+            <div className="space-y-2">
+              {regularNews.map((item) => (
+                <div key={item.id} className="flex gap-2 items-start">
+                  {item.image && (
+                    <img src={item.image} alt={item.imageAlt || item.Title} className="w-12 h-8 rounded object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  )}
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-tight">{item.Title}</h4>
+                    <div className="text-[10px] text-gray-500">{item.Source}</div>
+                  </div>
+                </div>
+              ))}
+              {regularNews.length === 0 && (
+                <div className="text-center py-6 text-sm text-gray-500">No news available</div>
+              )}
+            </div>
+          </div>
 
-              <div className="space-y-3">
-                {(currentPinnedItem as any).ImageURL && (
-                  <div className="w-full">
-                    <img
-                      src={(currentPinnedItem as any).ImageURL}
-                      alt={(currentPinnedItem as any).Title}
-                      className="w-full h-32 rounded-xl object-cover shadow-sm"
-                    />
+          {/* Right: Carousel (3/5) */}
+          <div className="col-span-3 relative h-56 sm:h-64 md:h-72">
+            <div className="absolute inset-0">
+              {(currentPinnedItem || currentRegularItem) ? (
+                <>
+                  <img
+                    src={(currentPinnedItem || currentRegularItem as any).image || (currentPinnedItem || currentRegularItem as any).ImageURL || ''}
+                    alt={(currentPinnedItem || currentRegularItem as any).imageAlt || (currentPinnedItem || currentRegularItem as any).Title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h3 className="text-white text-sm sm:text-base font-semibold drop-shadow">{(currentPinnedItem || currentRegularItem as any).Title}</h3>
                   </div>
-                )}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
-                    {(currentPinnedItem as any).Title}
-                  </h4>
-                  <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
-                    {(currentPinnedItem as any).Summary}
-                  </p>
-                  <div className="text-xs text-gray-500 font-medium">
-                    by <span className="text-gray-700">{(currentPinnedItem as any).sponsorName || 'Sponsor'}</span>
-                  </div>
-                </div>
-              </div>
+                </>
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm">No image</div>
+              )}
             </div>
-          ) : currentPinnedItem ? (
-            <div className="space-y-3">
-              <div className="flex gap-3">
-                {(currentPinnedItem as StrapiBreakingNews).image && (
-                  <div className="flex-shrink-0">
-                    <img 
-                      src={(currentPinnedItem as StrapiBreakingNews).image} 
-                      alt={(currentPinnedItem as StrapiBreakingNews).imageAlt || (currentPinnedItem as StrapiBreakingNews).Title}
-                      className="w-15 h-11 rounded object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-                <div className="flex-1 space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-tight">
-                    {(currentPinnedItem as StrapiBreakingNews).Title}
-                  </h4>
-                  <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed">
-                    {(currentPinnedItem as StrapiBreakingNews).Summary}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-gray-500 font-medium">
-                      Source: <span className="text-gray-700">{(currentPinnedItem as StrapiBreakingNews).Source}</span>
-                    </div>
-                    
-                    {/* Vote Buttons */}
-                    <SimpleVoteButton 
-                      article={currentPinnedItem}
-                      onVoteUpdate={handlePinnedNewsVoteUpdate}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-8 h-8 bg-gray-100 rounded-full mx-auto mb-3 animate-pulse"></div>
-              <p className="text-sm text-gray-500 font-medium">No pinned news available</p>
-            </div>
-          )}
-        </CardContent>
-        </Card>
-        </>
-      )}
+            {/* Controls */}
+            <button aria-label="Prev" className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow" onClick={() => setCurrentPinnedIndex((i)=> (i-1 + Math.max(pinnedNews.length,1))%Math.max(pinnedNews.length,1))}>
+              <ChevronLeft className="w-4 h-4 text-gray-700" />
+            </button>
+            <button aria-label="Next" className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow" onClick={() => setCurrentPinnedIndex((i)=> (i+1)%Math.max(pinnedNews.length,1))}>
+              <ChevronRight className="w-4 h-4 text-gray-700" />
+            </button>
+          </div>
+        </div>
+      </Card>
       
       {/* Custom CSS for TV News Animations */}
       <style jsx>{`

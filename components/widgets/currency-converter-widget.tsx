@@ -6,7 +6,8 @@ import { useState, useEffect, lazy, Suspense, useRef, useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, BarChart3, Heart, Zap, Loader2, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TrendingUp, BarChart3, Heart, Zap, Loader2, AlertCircle, ArrowRightLeft, DollarSign, Coins, Calculator, Sparkles, Star, RefreshCw, TrendingDown } from "lucide-react";
 import { useCurrencyConverter, useCurrencyConversion, useCurrencyHistory } from '@/hooks/use-currency-converter';
 import { WidgetWrapper } from './WidgetWrapper';
 import { SponsorshipBanner } from './sponsorship-banner';
@@ -57,6 +58,7 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
   const [isLoading, setIsLoading] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [showExpandedModal, setShowExpandedModal] = useState(false);
 
   const [dimensions, setDimensions] = useState({ width: 400, height: 600 });
   const [isResizing, setIsResizing] = useState(false);
@@ -248,109 +250,244 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
 
   if (initialError) {
     return (
-      <WidgetWrapper widgetId="currency-converter" className={className}>
-        <div className="relative">
-          <Card className="shadow-lg border border-gray-200 bg-white overflow-hidden relative">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center h-32">
-              <div className="text-center">
-                <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">
-                  Failed to load currency converter
-                </p>
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 rounded-xl">
+        <div className="text-center text-gray-600">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3 animate-pulse" />
+          <p className="text-sm font-medium mb-2">Failed to load currency converter</p>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={refreshRates}
-                  className="mt-2"
+            className="bg-white hover:bg-emerald-50 border-emerald-200"
                 >
+            <RefreshCw className="w-4 h-4 mr-2" />
                   Retry
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        </div>
-      </WidgetWrapper>
     );
   }
 
   return (
-    <WidgetWrapper widgetId="currency-converter" className={`${className} h-full w-full`}>
-      <div className="relative h-full w-full flex flex-col">
-        <Card
-          ref={widgetRef}
-          className="shadow-lg border border-gray-200 bg-white overflow-hidden relative flex flex-col h-full w-full"
-          style={{
-            minWidth: `${dimensions.width}px`,
-            minHeight: `${dimensions.height}px`,
-            width: "100%",
-            height: "100%",
-            transition: isResizing ? "none" : "all 0.2s ease",
-          }}
-        >
-          <div
-            className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize bg-transparent hover:bg-blue-200 opacity-0 hover:opacity-50 transition-opacity"
-            onMouseDown={(e) => handleMouseDown(e, "horizontal")}
-            title="Resize horizontally"
-          />
-          <div
-            className="absolute left-0 bottom-0 right-0 h-2 cursor-ns-resize bg-transparent hover:bg-blue-200 opacity-0 hover:opacity-50 transition-opacity"
-            onMouseDown={(e) => handleMouseDown(e, "vertical")}
-            title="Resize vertically"
-          />
-          <div
-            className="absolute right-0 bottom-0 w-4 h-4 cursor-nw-resize bg-transparent hover:bg-blue-300 opacity-0 hover:opacity-70 transition-opacity"
-            onMouseDown={(e) => handleMouseDown(e, "both")}
-            title="Resize both directions"
-          />
-
-          <div
-            className="flex-shrink-0"
-            style={{
-              background: "#059669",
-              color: "#ffffff",
-              padding: "6px 10px",
-              borderTopLeftRadius: "8px",
-              borderTopRightRadius: "8px",
-            }}
-          >
-            <div className="text-xs flex items-center gap-1 font-semibold" style={{ color: "#ffffff" }}>
-              💱 Currency Exchange
-              <span className="ml-auto text-xs opacity-70">
-                {dimensions.width}×{dimensions.height}
-              </span>
+    <>
+      {/* Main Widget - Clickable to expand */}
+      <div 
+        className="h-full flex flex-col bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 rounded-xl overflow-hidden relative shadow-sm border border-emerald-200 cursor-pointer hover:shadow-md transition-shadow duration-300"
+        onClick={() => setShowExpandedModal(true)}
+      >
+        {/* Clean Header with Animated Icons */}
+        <div className="relative p-4 border-b border-emerald-200 bg-gradient-to-r from-emerald-100 to-green-100 overflow-hidden">
+          {/* Animated Background Icons */}
+          <DollarSign className="absolute top-2 left-2 w-4 h-4 text-emerald-300 opacity-60 animate-pulse" />
+          <Coins className="absolute top-3 right-4 w-5 h-5 text-green-400 opacity-50 animate-bounce" style={{ animationDelay: '0.5s' }} />
+          <TrendingUp className="absolute bottom-1 left-6 w-3 h-3 text-teal-400 opacity-40 animate-pulse" style={{ animationDelay: '1s' }} />
+          <Star className="absolute bottom-2 right-2 w-4 h-4 text-emerald-300 opacity-30 animate-ping" style={{ animationDelay: '1.5s' }} />
+          <Sparkles className="absolute top-1 right-8 w-3 h-3 text-green-300 opacity-50 animate-spin" style={{ animationDelay: '2s', animationDuration: '3s' }} />
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg shadow-sm">
+                <DollarSign className="w-5 h-5 text-white animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Currency Converter</h2>
+                <p className="text-xs text-gray-600">Live exchange rates</p>
+              </div>
             </div>
-            <p className="text-xs" style={{ color: "#d1fae5" }}>
-              Live rates • Pattaya focused
-            </p>
+            <div className="flex items-center gap-2">
+              {lastUpdated && (
+                <span className="text-xs text-gray-500">
+                  Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  refreshRates()
+                }}
+                className="p-1 h-6 w-6"
+              >
+                <RefreshCw className="w-3 h-3 text-emerald-600" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Clean Content Area */}
+        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+          <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+            {/* Quick Converter */}
+            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-emerald-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-gray-700">Quick Convert</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    swapCurrencies()
+                  }}
+                  className="p-1 h-6 w-6"
+                >
+                  <ArrowRightLeft className="w-3 h-3 text-emerald-600" />
+                </Button>
+              </div>
+              
+              {/* Amount Input */}
+              <div className="mb-3">
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  className="w-full p-2 text-lg font-semibold border border-emerald-200 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Enter amount"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+              
+              {/* Currency Selection */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">From</label>
+                  <select
+                    value={selectedFromCurrency}
+                    onChange={(e) => setSelectedFromCurrency(e.target.value)}
+                    className="w-full p-2 border border-emerald-200 rounded-lg bg-white/80 text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {currencies.map(currency => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.flag} {currency.code}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1 block">To</label>
+                  <select
+                    value={selectedToCurrency}
+                    onChange={(e) => setSelectedToCurrency(e.target.value)}
+                    className="w-full p-2 border border-emerald-200 rounded-lg bg-white/80 text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {currencies.map(currency => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.flag} {currency.code}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              {/* Exchange Rate Display */}
+              <div className="bg-gradient-to-r from-emerald-50 to-green-50 p-3 rounded-lg border border-emerald-200">
+                <div className="text-center">
+                  <div className="text-xs text-gray-600 mb-1">Exchange Rate</div>
+                  <div className="text-2xl font-bold text-emerald-700">
+                    {isLoading ? (
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                    ) : exchangeRate ? (
+                      `1 ${selectedFromCurrency} = ${exchangeRate.toFixed(4)} ${selectedToCurrency}`
+                    ) : (
+                      'Loading...'
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-emerald-200">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Amounts</h3>
+              <div className="grid grid-cols-3 gap-2">
+                {[100, 500, 1000, 2000, 5000, 10000].map(quickAmount => (
+                  <Button
+                    key={quickAmount}
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleQuickAmount(quickAmount)
+                    }}
+                    className="text-xs h-8 bg-white/80 hover:bg-emerald-50 border-emerald-200"
+                  >
+                    {quickAmount.toLocaleString()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Popular Pairs */}
+            <div className="bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-emerald-200">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Popular Pairs</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {popularPairs.slice(0, 4).map((pair) => (
+                  <Button
+                    key={`${pair.from}-${pair.to}`}
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedFromCurrency(pair.from)
+                      setSelectedToCurrency(pair.to)
+                    }}
+                    className="h-12 bg-white/60 hover:bg-emerald-50 border border-emerald-200 rounded-lg"
+                  >
+                    <div className="text-left">
+                      <div className="text-xs font-semibold">{pair.from} → {pair.to}</div>
+                      <div className="text-sm font-bold text-emerald-600">{pair.rate}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
           </div>
 
-          <CardContent className="p-3 flex flex-col flex-1 min-h-0 h-full w-full">
-            <Tabs defaultValue="convert" className="w-full h-full flex flex-col flex-1">
-              <TabsList className="grid w-full grid-cols-5 h-8 bg-gray-100 mb-2 flex-shrink-0">
-                <TabsTrigger value="convert" className="text-xs px-2 py-1">
-                  <Zap className="h-3 w-3" />
+      {/* Expanded Modal */}
+      {showExpandedModal && (
+        <Dialog open={showExpandedModal} onOpenChange={setShowExpandedModal}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden z-[100]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <DollarSign className="w-6 h-6 text-emerald-500 animate-pulse" />
+                Currency Converter - Full View
+              </DialogTitle>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+              <Tabs defaultValue="convert" className="w-full">
+                <TabsList className="grid w-full grid-cols-5 mb-4">
+                  <TabsTrigger value="convert" className="flex items-center gap-2">
+                    <Calculator className="h-4 w-4" />
+                    Convert
                 </TabsTrigger>
-                <TabsTrigger value="trending" className="text-xs px-2 py-1">
-                  <TrendingUp className="h-3 w-3" />
+                  <TabsTrigger value="trending" className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Trending
                 </TabsTrigger>
-                <TabsTrigger value="charts" className="text-xs px-2 py-1">
-                  <BarChart3 className="h-3 w-3" />
+                  <TabsTrigger value="charts" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Charts
                 </TabsTrigger>
-                <TabsTrigger value="favorites" className="text-xs px-2 py-1">
-                  <Heart className="h-3 w-3" />
+                  <TabsTrigger value="favorites" className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    Favorites
                 </TabsTrigger>
-                <TabsTrigger value="tools" className="text-xs px-2 py-1">
-                  ⚙️
+                  <TabsTrigger value="tools" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Tools
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="convert" className="mt-0 flex-1 flex flex-col min-h-0 h-full w-full data-[state=active]:flex">
+                <TabsContent value="convert" className="mt-4">
+                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 p-6 rounded-lg border border-emerald-200">
                 <Suspense
                   fallback={
                     <div className="flex items-center justify-center h-32">
-                      <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+                          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
                     </div>
                   }
                 >
@@ -368,43 +505,44 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
                     currencies={currencies}
                   />
                 </Suspense>
+                  </div>
               </TabsContent>
 
-              <TabsContent value="trending" className="mt-0 flex-1 flex flex-col min-h-0 h-full w-full data-[state=active]:flex">
-                <div className="space-y-4 w-full h-full flex-1 flex flex-col overflow-y-auto max-h-96">
-                  <div className="text-center flex-shrink-0">
-                    <div className="text-lg font-semibold text-gray-800 mb-1">
+                <TabsContent value="trending" className="mt-4">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
                       📈 Trending Currencies
-                    </div>
-                    <div className="text-sm text-gray-600">
+                      </h3>
+                      <p className="text-gray-600">
                       Most popular currencies in Pattaya
-                    </div>
+                      </p>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 flex-1">
-                    {trendingCurrencies.slice(0, 6).map((currency) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {trendingCurrencies.slice(0, 10).map((currency) => (
                       <Button
                         key={currency.code}
                         variant="ghost"
                         onClick={() => handleTrendingCurrencyClick(currency.code)}
-                        className="w-full justify-between text-sm h-14 hover:bg-emerald-50 transition-all duration-200 border-2 border-gray-200 rounded-lg p-3 hover:border-emerald-300"
+                          className="w-full justify-between h-16 hover:bg-emerald-50 transition-all duration-200 border-2 border-gray-200 rounded-lg p-4 hover:border-emerald-300"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm bg-emerald-100 rounded-full w-8 h-8 flex items-center justify-center font-bold text-emerald-700">
+                          <div className="flex items-center gap-4">
+                            <div className="text-sm bg-emerald-100 rounded-full w-10 h-10 flex items-center justify-center font-bold text-emerald-700">
                             #{currency.rank}
                           </div>
                           <div className="text-left">
                             <div className="flex items-center gap-2">
-                              <span className="text-lg">{currency.flag}</span>
+                                <span className="text-2xl">{currency.flag}</span>
                               <div>
-                                <div className="font-mono text-sm font-bold text-gray-900">{currency.code}</div>
-                                <div className="text-xs text-gray-600">{currency.name}</div>
+                                  <div className="font-mono text-lg font-bold text-gray-900">{currency.code}</div>
+                                  <div className="text-sm text-gray-600">{currency.name}</div>
                               </div>
                             </div>
                           </div>
                         </div>
                         <div
-                          className="text-sm px-3 py-1 rounded-full font-bold"
+                            className="text-sm px-4 py-2 rounded-full font-bold"
                           style={{
                             backgroundColor: currency.trend.startsWith("+") ? "#22c55e" : "#ef4444",
                             color: "#ffffff",
@@ -416,16 +554,16 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
                     ))}
                   </div>
 
-                  <div className="pt-4 border-t border-gray-200 flex-shrink-0">
-                    <div className="text-sm font-semibold text-gray-800 mb-3 text-center">Popular Pairs for Pattaya</div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {popularPairs.slice(0, 4).map((pair) => (
-                        <div key={`${pair.from}-${pair.to}`} className="bg-gradient-to-r from-gray-50 to-gray-100 p-3 rounded-lg border-2 border-gray-200 hover:border-emerald-300 transition-colors">
+                    <div className="pt-6 border-t border-gray-200">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Popular Pairs for Pattaya</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {popularPairs.map((pair) => (
+                          <div key={`${pair.from}-${pair.to}`} className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border-2 border-gray-200 hover:border-emerald-300 transition-colors">
                           <div className="flex items-center justify-between">
-                            <span className="font-mono text-sm font-semibold text-gray-800">
+                              <span className="font-mono text-lg font-semibold text-gray-800">
                               {pair.from} → {pair.to}
                             </span>
-                            <span className="font-bold text-lg text-emerald-600">{pair.rate}</span>
+                              <span className="font-bold text-xl text-emerald-600">{pair.rate}</span>
                           </div>
                         </div>
                       ))}
@@ -434,12 +572,12 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
                 </div>
               </TabsContent>
 
-              <TabsContent value="charts" className="mt-0 flex-1 flex flex-col min-h-0 h-full w-full data-[state=active]:flex">
-                <div className="flex-1 flex flex-col min-h-0 h-full w-full overflow-y-auto max-h-96">
+                <TabsContent value="charts" className="mt-4">
+                  <div className="bg-white p-6 rounded-lg border border-gray-200">
                   <Suspense
                     fallback={
-                      <div className="flex items-center justify-center h-32">
-                        <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+                        <div className="flex items-center justify-center h-64">
+                          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
                       </div>
                     }
                   >
@@ -451,61 +589,54 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
                 </div>
               </TabsContent>
 
-              <TabsContent value="favorites" className="mt-0 flex-1 flex flex-col min-h-0 h-full w-full data-[state=active]:flex">
-                <div className="flex-1 flex flex-col justify-center h-full w-full">
-                  <div className="text-center space-y-4">
-                    <div className="text-lg font-semibold text-gray-800">❤️ My Favorites</div>
-                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-6 rounded-lg border-2 border-amber-200 text-center">
-                      <Heart className="h-12 w-12 mx-auto text-amber-600 mb-3" />
-                      <div className="text-lg text-amber-800 mb-3">Sign in to save your favorite currency pairs</div>
-                      <Button size="lg" className="text-sm h-10 px-6 bg-amber-600 hover:bg-amber-700 text-white rounded-lg">
+                <TabsContent value="favorites" className="mt-4">
+                  <div className="text-center space-y-6">
+                    <div className="text-xl font-semibold text-gray-800">❤️ My Favorites</div>
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-8 rounded-lg border-2 border-amber-200 text-center">
+                      <Heart className="h-16 w-16 mx-auto text-amber-600 mb-4" />
+                      <div className="text-xl text-amber-800 mb-4">Sign in to save your favorite currency pairs</div>
+                      <Button size="lg" className="text-lg h-12 px-8 bg-amber-600 hover:bg-amber-700 text-white rounded-lg">
                         Sign In
                       </Button>
-                    </div>
                   </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="tools" className="mt-0 flex-1 flex flex-col min-h-0 h-full w-full data-[state=active]:flex">
-                <div className="space-y-4 flex-1 flex flex-col min-h-0 h-full w-full overflow-y-auto max-h-96">
-                  <div className="text-center flex-shrink-0">
-                    <div className="text-lg font-semibold text-gray-800">🛠️ Currency Tools</div>
-                    <div className="text-sm text-gray-600">Advanced currency utilities</div>
+                <TabsContent value="tools" className="mt-4">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-xl font-semibold text-gray-800">🛠️ Currency Tools</h3>
+                      <p className="text-gray-600">Advanced currency utilities</p>
                   </div>
 
-                  <div className="space-y-3 flex-1">
-                    <Button variant="outline" size="lg" className="w-full justify-start text-sm h-12 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button variant="outline" size="lg" className="w-full justify-start text-lg h-16 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
                       📊 Rate Alerts
                     </Button>
-                    <Button variant="outline" size="lg" className="w-full justify-start text-sm h-12 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
+                      <Button variant="outline" size="lg" className="w-full justify-start text-lg h-16 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
                       🧮 Travel Calculator
                     </Button>
-                    <Button variant="outline" size="lg" className="w-full justify-start text-sm h-12 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
+                      <Button variant="outline" size="lg" className="w-full justify-start text-lg h-16 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
                       💰 Savings Goal Tracker
                     </Button>
-                    <Button variant="outline" size="lg" className="w-full justify-start text-sm h-12 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
+                      <Button variant="outline" size="lg" className="w-full justify-start text-lg h-16 bg-white border-2 hover:border-emerald-300 hover:bg-emerald-50">
                       📈 Investment Calculator
                     </Button>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-200 flex-shrink-0">
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg text-center border-2 border-blue-200">
-                      <div className="text-sm text-blue-800 font-semibold mb-1">Sponsored by ExchangeRate-API</div>
-                      <div className="text-xs text-blue-600">Free • Reliable • Fast</div>
+                    <div className="pt-6 border-t border-gray-200">
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg text-center border-2 border-blue-200">
+                        <div className="text-lg text-blue-800 font-semibold mb-2">Sponsored by ExchangeRate-API</div>
+                        <div className="text-sm text-blue-600">Free • Reliable • Fast</div>
                     </div>
                   </div>
                 </div>
               </TabsContent>
             </Tabs>
-        </CardContent>
-      </Card>
-
-        {isResizing && (
-          <div className="absolute -bottom-8 left-0 text-xs text-gray-600 bg-white px-2 py-1 rounded shadow border">
-            Resizing: {dimensions.width}×{dimensions.height}
           </div>
+          </DialogContent>
+        </Dialog>
         )}
-      </div>
-    </WidgetWrapper>
+    </>
   );
 }

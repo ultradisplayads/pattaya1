@@ -44,7 +44,7 @@ export function Footer({ theme }: FooterProps) {
   ]
 
   return (
-    <footer className="bg-white/50 border-t border-gray-100/50 backdrop-blur-sm font-sans antialiased">
+    <footer className="bg-white/50 border-t border-gray-100/50 backdrop-blur-sm font-sans antialiased relative z-10">
       <div className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand */}
