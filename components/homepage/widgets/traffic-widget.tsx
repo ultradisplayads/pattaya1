@@ -16,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { buildApiUrl } from "@/lib/strapi-config"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { InteractiveTrafficMap } from "@/components/ui/interactive-traffic-map"
 
 interface TrafficRoute {
   id: string
@@ -90,6 +92,34 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
   const [incidents, setIncidents] = useState<TrafficIncident[]>([])
   const [loading, setLoading] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [activeTab, setActiveTab] = useState<"summary" | "map" | "parking" | "transport">("summary")
+
+  // Map tab state
+  const [mapImageUrl, setMapImageUrl] = useState<string>("")
+  
+  // Interactive map modal state
+  const [isInteractiveMapOpen, setIsInteractiveMapOpen] = useState(false)
+
+  // Parking tab state
+  interface ParkingLot {
+    id: string
+    name: string
+    location?: string
+    status: "spaces" | "likely-full" | "closed"
+    spacesAvailable?: number | null
+    lastUpdated?: string
+  }
+  const [parkingLots, setParkingLots] = useState<ParkingLot[]>([])
+
+  // Transport tab state
+  interface TransportStatus {
+    id: string
+    name: string
+    status: "on-schedule" | "delayed" | "suspended"
+    notes?: string
+    lastUpdated?: string
+  }
+  const [transportStatuses, setTransportStatuses] = useState<TransportStatus[]>([])
 
   useEffect(() => {
     loadTrafficData()
@@ -110,9 +140,21 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
       setLoading(true)
       console.log('Fetching traffic data from Strapi...')
       
-      // Fetch traffic routes
+      // Summary tab data: routes + incidents (existing behavior)
       const routesResponse = await fetch(buildApiUrl("traffic-routes?populate=*&sort=Order:asc"))
       const incidentsResponse = await fetch(buildApiUrl("traffic-incidents?populate=*&sort=Order:asc"))
+
+      // Map tab data: cached static map image URL (optional backend)
+      // Expected backend endpoint: GET /api/traffic-map returns { url: string }
+      const mapRespPromise = fetch(buildApiUrl("traffic-map"))
+
+      // Parking tab data: list of parking lots
+      // Expected backend endpoint: GET /api/parking-status returns { data: ParkingLot[] }
+      const parkingRespPromise = fetch(buildApiUrl("parking-status?sort=Order:asc"))
+
+      // Transport tab data: list of transport statuses
+      // Expected backend endpoint: GET /api/transport-status returns { data: TransportStatus[] }
+      const transportRespPromise = fetch(buildApiUrl("transport-status?sort=Order:asc"))
       
       if (routesResponse.ok && incidentsResponse.ok) {
         const routesData = await routesResponse.json()
@@ -154,10 +196,63 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
         setRoutes(getFallbackRoutes())
         setIncidents(getFallbackIncidents())
       }
+
+      // Handle auxiliary tabs (best-effort; fall back silently on errors)
+      try {
+        const [mapResp, parkingResp, transportResp] = await Promise.allSettled([
+          mapRespPromise,
+          parkingRespPromise,
+          transportRespPromise,
+        ])
+
+        if (mapResp.status === "fulfilled" && mapResp.value.ok) {
+          const mapJson = await mapResp.value.json()
+          setMapImageUrl(mapJson.url || getFallbackMapImageUrl())
+        } else {
+          setMapImageUrl(getFallbackMapImageUrl())
+        }
+
+        if (parkingResp.status === "fulfilled" && parkingResp.value.ok) {
+          const prJson = await parkingResp.value.json()
+          const parsed: ParkingLot[] = (prJson.data || []).map((p: any) => ({
+            id: (p.id ?? Math.random()).toString(),
+            name: p.Name || p.name || "Parking Lot",
+            location: p.Location || p.location || undefined,
+            status: (p.Status || p.status || "spaces").replace(" ", "-") as ParkingLot["status"],
+            spacesAvailable: p.SpacesAvailable ?? p.spacesAvailable ?? null,
+            lastUpdated: p.LastUpdated || p.updatedAt || undefined,
+          }))
+          setParkingLots(parsed.length ? parsed : getFallbackParkingLots())
+        } else {
+          setParkingLots(getFallbackParkingLots())
+        }
+
+        if (transportResp.status === "fulfilled" && transportResp.value.ok) {
+          const trJson = await transportResp.value.json()
+          const parsed: TransportStatus[] = (trJson.data || []).map((t: any) => ({
+            id: (t.id ?? Math.random()).toString(),
+            name: t.Name || t.name || "Service",
+            status: (t.Status || t.status || "on-schedule").replace(" ", "-") as TransportStatus["status"],
+            notes: t.Notes || t.notes || undefined,
+            lastUpdated: t.LastUpdated || t.updatedAt || undefined,
+          }))
+          setTransportStatuses(parsed.length ? parsed : getFallbackTransportStatuses())
+        } else {
+          setTransportStatuses(getFallbackTransportStatuses())
+        }
+      } catch (auxErr) {
+        console.warn("Auxiliary tab data failed, using fallbacks:", auxErr)
+        setMapImageUrl(getFallbackMapImageUrl())
+        setParkingLots(getFallbackParkingLots())
+        setTransportStatuses(getFallbackTransportStatuses())
+      }
     } catch (error) {
       console.error("Failed to load traffic data:", error)
       setRoutes(getFallbackRoutes())
       setIncidents(getFallbackIncidents())
+      setMapImageUrl(getFallbackMapImageUrl())
+      setParkingLots(getFallbackParkingLots())
+      setTransportStatuses(getFallbackTransportStatuses())
     } finally {
       setLoading(false)
     }
@@ -253,6 +348,35 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
     },
   ]
 
+  // Map fallback: placeholder image; replace with CDN-cached static map URL when backend ready
+  const getFallbackMapImageUrl = () => 
+    "https://maps.googleapis.com/maps/api/staticmap?center=Pattaya,Thailand&zoom=12&size=600x300&maptype=roadmap&style=feature:road|color:0xffffff&markers=color:red|Pattaya&key=FAKE_KEY_REPLACE"
+
+  const getParkingStatusBadge = (status: ParkingLot["status"]) => {
+    switch (status) {
+      case "spaces":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200"
+      case "likely-full":
+        return "bg-amber-50 text-amber-700 border-amber-200"
+      case "closed":
+        return "bg-gray-100 text-gray-700 border-gray-200"
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200"
+    }
+  }
+
+  const getFallbackParkingLots = (): ParkingLot[] => [
+    { id: "cf", name: "Central Festival Parking", status: "spaces", spacesAvailable: 120 },
+    { id: "t21", name: "Terminal 21 Parking", status: "likely-full", spacesAvailable: 25 },
+    { id: "br", name: "Beach Road Public Lot", status: "closed", spacesAvailable: null },
+  ]
+
+  const getFallbackTransportStatuses = (): TransportStatus[] => [
+    { id: "ferry", name: "Koh Larn Ferry", status: "on-schedule", notes: "Next departure 14:30" },
+    { id: "bus", name: "Bangkok Bus (Ekamai)", status: "delayed", notes: "+10m due to traffic" },
+    { id: "baht", name: "Baht Bus (Beach Rd)", status: "on-schedule" },
+  ]
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "clear":
@@ -332,11 +456,11 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
   return (
     <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-[0_1px_3px_0_rgb(0,0,0,0.1),0_1px_2px_-1px_rgb(0,0,0,0.1)] rounded-2xl overflow-hidden">
-      <CardHeader className="pb-4 px-6 pt-6">
+      <CardHeader className="pb-2 px-6 pt-6">
         <CardTitle className="text-[15px] font-semibold text-gray-900 flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
-            Traffic Conditions
+            Traffic & Transport
           </div>
           <div className="flex items-center space-x-2">
             <div className="flex items-center text-[11px] text-gray-500 font-medium">
@@ -355,13 +479,25 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
             )}
           </div>
         </CardTitle>
+        <div className="mt-3">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsList className="bg-gray-100 p-1 rounded-lg">
+              <TabsTrigger value="summary" className="text-xs px-2 py-1">Summary</TabsTrigger>
+              <TabsTrigger value="map" className="text-xs px-2 py-1">Map View</TabsTrigger>
+              <TabsTrigger value="parking" className="text-xs px-2 py-1">Parking</TabsTrigger>
+              <TabsTrigger value="transport" className="text-xs px-2 py-1">Transport</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="overflow-y-auto transition-all duration-300" style={{ maxHeight }}>
-          {/* Major Routes */}
-          <div className="space-y-3 mb-5">
-            <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Major Routes</h5>
-            {displayRoutes.map((route, index) => (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsContent value="summary">
+              {/* Major Routes */}
+              <div className="space-y-3 mb-5">
+                <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Major Routes</h5>
+                {displayRoutes.map((route, index) => (
               <div
                 key={route.id}
                 className="p-4 rounded-xl bg-gray-50/50 hover:bg-gray-50 border border-gray-100/50 hover:border-gray-200 transition-all duration-200 cursor-pointer group"
@@ -423,15 +559,15 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
                   )}
                 </div>
               </div>
-            ))}
-          </div>
+                ))}
+              </div>
 
-          {/* Traffic Incidents */}
-          {displayIncidents.length > 0 && (
-            <div className="space-y-3">
-              <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Active Incidents</h5>
-              <div className="space-y-2">
-                {displayIncidents.map((incident, index) => (
+              {/* Traffic Incidents */}
+              {displayIncidents.length > 0 && (
+                <div className="space-y-3">
+                  <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Active Incidents</h5>
+                  <div className="space-y-2">
+                    {displayIncidents.map((incident, index) => (
                   <div
                     key={incident.id}
                     className="p-3 rounded-xl bg-red-50/50 border border-red-100/50 hover:bg-red-50 transition-colors duration-200"
@@ -459,10 +595,96 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
                       </div>
                     </div>
                   </div>
-                ))}
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="map">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Live Traffic Map</h5>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsInteractiveMapOpen(true)}
+                    className="h-6 text-[10px] font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MapPin className="h-3 w-3 mr-1" />
+                    Expand
+                  </Button>
+                </div>
+                <div
+                  className="rounded-xl overflow-hidden border border-gray-100 cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Open interactive traffic map"
+                  onClick={() => setIsInteractiveMapOpen(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      setIsInteractiveMapOpen(true)
+                    }
+                  }}
+                >
+                  {mapImageUrl ? (
+                    <img src={mapImageUrl} alt="Pattaya Traffic Map" className="w-full h-auto" />
+                  ) : (
+                    <div className="h-40 bg-gray-50 flex items-center justify-center text-gray-400 text-sm">Map unavailable</div>
+                  )}
+                </div>
+                <p className="text-[11px] text-gray-500">Map auto-refreshes every few minutes. Click expand for interactive layers.</p>
               </div>
-            </div>
-          )}
+            </TabsContent>
+
+            <TabsContent value="parking">
+              <div className="space-y-3">
+                <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Parking Status</h5>
+                <div className="space-y-2">
+                  {parkingLots.map((lot) => (
+                    <div key={lot.id} className="p-3 rounded-xl bg-gray-50/50 border border-gray-100/50 flex items-center justify-between">
+                      <div>
+                        <div className="text-[12px] font-medium text-gray-900">{lot.name}</div>
+                        {lot.location && <div className="text-[11px] text-gray-500">{lot.location}</div>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {typeof lot.spacesAvailable === "number" && (
+                          <Badge variant="outline" className="text-[10px] font-medium bg-white border-gray-200 text-gray-700">
+                            {lot.spacesAvailable} spaces
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getParkingStatusBadge(lot.status)}`}>
+                          {lot.status === "spaces" ? "Spaces Available" : lot.status === "likely-full" ? "Likely Full" : "Closed"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="transport">
+              <div className="space-y-3">
+                <h5 className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider">Public Transport</h5>
+                <div className="space-y-2">
+                  {transportStatuses.map((svc) => (
+                    <div key={svc.id} className="p-3 rounded-xl bg-gray-50/50 border border-gray-100/50 flex items-center justify-between">
+                      <div>
+                        <div className="text-[12px] font-medium text-gray-900">{svc.name}</div>
+                        {svc.notes && <div className="text-[11px] text-gray-500">{svc.notes}</div>}
+                      </div>
+                      <div>
+                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-1 rounded-full border ${svc.status === "on-schedule" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : svc.status === "delayed" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-gray-100 text-gray-700 border-gray-200"}`}>
+                          {svc.status === "on-schedule" ? "On Schedule" : svc.status === "delayed" ? "Delayed" : "Suspended"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Last Updated */}
@@ -479,6 +701,12 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
           </Button>
         </div>
       </CardContent>
+      
+      {/* Interactive Map Modal */}
+      <InteractiveTrafficMap 
+        isOpen={isInteractiveMapOpen} 
+        onClose={() => setIsInteractiveMapOpen(false)} 
+      />
     </Card>
   )
 }
