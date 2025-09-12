@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Star, ExternalLink, RefreshCw, MapPin } from "lucide-react"
+import { Star, ExternalLink, RefreshCw, MapPin, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -60,6 +60,8 @@ export function GoogleReviewsWidget() {
   const [error, setError] = useState<string | null>(null)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
   const [isLive, setIsLive] = useState(true)
+  const [isAutoPlay, setIsAutoPlay] = useState(true)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   /* ------------------------------------------------------------------ */
   /*                             EFFECTS                                */
@@ -68,12 +70,13 @@ export function GoogleReviewsWidget() {
     loadReviews()
     loadStats()
 
-    // Auto-rotate reviews every 8 seconds
+    // Auto-rotate reviews every 6 seconds when auto-play is enabled
     const interval = setInterval(() => {
+      if (!isAutoPlay) return
       const total = reviewsData?.data?.length ?? 0
       if (!total) return
-      setCurrentReviewIndex((prev) => (prev + 1) % total)
-    }, 8000)
+      nextReview()
+    }, 6000)
 
     // Live polling every 30 seconds
     const liveInterval = setInterval(() => {
@@ -86,7 +89,7 @@ export function GoogleReviewsWidget() {
       clearInterval(interval)
       clearInterval(liveInterval)
     }
-  }, [reviewsData?.data?.length, isLive])
+  }, [reviewsData?.data?.length, isLive, isAutoPlay])
 
   /* ------------------------------------------------------------------ */
   /*                        DATA FETCH / FALLBACK                       */
@@ -142,6 +145,33 @@ export function GoogleReviewsWidget() {
     setIsLive(!isLive)
   }
 
+  const toggleAutoPlay = () => {
+    setIsAutoPlay(!isAutoPlay)
+  }
+
+  const nextReview = () => {
+    if (isTransitioning || !reviewsData?.data?.length) return
+    setIsTransitioning(true)
+    const total = reviewsData.data.length
+    setCurrentReviewIndex((prev) => (prev + 1) % total)
+    setTimeout(() => setIsTransitioning(false), 300)
+  }
+
+  const prevReview = () => {
+    if (isTransitioning || !reviewsData?.data?.length) return
+    setIsTransitioning(true)
+    const total = reviewsData.data.length
+    setCurrentReviewIndex((prev) => (prev - 1 + total) % total)
+    setTimeout(() => setIsTransitioning(false), 300)
+  }
+
+  const goToReview = (index: number) => {
+    if (isTransitioning || !reviewsData?.data?.length || index === currentReviewIndex) return
+    setIsTransitioning(true)
+    setCurrentReviewIndex(index)
+    setTimeout(() => setIsTransitioning(false), 300)
+  }
+
   /* ------------------------------------------------------------------ */
   /*                            HELPERS                                 */
   /* ------------------------------------------------------------------ */
@@ -172,21 +202,22 @@ export function GoogleReviewsWidget() {
   const current = reviewsData.data[currentReviewIndex]
 
   return (
-    <Card className="top-row-widget reviews-widget bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+    <Card className="top-row-widget reviews-widget bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center space-x-2 text-yellow-800">
-            <Star className="w-4 h-4 text-yellow-600" />
+            <Star className="w-4 h-4 text-yellow-600 animate-pulse" />
             <span>Latest Reviews</span>
           </CardTitle>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleLive}
-              className={`h-6 px-2 text-xs ${isLive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}
+              onClick={toggleAutoPlay}
+              className={`h-6 w-6 p-0 ${isAutoPlay ? 'text-green-600' : 'text-gray-500'}`}
+              aria-label={isAutoPlay ? 'Pause auto-play' : 'Start auto-play'}
             >
-              {isLive ? 'Live' : 'Paused'}
+              {isAutoPlay ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </Button>
             <Button
               variant="ghost"
@@ -202,12 +233,69 @@ export function GoogleReviewsWidget() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        {/* Current review */}
-        <ReviewCard review={current} />
+      <CardContent className="flex flex-col h-full">
+        {/* Carousel Container */}
+        <div className="flex-1 relative overflow-hidden">
+          {/* Current review with transition */}
+          <div 
+            className={`transition-all duration-300 ease-in-out ${
+              isTransitioning ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
+            }`}
+          >
+            <ReviewCard review={current} />
+          </div>
+        </div>
 
-        {/* Stats and navigation */}
-        <div className="flex items-center justify-between text-xs text-yellow-600">
+        {/* Carousel Navigation */}
+        <div className="flex items-center justify-between mt-4">
+          {/* Previous Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={prevReview}
+            disabled={isTransitioning || reviewsData?.data?.length <= 1}
+            className="h-8 w-8 p-0 hover:bg-yellow-100"
+            aria-label="Previous review"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+
+          {/* Indicators */}
+          <div className="flex items-center space-x-1">
+            {reviewsData?.data?.slice(0, 5).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToReview(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index === currentReviewIndex
+                    ? 'bg-yellow-600 w-4'
+                    : 'bg-yellow-300 hover:bg-yellow-400'
+                }`}
+                aria-label={`Go to review ${index + 1}`}
+              />
+            ))}
+            {reviewsData?.data?.length > 5 && (
+              <span className="text-xs text-gray-500 ml-1">
+                +{reviewsData.data.length - 5}
+              </span>
+            )}
+          </div>
+
+          {/* Next Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={nextReview}
+            disabled={isTransitioning || reviewsData?.data?.length <= 1}
+            className="h-8 w-8 p-0 hover:bg-yellow-100"
+            aria-label="Next review"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+
+        {/* Stats and Info */}
+        <div className="flex items-center justify-between text-xs text-yellow-600 mt-3 pt-2 border-t border-yellow-200">
           <div className="flex items-center space-x-1">
             <MapPin className="w-3 h-3" />
             <span>Pattaya Reviews</span>
@@ -218,13 +306,13 @@ export function GoogleReviewsWidget() {
             )}
           </div>
           <div className="flex items-center space-x-2">
-            <span>
+            <span className="font-medium">
               {currentReviewIndex + 1}/{reviewsData.data.length}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 w-5 p-0"
+              className="h-5 w-5 p-0 hover:bg-yellow-100"
               onClick={() => window.open("https://www.google.com/maps/search/pattaya+reviews", "_blank")}
               aria-label="Open in Google Maps"
             >
@@ -235,12 +323,16 @@ export function GoogleReviewsWidget() {
 
         {/* Platform stats */}
         {getPlatformStats() && (
-          <div className="flex items-center space-x-1 text-xs text-gray-500">
+          <div className="flex items-center space-x-1 text-xs text-gray-500 mt-2">
             {getPlatformStats()}
           </div>
         )}
 
-        {error && <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded text-center">{error}</div>}
+        {error && (
+          <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded text-center mt-2">
+            {error}
+          </div>
+        )}
       </CardContent>
     </Card>
   )

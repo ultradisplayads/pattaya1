@@ -218,237 +218,225 @@ export default function CompactComprehensiveSearchWidget() {
   const totalPages = Math.ceil(totalResults / hitsPerPage)
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <Search className="h-5 w-5" />
-          Site Search
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="flex-1 space-y-3">
-        {/* Search Bar */}
+    <div className="h-full flex flex-col bg-transparent">
+      {/* Google-style search bar */}
+      <div className="relative w-full">
         <div className="relative">
-          <form onSubmit={handleSearch} className="relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search news, topics..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-9 pr-8 py-2 text-sm"
-                onFocus={() => query.length >= 2 && setShowSuggestions(true)}
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('')
-                    setResults([])
-                    setShowSuggestions(false)
-                  }}
-                  className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </form>
-
-          {/* Search Suggestions */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div ref={suggestionsRef} className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-              {suggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-b-0"
-                >
-                  <div className="font-medium text-gray-900 text-sm">{suggestion.text}</div>
-                  <Search className="h-3 w-3 text-gray-400" />
-                </button>
-              ))}
-            </div>
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search news, topics, articles..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-12 pr-12 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:ring-0 shadow-sm bg-white"
+            onFocus={() => query.length >= 2 && setShowSuggestions(true)}
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setResults([])
+                setShowSuggestions(false)
+              }}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-5 w-5" />
+            </button>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className="text-xs"
-          >
-            <Filter className="h-3 w-3 mr-1" />
-            Filters
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowTrending(!showTrending)}
-            className="text-xs"
-          >
-            <TrendingUp className="h-3 w-3 mr-1" />
-            Trending
-          </Button>
-        </div>
-
-        {/* Filters */}
-        {showFilters && facets && (
-          <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
-                {facets.categories.slice(0, 5).map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedContentType} onValueChange={setSelectedContentType}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
-                {facets.contentTypes.slice(0, 5).map(type => (
-                  <SelectItem key={type} value={type}>{type.replace('-', ' ')}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Google-style search suggestions dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <div ref={suggestionsRef} className="absolute top-full left-0 right-0 z-[9999] mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+            {suggestions.map((suggestion, index) => (
+              <button
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-b-0"
+              >
+                <div className="font-medium text-gray-900">{suggestion.text}</div>
+                <Search className="h-4 w-4 text-gray-400" />
+              </button>
+            ))}
           </div>
         )}
+      </div>
 
-        {/* Trending Topics */}
-        {showTrending && trending.length > 0 && (
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <div className="text-sm font-medium text-gray-900 mb-2">Trending Topics</div>
-            <div className="space-y-1">
-              {trending.map((topic, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTrendingClick(topic)}
-                  className="w-full text-left p-1 rounded hover:bg-blue-100 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-900">{topic.query}</span>
-                    <span className="text-xs text-gray-500">#{topic.rank}</span>
-                  </div>
-                </button>
-              ))}
+      {/* Results container with high z-index */}
+      {(results.length > 0 || loading) && (
+        <div className="absolute top-full left-0 right-0 z-[9999] mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          {loading && (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-2 text-sm text-gray-600">Searching...</p>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-1 text-xs text-gray-600">Searching...</p>
-          </div>
-        )}
-
-        {/* Search Results */}
-        {results.length > 0 && !loading && (
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            <div className="text-xs text-gray-600 mb-2">
-              {totalResults} results found
-            </div>
-            {results.map((result, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                <div className="flex gap-2">
-                  {result.featuredImage && (
-                    <div className="flex-shrink-0">
-                      <img
-                        src={result.featuredImage}
-                        alt=""
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 
-                          className="text-sm font-medium text-gray-900 line-clamp-2"
-                          dangerouslySetInnerHTML={{ __html: result.title }}
+          {results.length > 0 && !loading && (
+            <div className="p-4">
+              <div className="text-sm text-gray-600 mb-3">
+                {totalResults} results found
+              </div>
+              <div className="space-y-3">
+                {results.map((result, index) => (
+                  <div key={index} className="border-b border-gray-100 pb-3 last:border-b-0">
+                    <div className="flex gap-3">
+                      {result.featuredImage && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={result.featuredImage}
+                            alt=""
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 
+                              className="text-sm font-medium text-blue-600 hover:text-blue-800 line-clamp-2 cursor-pointer"
+                              dangerouslySetInnerHTML={{ __html: result.title }}
+                              onClick={() => window.open(result.url, '_blank')}
+                            />
+                            <div className="flex items-center gap-1 mt-1">
+                              {getContentTypeBadge(result.contentType, result.isBreaking, result.severity)}
+                            </div>
+                          </div>
+                          <ExternalLink className="h-3 w-3 text-gray-400 ml-2" />
+                        </div>
+                        
+                        <p 
+                          className="text-xs text-gray-600 line-clamp-2 mt-1"
+                          dangerouslySetInnerHTML={{ __html: result.content }}
                         />
-                        <div className="flex items-center gap-1 mt-1">
-                          {getContentTypeBadge(result.contentType, result.isBreaking, result.severity)}
+                        
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <span>{result.source}</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-2 w-2" />
+                            {formatDate(result.publishedAt)}
+                          </span>
                         </div>
                       </div>
-                      <a
-                        href={result.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-gray-400 hover:text-gray-600 ml-1"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                    
-                    <p 
-                      className="text-xs text-gray-600 line-clamp-1 mt-1"
-                      dangerouslySetInnerHTML={{ __html: result.content }}
-                    />
-                    
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                      <span>{result.source}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-2 w-2" />
-                        {formatDate(result.publishedAt)}
-                      </span>
                     </div>
                   </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-4 border-t border-gray-200">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 0}
+                    onClick={() => performSearch(query, currentPage - 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Previous
+                  </Button>
+                  
+                  <span className="text-xs text-gray-600 px-3">
+                    {currentPage + 1} of {totalPages}
+                  </span>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages - 1}
+                    onClick={() => performSearch(query, currentPage + 1)}
+                    className="h-8 px-3 text-xs"
+                  >
+                    Next
+                  </Button>
                 </div>
-              </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="flex gap-2 mt-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="text-xs"
+        >
+          <Filter className="h-3 w-3 mr-1" />
+          Filters
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowTrending(!showTrending)}
+          className="text-xs"
+        >
+          <TrendingUp className="h-3 w-3 mr-1" />
+          Trending
+        </Button>
+      </div>
+
+      {/* Filters */}
+      {showFilters && facets && (
+        <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-lg mt-3">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Categories</SelectItem>
+              {facets.categories.slice(0, 5).map(category => (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedContentType} onValueChange={setSelectedContentType}>
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Types</SelectItem>
+              {facets.contentTypes.slice(0, 5).map(type => (
+                <SelectItem key={type} value={type}>{type.replace('-', ' ')}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Trending Topics */}
+      {showTrending && trending.length > 0 && (
+        <div className="p-3 bg-blue-50 rounded-lg mt-3">
+          <div className="text-sm font-medium text-gray-900 mb-2">Trending Topics</div>
+          <div className="space-y-1">
+            {trending.map((topic, index) => (
+              <button
+                key={index}
+                onClick={() => handleTrendingClick(topic)}
+                className="w-full text-left p-1 rounded hover:bg-blue-100 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-900">{topic.query}</span>
+                  <span className="text-xs text-gray-500">#{topic.rank}</span>
+                </div>
+              </button>
             ))}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-1 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === 0}
-                  onClick={() => performSearch(query, currentPage - 1)}
-                  className="h-6 px-2 text-xs"
-                >
-                  Prev
-                </Button>
-                
-                <span className="text-xs text-gray-600 px-2">
-                  {currentPage + 1}/{totalPages}
-                </span>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage >= totalPages - 1}
-                  onClick={() => performSearch(query, currentPage + 1)}
-                  className="h-6 px-2 text-xs"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* No Results */}
-        {!loading && results.length === 0 && query && (
-          <div className="text-center py-4">
-            <p className="text-xs text-gray-600">No results found for "{query}"</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* No Results */}
+      {!loading && results.length === 0 && query && (
+        <div className="text-center py-4 mt-3">
+          <p className="text-xs text-gray-600">No results found for "{query}"</p>
+        </div>
+      )}
+    </div>
   )
 }

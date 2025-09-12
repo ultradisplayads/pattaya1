@@ -11,6 +11,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 import { useRestaurants, StrapiRestaurant } from "@/hooks/use-restaurants"
 import { useBookings } from "@/hooks/use-bookings"
+import { 
+  Utensils, 
+  Star, 
+  MapPin, 
+  Clock, 
+  Users, 
+  Search, 
+  Filter, 
+  Grid3X3, 
+  List, 
+  ChefHat, 
+  Flame, 
+  Heart, 
+  TrendingUp,
+  ArrowRight,
+  Sparkles,
+  Zap,
+  Crown,
+  Eye,
+  Coffee,
+  Pizza,
+  Cake,
+  Apple,
+  Sandwich,
+  IceCream,
+  Cookie,
+  Wine,
+  Beer,
+  Grape
+} from "lucide-react"
 
 // Core types
 export interface Restaurant {
@@ -119,18 +149,7 @@ const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c
 }
 
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-  </svg>
-)
-
-const MapPinIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-  </svg>
-)
+// Using Lucide icons directly - no need for custom components
 
 const getCuisineFlag = (cuisine: string) => {
   const flags: { [key: string]: string } = {
@@ -186,69 +205,80 @@ function RestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; onBook
   const available = restaurant.maxDailyBookings - restaurant.currentDailyBookings
 
   return (
-    <Card className="bg-card border-border hover:shadow-md transition-shadow group">
+    <Card className="bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-300 group overflow-hidden relative">
       <div className="relative overflow-hidden rounded-t-lg">
-        <img src={restaurant.image || "/placeholder.svg"} alt={restaurant.name} className="w-full h-40 object-cover" />
+        <img 
+          src={restaurant.image || "/placeholder.svg"} 
+          alt={restaurant.name} 
+          className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300" 
+        />
 
-        <div className="absolute top-2 left-2 rounded-full px-3 py-1 font-bold text-sm shadow-lg" style={getPriceRangeStyle(restaurant.priceRange)}>
+        {/* Price Range Badge */}
+        <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium text-white" style={getPriceRangeStyle(restaurant.priceRange)}>
           {getPriceRangeDisplay(restaurant.priceRange)}
         </div>
 
-        <div className="absolute top-2 right-2 px-2 py-1 rounded shadow-lg flex items-center gap-1" style={{ backgroundColor: "#1e40af", color: "white" }}>
-          <StarIcon className="h-3 w-3 text-yellow-300" />
-          <span className="text-xs font-medium">{restaurant.rating}</span>
-        </div>
-
-        <div className="absolute bottom-2 left-2 px-3 py-1 rounded-lg shadow-lg max-w-[65%]" style={{ backgroundColor: "#2563eb", color: "white" }}>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{getCuisineFlag(restaurant.cuisine)}</span>
-            <h3 className="font-bold text-sm truncate">{restaurant.name}</h3>
+        {/* Rating Badge */}
+        <div className="absolute top-2 right-2 px-2 py-1 rounded bg-white shadow-sm">
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-yellow-500 fill-current animate-pulse" />
+            <span className="text-xs font-medium text-gray-700">{restaurant.rating}</span>
           </div>
         </div>
 
-        {restaurant.distance !== undefined && (
-          <div className="absolute bottom-2 right-2 px-2 py-1 rounded shadow-lg" style={{ backgroundColor: "#059669", color: "white" }}>
-            <span className="text-xs font-medium">{restaurant.distance.toFixed(1)}km</span>
+        {/* Discount Badge - Only color accent */}
+        {restaurant.topDiscount > 0 && (
+          <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-medium">
+            {restaurant.topDiscount}% OFF
           </div>
         )}
       </div>
 
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPinIcon className="h-3 w-3" />
-            <span className="truncate max-w-[180px]">{restaurant.location}</span>
+      <CardContent className="p-3 relative">
+        {/* Restaurant Name & Cuisine */}
+        <div className="mb-2">
+          <h3 className="font-semibold text-sm text-gray-900 truncate">{restaurant.name}</h3>
+          <p className="text-xs text-gray-500 truncate">{restaurant.cuisine}</p>
           </div>
+
+        {/* Location */}
+        <div className="flex items-center gap-1 mb-2">
+          <MapPin className="h-3 w-3 text-gray-400" />
+          <span className="text-xs text-gray-500 truncate flex-1">{restaurant.location}</span>
           {available <= 5 && (
-            <Badge variant="destructive" className="text-xs">
+            <Badge variant="destructive" className="text-xs px-1 py-0">
               {available} left
             </Badge>
           )}
         </div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2">{restaurant.description}</p>
-
-        <div className="flex flex-wrap gap-1 mt-3">
-          {restaurant.features.slice(0, 3).map((f, i) => (
-            <Badge key={i} variant="outline" className="text-xs">
-              {f}
+        {/* Features */}
+        <div className="flex flex-wrap gap-1 mb-3">
+          {restaurant.features.slice(0, 2).map((feature, i) => (
+            <Badge key={i} variant="outline" className="text-xs px-1 py-0">
+              {feature}
             </Badge>
           ))}
         </div>
 
-        <div className="flex gap-2 pt-3">
+        {/* Action Buttons */}
+        <div className="flex gap-2">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                View Details
+              <Button variant="outline" size="sm" className="flex-1 text-xs">
+                <Eye className="w-3 h-3 mr-1 animate-pulse" />
+                Details
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-[100]">
               <DialogHeader>
-                <DialogTitle className="text-lg">{restaurant.name}</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  <Utensils className="w-5 h-5 text-purple-500" />
+                  {restaurant.name}
+                </DialogTitle>
               </DialogHeader>
-              <div className="space-y-3">
-                <img src={restaurant.image || "/placeholder.svg"} alt={restaurant.name} className="w-full h-56 object-cover rounded" />
+              <div className="space-y-4">
+                <img src={restaurant.image || "/placeholder.svg"} alt={restaurant.name} className="w-full h-56 object-cover rounded-xl" />
                 <div className="flex items-center gap-2 text-sm">
                   <Badge style={getPriceRangeStyle(restaurant.priceRange)} className="text-white">
                     {getPriceRangeDisplay(restaurant.priceRange)}
@@ -256,26 +286,35 @@ function RestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; onBook
                   <Badge variant="secondary">{restaurant.cuisine}</Badge>
                   <Badge variant="outline">⭐ {restaurant.rating}</Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">{restaurant.description}</div>
-                <div className="flex flex-wrap gap-1">
-                  {restaurant.features.map((f, i) => (
+                <div className="text-sm text-gray-600">{restaurant.description}</div>
+                <div className="flex flex-wrap gap-2">
+                  {restaurant.features.map((feature, i) => (
                     <Badge key={i} variant="outline" className="text-xs">
-                      {f}
+                      {feature}
                     </Badge>
                   ))}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {restaurant.discounts.map((d, i) => (
-                    <Badge key={i} className="bg-blue-600 text-white">
-                      {d.type === "time-based" ? `${d.value}% OFF` : d.type === "fixed-price" ? `฿${d.value}` : "All You Can Eat"}
+                  {restaurant.discounts.map((discount, i) => (
+                    <Badge key={i} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                      {discount.type === "time-based" ? `${discount.value}% OFF` : discount.type === "fixed-price" ? `฿${discount.value}` : "All You Can Eat"}
                     </Badge>
                   ))}
                 </div>
               </div>
             </DialogContent>
           </Dialog>
-          <Button size="sm" className="flex-1 btn-book-now" onClick={() => onBook(restaurant)}>
+          <Button 
+            size="sm" 
+            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xs shadow-lg hover:shadow-xl transition-all duration-300" 
+            onClick={(e) => {
+              e.stopPropagation()
+              onBook(restaurant)
+            }}
+          >
+            <Heart className="w-3 h-3 mr-1 animate-bounce" />
             Book Now
+            <ArrowRight className="w-3 h-3 ml-1 animate-pulse" />
           </Button>
         </div>
       </CardContent>
@@ -295,6 +334,7 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
+  const [showExpandedModal, setShowExpandedModal] = useState(false)
 
   // Use Pattaya center for distance
   const userLocation = { lat: 12.9236, lng: 100.8825 }
@@ -390,82 +430,352 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
   }
 
   return (
-    <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-sm hover:shadow-md transition-all duration-300">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-            <span className="text-[15px] font-medium text-gray-900">Pattaya Dining</span>
+    <>
+      {/* Main Widget - Clickable to expand */}
+      <div 
+        className="h-full flex flex-col bg-white rounded-xl overflow-hidden relative shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow duration-300"
+        onClick={() => setShowExpandedModal(true)}
+      >
+      {/* Animated Background Icons */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Animated Lucide icons with various effects */}
+        <Utensils className="absolute top-4 left-4 w-8 h-8 text-gray-100 animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }} />
+        <ChefHat className="absolute bottom-8 right-8 w-6 h-6 text-gray-100 animate-pulse" style={{ animationDelay: '1s', animationDuration: '2s' }} />
+        <Star className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-gray-100 animate-ping" style={{ animationDelay: '2s', animationDuration: '4s' }} />
+        <Heart className="absolute top-8 right-4 w-6 h-6 text-gray-100 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2.5s' }} />
+        <Sparkles className="absolute bottom-4 left-8 w-5 h-5 text-gray-100 animate-pulse" style={{ animationDelay: '1.5s', animationDuration: '3s' }} />
+        <Flame className="absolute top-1/4 right-1/4 w-4 h-4 text-gray-100 animate-ping" style={{ animationDelay: '2.5s', animationDuration: '3.5s' }} />
+      </div>
+
+      {/* Enhanced Header with Food Icons Background */}
+      <div className="relative p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100 overflow-hidden">
+        {/* Animated Food Icons Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Pizza className="absolute top-2 left-8 w-5 h-5 text-purple-200 animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '3s' }} />
+          <Coffee className="absolute top-1 right-12 w-4 h-4 text-purple-300 animate-pulse" style={{ animationDelay: '1s', animationDuration: '2.5s' }} />
+          <Cake className="absolute bottom-2 left-4 w-6 h-6 text-pink-200 animate-ping" style={{ animationDelay: '1.5s', animationDuration: '4s' }} />
+          <Apple className="absolute top-4 right-4 w-4 h-4 text-red-200 animate-bounce" style={{ animationDelay: '2s', animationDuration: '2.8s' }} />
+          <Sandwich className="absolute bottom-3 right-8 w-5 h-5 text-orange-200 animate-pulse" style={{ animationDelay: '0.8s', animationDuration: '3.2s' }} />
+          <IceCream className="absolute top-3 left-12 w-4 h-4 text-blue-200 animate-ping" style={{ animationDelay: '2.5s', animationDuration: '3.8s' }} />
+          <Cookie className="absolute bottom-4 left-16 w-3 h-3 text-yellow-200 animate-bounce" style={{ animationDelay: '1.2s', animationDuration: '2.2s' }} />
+          <Wine className="absolute top-2 right-20 w-4 h-4 text-purple-300 animate-pulse" style={{ animationDelay: '1.8s', animationDuration: '3.5s' }} />
+          <Beer className="absolute bottom-2 right-16 w-4 h-4 text-amber-200 animate-ping" style={{ animationDelay: '0.3s', animationDuration: '2.8s' }} />
+          <Grape className="absolute top-5 left-20 w-3 h-3 text-green-200 animate-bounce" style={{ animationDelay: '2.2s', animationDuration: '3.1s' }} />
+          <ChefHat className="absolute bottom-1 left-24 w-5 h-5 text-gray-300 animate-pulse" style={{ animationDelay: '1.7s', animationDuration: '4.2s' }} />
+          <Utensils className="absolute top-1 left-28 w-4 h-4 text-purple-200 animate-ping" style={{ animationDelay: '0.7s', animationDuration: '3.3s' }} />
+        </div>
+        
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Main Accent Icon with Enhanced Animation */}
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg shadow-md relative z-10">
+              <Utensils className="w-6 h-6 text-white animate-spin" style={{ animationDuration: '8s' }} />
+            </div>
+            <div className="relative z-10">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Dining
+              </h2>
+              <p className="text-xs text-gray-500">Discover restaurants</p>
+            </div>
           </div>
-          <Badge className="bg-blue-500/10 text-blue-600 text-[11px] px-2 py-0.5 font-medium border border-blue-200 rounded-full">
+          <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600 relative z-10">
             Live
           </Badge>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0 space-y-4">
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Input placeholder="Search restaurants or cuisines..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      </div>
+
+      {/* Unified Controls in One Line */}
+      <div className="p-4 border-b border-gray-100 bg-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2 items-center">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 animate-pulse" />
+            <Input 
+              placeholder="Search restaurants..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white focus:border-gray-300"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          
+          {/* Price Filter */}
           <Select value={price} onValueChange={setPrice}>
-            <SelectTrigger className="w-full sm:w-40">
+            <SelectTrigger 
+              className="w-32 bg-gray-50 border-gray-200 focus:border-gray-300"
+              onClick={(e) => e.stopPropagation()}
+            >
               <SelectValue placeholder="Price" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Prices</SelectItem>
-              <SelectItem value="budget">$</SelectItem>
-              <SelectItem value="moderate">$$</SelectItem>
-              <SelectItem value="expensive">$$$</SelectItem>
-              <SelectItem value="luxury">$$$$</SelectItem>
+              <SelectItem value="budget">$ Budget</SelectItem>
+              <SelectItem value="moderate">$$ Moderate</SelectItem>
+              <SelectItem value="expensive">$$$ Expensive</SelectItem>
+              <SelectItem value="luxury">$$$$ Luxury</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex gap-2">
-            <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>Grid</Button>
-            <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>List</Button>
+          
+          {/* View Mode Buttons */}
+          <Button 
+            variant={viewMode === "grid" ? "default" : "outline"} 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation()
+              setViewMode("grid")
+            }}
+            className="px-3"
+          >
+            <Grid3X3 className="w-4 h-4 animate-pulse" />
+          </Button>
+          <Button 
+            variant={viewMode === "list" ? "default" : "outline"} 
+            size="sm" 
+            onClick={(e) => {
+              e.stopPropagation()
+              setViewMode("list")
+            }}
+            className="px-3"
+          >
+            <List className="w-4 h-4 animate-bounce" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Scrollable Content - Properly Fixed */}
+      <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="p-4 pb-6" onClick={(e) => e.stopPropagation()}>
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 mb-4 border border-gray-200">
+              <TabsTrigger value="all" className="text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                <Utensils className="w-3 h-3 mr-1 animate-spin" style={{ animationDuration: '6s' }} />
+                All
+              </TabsTrigger>
+              <TabsTrigger value="time" className="text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                <Clock className="w-3 h-3 mr-1 animate-pulse" />
+                Deals
+              </TabsTrigger>
+              <TabsTrigger value="ayce" className="text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                <TrendingUp className="w-3 h-3 mr-1 animate-bounce" />
+                Buffet
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="mt-0">
+              <div className={cn(
+                "gap-3", 
+                viewMode === "grid" 
+                  ? "grid grid-cols-1 sm:grid-cols-2" 
+                  : "space-y-3"
+              )}> 
+                {filtered.map((r, index) => (
+                  <div 
+                    key={r.id} 
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <RestaurantCard restaurant={r} onBook={handleBook} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="time" className="mt-0">
+              <div className={cn(
+                "gap-3", 
+                viewMode === "grid" 
+                  ? "grid grid-cols-1 sm:grid-cols-2" 
+                  : "space-y-3"
+              )}>
+                {filtered
+                  .filter((r) => r.discounts.some((d) => d.type === "time-based"))
+                  .map((r, index) => (
+                    <div 
+                      key={r.id} 
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <RestaurantCard restaurant={r} onBook={handleBook} />
+                    </div>
+                  ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="ayce" className="mt-0">
+              <div className={cn(
+                "gap-3", 
+                viewMode === "grid" 
+                  ? "grid grid-cols-1 sm:grid-cols-2" 
+                  : "space-y-3"
+              )}>
+                {filtered
+                  .filter((r) => r.isAllYouCanEat)
+                  .map((r, index) => (
+                    <div 
+                      key={r.id} 
+                      className="animate-fade-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <RestaurantCard restaurant={r} onBook={handleBook} />
+                    </div>
+                  ))}
           </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+      </div>
+
+      {/* Expanded Modal */}
+      {showExpandedModal && (
+        <Dialog open={showExpandedModal} onOpenChange={setShowExpandedModal}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden z-[100]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Utensils className="w-6 h-6 text-purple-500 animate-spin" style={{ animationDuration: '4s' }} />
+                Pattaya Dining - Full View
+              </DialogTitle>
+            </DialogHeader>
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+              {/* Expanded widget content */}
+              <div className="space-y-4">
+                {/* Unified Controls */}
+                <div className="flex gap-2 items-center p-4 bg-gray-50 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 animate-pulse" />
+                    <Input 
+                      placeholder="Search restaurants..." 
+                      value={search} 
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="pl-10"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                  <Select value={price} onValueChange={setPrice}>
+                    <SelectTrigger 
+                      className="w-40"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue placeholder="Price Range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Prices</SelectItem>
+                      <SelectItem value="budget">$ Budget</SelectItem>
+                      <SelectItem value="moderate">$$ Moderate</SelectItem>
+                      <SelectItem value="expensive">$$$ Expensive</SelectItem>
+                      <SelectItem value="luxury">$$$$ Luxury</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    variant={viewMode === "grid" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setViewMode("grid")
+                    }}
+                  >
+                    <Grid3X3 className="w-4 h-4 animate-pulse" />
+                  </Button>
+                  <Button 
+                    variant={viewMode === "list" ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setViewMode("list")
+                    }}
+                  >
+                    <List className="w-4 h-4 animate-bounce" />
+                  </Button>
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs defaultValue="all" className="w-full" onClick={(e) => e.stopPropagation()}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="time">Time Deals</TabsTrigger>
-            <TabsTrigger value="ayce">All You Can Eat</TabsTrigger>
+                    <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                      <Utensils className="w-4 h-4 mr-2 animate-spin" style={{ animationDuration: '6s' }} />
+                      All Restaurants
+                    </TabsTrigger>
+                    <TabsTrigger value="time" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                      <Clock className="w-4 h-4 mr-2 animate-pulse" />
+                      Time-Based Deals
+                    </TabsTrigger>
+                    <TabsTrigger value="ayce" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
+                      <TrendingUp className="w-4 h-4 mr-2 animate-bounce" />
+                      All You Can Eat
+                    </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="mt-4">
-            <div className={cn("gap-4", viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "space-y-4")}> 
-              {filtered.map((r) => (
-                <RestaurantCard key={r.id} restaurant={r} onBook={handleBook} />
+                    <div className={cn(
+                      "gap-4", 
+                      viewMode === "grid" 
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+                        : "space-y-4"
+                    )}>
+                      {filtered.map((r, index) => (
+                        <div 
+                          key={r.id} 
+                          className="animate-fade-in-up"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <RestaurantCard restaurant={r} onBook={handleBook} />
+                        </div>
               ))}
             </div>
           </TabsContent>
 
           <TabsContent value="time" className="mt-4">
-            <div className={cn("gap-4", viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "space-y-4")}>
+                    <div className={cn(
+                      "gap-4", 
+                      viewMode === "grid" 
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+                        : "space-y-4"
+                    )}>
               {filtered
-                .filter((r) => r.discounts.some((d) => d.type === "time-based"))
-                .map((r) => (
-                  <RestaurantCard key={r.id} restaurant={r} onBook={handleBook} />
+                        .filter((r) => r.discounts.some(d => d.type === "time-based"))
+                        .map((r, index) => (
+                          <div 
+                            key={r.id} 
+                            className="animate-fade-in-up"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                          >
+                            <RestaurantCard restaurant={r} onBook={handleBook} />
+                          </div>
                 ))}
             </div>
           </TabsContent>
 
           <TabsContent value="ayce" className="mt-4">
-            <div className={cn("gap-4", viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "space-y-4")}>
+                    <div className={cn(
+                      "gap-4", 
+                      viewMode === "grid" 
+                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" 
+                        : "space-y-4"
+                    )}>
               {filtered
                 .filter((r) => r.isAllYouCanEat)
-                .map((r) => (
-                  <RestaurantCard key={r.id} restaurant={r} onBook={handleBook} />
+                        .map((r, index) => (
+                          <div 
+                            key={r.id} 
+                            className="animate-fade-in-up"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                          >
+                            <RestaurantCard restaurant={r} onBook={handleBook} />
+                          </div>
                 ))}
             </div>
           </TabsContent>
         </Tabs>
-      </CardContent>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Simple Booking Modal */}
       {showBookingModal && selectedRestaurant && (
         <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md z-[100]">
             <DialogHeader>
               <DialogTitle>Book a Table at {selectedRestaurant.name}</DialogTitle>
             </DialogHeader>
@@ -504,7 +814,7 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
           </DialogContent>
         </Dialog>
       )}
-    </Card>
+    </>
   )
 }
 

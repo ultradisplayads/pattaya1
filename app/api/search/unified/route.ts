@@ -60,9 +60,11 @@ const STRAPI_COLLECTIONS = {
   'trending-topic': 'trending-topics'
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://api.pattaya1.com'
+
 async function fetchFromStrapi(collection: string, contentType: string): Promise<any[]> {
   try {
-    const response = await fetch(`http://localhost:1337/api/${collection}?populate=*&pagination[limit]=100`, {
+    const response = await fetch(`${API_BASE}/api/${collection}?populate=*&pagination[limit]=100`, {
       headers: { 'Accept': 'application/json' }
     })
     
@@ -160,7 +162,7 @@ export async function GET(request: Request) {
 
     // Try to search breaking news from Strapi
     try {
-      const newsResponse = await fetch(`http://localhost:1337/api/breaking-news-plural?populate=*&pagination[limit]=50`, {
+      const newsResponse = await fetch(`${API_BASE}/api/breaking-news-plural?populate=*&pagination[limit]=50`, {
         headers: { 'Accept': 'application/json' },
         signal: AbortSignal.timeout(2000) // 2 second timeout
       })
@@ -220,7 +222,7 @@ export async function GET(request: Request) {
 
     // Try to search sponsored posts from Strapi
     try {
-      const sponsoredResponse = await fetch(`http://localhost:1337/api/breaking-news-plural?populate=*&filters[type][$eq]=sponsored&pagination[limit]=20`, {
+      const sponsoredResponse = await fetch(`${API_BASE}/api/breaking-news-plural?populate=*&filters[type][$eq]=sponsored&pagination[limit]=20`, {
         headers: { 'Accept': 'application/json' },
         signal: AbortSignal.timeout(2000) // 2 second timeout
       })
@@ -269,77 +271,7 @@ export async function GET(request: Request) {
       console.log('Sponsored posts fetch failed, using fallback data')
     }
 
-    // Always include fallback data for demonstration
-    const fallbackResults = [
-      {
-        title: highlightText("Breaking: Pattaya Beach Safety Update", query),
-        content: highlightText("New safety measures implemented at Pattaya beaches following recent incidents. Lifeguards now stationed at all major beaches with enhanced equipment and training.", query),
-        source: "Pattaya1 News",
-        category: "Safety",
-        url: "/articles/beach-safety-update",
-        contentType: "breaking-news",
-        publishedAt: new Date().toISOString(),
-        isBreaking: true,
-        severity: "high"
-      },
-      {
-        title: highlightText("Tourism Numbers Rise in Pattaya", query),
-        content: highlightText("Latest statistics show significant increase in tourist arrivals this month. Hotels report 85% occupancy rates across the city.", query),
-        source: "Tourism Board",
-        category: "Tourism",
-        url: "/articles/tourism-rise",
-        contentType: "breaking-news",
-        publishedAt: new Date(Date.now() - 3600000).toISOString(),
-        isBreaking: false,
-        severity: "medium"
-      },
-      {
-        title: highlightText("Best Restaurant Deals This Week", query),
-        content: highlightText("Discover amazing dining offers from top restaurants in Pattaya. Special promotions available for both locals and tourists.", query),
-        source: "Sponsored Content",
-        category: "Sponsored",
-        url: "/articles/restaurant-deals",
-        contentType: "sponsored-post",
-        publishedAt: new Date(Date.now() - 7200000).toISOString(),
-        sponsorName: "Anugra Restaurant",
-        type: "sponsored"
-      },
-      {
-        title: highlightText("Weather Alert: Sunny Skies Continue", query),
-        content: highlightText("Perfect weather conditions expected throughout the week. Ideal time for beach activities and outdoor events.", query),
-        source: "Weather Service",
-        category: "Weather",
-        url: "/articles/weather-alert",
-        contentType: "breaking-news",
-        publishedAt: new Date(Date.now() - 10800000).toISOString(),
-        isBreaking: false,
-        severity: "low"
-      },
-      {
-        title: highlightText("New Shopping Mall Opens", query),
-        content: highlightText("Grand opening of Central Pattaya Mall featuring international brands and local retailers. Special opening week discounts available.", query),
-        source: "Business News",
-        category: "Business",
-        url: "/articles/new-mall",
-        contentType: "breaking-news",
-        publishedAt: new Date(Date.now() - 14400000).toISOString(),
-        isBreaking: false,
-        severity: "medium"
-      }
-    ].filter(item => {
-      const searchText = `${item.title} ${item.content} ${item.category} ${item.source}`.toLowerCase()
-      const matchesQuery = searchText.includes(query.toLowerCase())
-      
-      // Apply filters
-      if (filterMap.category && item.category !== filterMap.category) return false
-      if (filterMap.source && item.source !== filterMap.source) return false
-      if (filterMap.contentType && item.contentType !== filterMap.contentType) return false
-      
-      return matchesQuery
-    })
-    
-    // Combine API results with fallback data
-    allResults.push(...fallbackResults)
+    // No fallback demo data. Only return real API results.
 
     // Remove duplicates based on title
     const uniqueResults = allResults.filter((item, index, self) => 
@@ -374,7 +306,7 @@ export async function GET(request: Request) {
         },
         query,
         filters: filterMap,
-        hasApiData: allResults.length > fallbackResults.length
+        hasApiData: allResults.length > 0
       }
     })
 

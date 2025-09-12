@@ -1,7 +1,6 @@
 "use client"
 
 import CompactComprehensiveSearchWidget from "./compact-comprehensive-search-widget"
-import WebSearchWidget from "./web-search-widget"
 import TravelSearchWidget from "./travel-search-widget"
 
 interface ThreeWidgetSearchLayoutProps {
@@ -22,19 +21,9 @@ export default function ThreeWidgetSearchLayout({ variant = 'compact' }: ThreeWi
 
   return (
     <div className="w-full space-y-6">
-      {/* Three widget grid layout - showing 2 of 3 widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Widget 1: Site Search (includes trending topics) */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <CompactComprehensiveSearchWidget />
-        </div>
-
-        {/* Widget 2: Web Search */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <WebSearchWidget />
-        </div>
-
-        {/* Widget 3: Travel Search */}
+      {/* Travel Search Only - Site and Web search are in unified search above */}
+      <div className="w-full">
+        {/* Travel Search Widget */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <TravelSearchWidget />
         </div>

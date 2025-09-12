@@ -13,11 +13,12 @@ export async function GET(request: Request) {
     }
 
     // Fetch data from both breaking news and sponsored posts
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.pattaya1.com'
     const [newsResponse, sponsoredResponse] = await Promise.all([
-      fetch(`http://localhost:1337/api/breaking-news-plural?populate=*&sort=PublishedTimestamp:desc&pagination[limit]=50`, {
+      fetch(`${apiBase}/api/breaking-news-plural?populate=*&sort=PublishedTimestamp:desc&pagination[limit]=50`, {
         headers: { 'Accept': 'application/json' }
       }),
-      fetch(`http://localhost:1337/api/sponsored-posts?populate=*&filters[IsActive][$eq]=true`, {
+      fetch(`${apiBase}/api/sponsored-posts?populate=*&filters[IsActive][$eq]=true`, {
         headers: { 'Accept': 'application/json' }
       })
     ])
