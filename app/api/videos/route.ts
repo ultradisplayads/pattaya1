@@ -6,15 +6,33 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get('page') || '1';
     const pageSize = searchParams.get('pageSize') || '12';
     const status = searchParams.get('status') || 'active';
+    const sourceKeyword = searchParams.get('filters[source_keyword][$eq]');
 
     // Construct Strapi API URL - handle null videostatus as active
     let strapiUrl;
+    let filterParams = [];
+
+    // Add status filters
     if (status === 'active') {
       // For active status, get videos where videostatus is null or doesn't exist (default state)
-      strapiUrl = `http://localhost:1337/api/videos?filters[$or][0][videostatus][$null]=true&filters[$or][1][videostatus][$eq]=active&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`;
+      filterParams.push('filters[$or][0][videostatus][$null]=true');
+      filterParams.push('filters[$or][1][videostatus][$eq]=active');
     } else {
-      strapiUrl = `http://localhost:1337/api/videos?filters[videostatus][$eq]=${status}&pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`;
+      filterParams.push(`filters[videostatus][$eq]=${status}`);
     }
+
+    // Add source_keyword filter if provided
+    if (sourceKeyword) {
+      const decodedKeyword = decodeURIComponent(sourceKeyword);
+      filterParams.push(`filters[source_keyword][$eq]=${encodeURIComponent(decodedKeyword)}`);
+    }
+
+    // Add pagination and populate
+    filterParams.push(`pagination[page]=${page}`);
+    filterParams.push(`pagination[pageSize]=${pageSize}`);
+    filterParams.push('populate=*');
+
+    strapiUrl = `http://localhost:1337/api/videos?${filterParams.join('&')}`;
 
     console.log('Fetching from Strapi:', strapiUrl);
 

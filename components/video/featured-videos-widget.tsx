@@ -1,9 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Play, ExternalLink, Star, Eye, Calendar, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, ExternalLink, Star, Eye, Calendar, User, ChevronLeft, ChevronRight, TrendingUp, Hash } from 'lucide-react';
 import { fetchApprovedVideos, fetchPromotedVideos, formatViewCount, formatPublishedDate, getYouTubeEmbedUrl, getYouTubeWatchUrl } from '@/lib/videoApi';
 import type { VideoData } from '@/lib/videoApi';
+
+interface TrendingTopic {
+  topic: string;
+  count: number;
+  totalViews: number;
+  engagementScore: number;
+  latestVideo?: {
+    id: string;
+    title: string;
+    videoId: string;
+    thumbnailUrl: string;
+  } | null;
+}
 
 interface FeaturedVideosWidgetProps {
   showBrowse?: boolean;
@@ -29,6 +42,8 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [showTrending, setShowTrending] = useState(false);
 
 
   // Fetch all approved videos for browsing
@@ -70,12 +85,29 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
     }
   };
 
+  // Fetch trending topics
+  const loadTrendingTopics = async () => {
+    try {
+      const response = await fetch('/api/videos/trending?limit=8');
+      const data = await response.json();
+      
+      if (data.success) {
+        setTrendingTopics(data.data);
+      } else {
+        throw new Error('Failed to fetch trending topics');
+      }
+    } catch (err) {
+      console.error('Error fetching trending topics:', err);
+    }
+  };
+
   useEffect(() => {
     const loadInitialData = async () => {
       setLoading(true);
       await Promise.all([
         showBrowse && loadBrowseVideos(),
-        showPromoted && loadPromotedVideos()
+        showPromoted && loadPromotedVideos(),
+        loadTrendingTopics()
       ]);
       setLoading(false);
     };
@@ -258,6 +290,22 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
                 Sponsored
               </button>
             )}
+
+            <button
+              onClick={() => {
+                console.log('Trending button clicked, current state:', showTrending);
+                setShowTrending(!showTrending);
+                console.log('Trending state should now be:', !showTrending);
+              }}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                showTrending
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <TrendingUp size={16} className="inline mr-1" />
+              Trending {showTrending ? '(ON)' : '(OFF)'}
+            </button>
           </div>
         </div>
       </div>
@@ -344,10 +392,83 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
           </div>
         )}
 
+        {/* Trending Topics Section */}
+        {showTrending && (
+          <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+            <div className="flex items-center mb-3">
+              <TrendingUp size={18} className="text-green-600 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-800">Trending Topics</h3>
+              <span className="ml-2 text-sm text-gray-500">({trendingTopics.length} topics)</span>
+            </div>
+            
+            {trendingTopics.length === 0 ? (
+              <div className="text-center py-4">
+                <p className="text-gray-500">Loading trending topics...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {trendingTopics.map((topic, index) => (
+                  <div
+                    key={topic.topic}
+                    className="bg-white rounded-lg p-3 shadow-sm border hover:shadow-md transition-shadow cursor-pointer group"
+                    onClick={() => {
+                      // You can implement topic-based filtering here
+                      console.log('Clicked topic:', topic.topic);
+                    }}
+                  >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center">
+                      <Hash size={12} className="text-gray-400 mr-1" />
+                      <span className="text-sm font-medium text-gray-800 truncate">
+                        {topic.topic}
+                      </span>
+                    </div>
+                    <span className="text-xs text-green-600 font-bold">
+                      #{index + 1}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{topic.count} videos</span>
+                    <span>{formatViewCount(topic.totalViews)} views</span>
+                  </div>
+                  
+                  {/* Engagement indicator */}
+                  <div className="mt-1">
+                    <div className="w-full bg-gray-200 rounded-full h-1">
+                      <div 
+                        className="bg-gradient-to-r from-green-400 to-blue-500 h-1 rounded-full transition-all duration-300 group-hover:from-green-500 group-hover:to-blue-600"
+                        style={{ 
+                          width: `${Math.min(100, (topic.engagementScore / Math.max(...trendingTopics.map(t => t.engagementScore))) * 100)}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="mt-3 text-center">
+              <button
+                onClick={loadTrendingTopics}
+                className="text-sm text-green-600 hover:text-green-700 font-medium"
+              >
+                Refresh Trending Topics
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Show video count for each tab */}
         <div className="text-center text-sm text-gray-500 mt-4">
           {activeTab === 'browse' && `Showing ${browseVideos.length} approved videos`}
           {activeTab === 'promoted' && `Showing ${promotedVideos.length} sponsored videos`}
+          {showTrending && (
+            <div className="mt-1 text-xs text-green-600">
+              {trendingTopics.length} trending topics found
+            </div>
+          )}
         </div>
       </div>
     </div>
