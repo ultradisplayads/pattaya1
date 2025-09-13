@@ -87,7 +87,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [strapiToken, setStrapiToken] = useState<string | null>(null)
+  const [strapiToken, setStrapiToken] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('strapi_token')
+    }
+    return null
+  })
 
   // Create user profile from Firebase user
   const createUserProfile = (firebaseUser: FirebaseUser, additionalData?: Partial<UserProfile>): UserProfile => {
@@ -160,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('[Auth] trying loginUser in Strapi')
         const strapiResponse = await strapiAPI.loginUser(firebaseUser.uid)
-        setStrapiToken(idToken)
+        updateStrapiToken(idToken)
         setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
         console.log('✅ User logged in with Strapi:', strapiResponse.user.id)
         // Best-effort profile sync in Strapi
@@ -196,7 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           console.log('[Auth] trying registerUser in Strapi')
           const strapiResponse = await strapiAPI.registerUser(userData)
-          setStrapiToken(idToken)
+          updateStrapiToken(idToken)
           setUser(prev => prev ? { ...prev, strapiUser: strapiResponse.user } : null)
           console.log('✅ User registered with Strapi:', strapiResponse.user.id)
           // Best-effort profile sync in Strapi right after registration
@@ -215,11 +220,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (registerError) {
           console.error('❌ Failed to register user with Strapi:', registerError)
           // Still set the token even if registration fails
-          setStrapiToken(idToken)
+          updateStrapiToken(idToken)
         }
       }
     } catch (error) {
       console.error("Strapi sync error:", error)
+    }
+  }
+
+  // Update Strapi token and persist to localStorage
+  const updateStrapiToken = (token: string | null) => {
+    setStrapiToken(token)
+    if (typeof window !== 'undefined') {
+      if (token) {
+        localStorage.setItem('strapi_token', token)
+      } else {
+        localStorage.removeItem('strapi_token')
+      }
     }
   }
 
@@ -228,6 +245,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     console.log('[Auth] mounted. STRAPI_CONFIG.apiUrl =', STRAPI_CONFIG.apiUrl)
+    
+    // Check if we have a token in localStorage but no Firebase user
+    const checkStoredToken = async () => {
+      const storedToken = localStorage.getItem('strapi_token')
+      if (storedToken && !firebaseUser) {
+        console.log('[Auth] Found stored token, but no Firebase user. Token will be cleared.')
+        updateStrapiToken(null)
+      }
+    }
+    
+    checkStoredToken()
+    
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('[Auth] onAuthStateChanged fired. user?', !!firebaseUser)
       setFirebaseUser(firebaseUser)
@@ -245,7 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setUser(null)
-        setStrapiToken(null)
+        updateStrapiToken(null)
       }
 
       setLoading(false)
@@ -363,7 +392,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth)
     setUser(null)
     setFirebaseUser(null)
-    setStrapiToken(null)
+    updateStrapiToken(null)
   }
 
   const updateUserProfile = async (data: Partial<UserProfile>) => {
