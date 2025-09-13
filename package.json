@@ -49,6 +49,7 @@
     "dotenv": "^17.2.1",
     "embla-carousel-react": "8.5.1",
     "firebase": "latest",
+    "framer-motion": "^12.23.12",
     "input-otp": "1.4.1",
     "jsonwebtoken": "latest",
     "lucide-react": "^0.454.0",
