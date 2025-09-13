@@ -7,6 +7,7 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
