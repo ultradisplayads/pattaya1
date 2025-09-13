@@ -3,14 +3,14 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Camera, Heart, MessageCircle, Eye, User } from "lucide-react"
+import { Camera, Heart, MessageCircle, Eye, User, MapPin, Clock } from "lucide-react"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
 
-interface StrapiPhotoGallery {
+interface PattayaPulsePhoto {
   id: number
-  Title: string
-  Image?: {
+  caption?: string
+  image?: {
     id: number
     name: string
     url: string
@@ -21,45 +21,42 @@ interface StrapiPhotoGallery {
       large?: { url: string }
     }
   }
-  Author: string
-  Location: string
-  Likes: number
-  Comments: number
-  Views: number
-  TimeAgo: string
-  Category: string
-  IsActive: boolean
-  Featured: boolean
-  Description?: string
-  Tags?: string[]
-  CameraSettings?: {
-    aperture: string
-    shutterSpeed: string
-    iso: number
-    focalLength: string
+  author?: {
+    id: number
+    username: string
+    email: string
   }
-  LocationCoordinates?: {
-    lat: number
-    lng: number
+  hashtags?: Array<{
+    id: number
+    name: string
+    slug: string
+    color?: string
+  }>
+  location?: {
+    latitude: number
+    longitude: number
+    address?: string
+    city?: string
+    country: string
   }
-  LastUpdated: string
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
-  overlay_text?: string
-  overlay_position?: string
-  overlay_text_color?: string
-  overlay_background_color?: string
-  overlay_font_size?: number
+  likes?: number
+  views?: number
+  width?: number
+  height?: number
+  orientation?: 'portrait' | 'landscape' | 'square'
   sponsor_url?: string
+  featured?: boolean
+  uploaded_at?: string
+  approved_at?: string
+  createdAt?: string
 }
 
 export function PhotoGalleryWidget() {
-  const [photos, setPhotos] = useState<StrapiPhotoGallery[]>([])
+  const [photos, setPhotos] = useState<PattayaPulsePhoto[]>([])
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const [loading, setLoading] = useState(true)
   const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxPhoto, setLightboxPhoto] = useState<StrapiPhotoGallery | null>(null)
+  const [lightboxPhoto, setLightboxPhoto] = useState<PattayaPulsePhoto | null>(null)
 
   useEffect(() => {
     loadPhotoData()
@@ -101,71 +98,42 @@ export function PhotoGalleryWidget() {
   const loadPhotoData = async () => {
     try {
       setLoading(true)
-      console.log('Fetching photo galleries from Strapi...')
-      const response = await fetch(buildApiUrl("photo-galleries?populate=*&sort=LastUpdated:desc"))
+      console.log('Fetching Pattaya Pulse photos from Strapi...')
+      const response = await fetch(buildApiUrl("photos/latest?limit=5&populate=*"))
       
       if (response.ok) {
         const data = await response.json()
         
         if (data.data && data.data.length > 0) {
-          // Transform data to ensure proper structure
-          const transformedPhotos = data.data.map((photo: any) => ({
-            ...photo,
-            // Ensure Image URL is properly formatted
-            Image: photo.Image ? {
-              ...photo.Image,
-              url: photo.Image.url
-            } : null
-          }))
-          setPhotos(transformedPhotos)
+          setPhotos(data.data)
         } else {
           setPhotos([])
         }
       } else {
-        console.error("Failed to load photo data from Strapi:", response.status)
+        console.error("Failed to load Pattaya Pulse photos:", response.status)
         setPhotos([])
       }
     } catch (error) {
-      console.error("Failed to load photo data:", error)
+      console.error("Failed to load Pattaya Pulse photos:", error)
       setPhotos([])
     } finally {
       setLoading(false)
     }
   }
 
-  const getCategoryColor = (category: string) => {
-    switch (category.toLowerCase()) {
-      case "landscape":
-        return "bg-green-50 text-green-700"
-      case "food":
-        return "bg-orange-50 text-orange-700"
-      case "culture":
-        return "bg-purple-50 text-purple-700"
-      case "nightlife":
-        return "bg-pink-50 text-pink-700"
-      default:
-        return "bg-gray-50 text-gray-700"
-    }
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    
+    if (diffInSeconds < 60) return "Just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return date.toLocaleDateString()
   }
 
-  const getOverlayPosition = (position: string) => {
-    switch (position) {
-      case "Top-Left":
-        return "top-2 left-2"
-      case "Top-Right":
-        return "top-2 right-2"
-      case "Bottom-Left":
-        return "bottom-2 left-2"
-      case "Bottom-Right":
-        return "bottom-2 right-2"
-      case "Center":
-        return "top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-      default:
-        return "bottom-2 right-2"
-    }
-  }
-
-  const handlePhotoClick = (photo: StrapiPhotoGallery) => {
+  const handlePhotoClick = (photo: PattayaPulsePhoto) => {
     if (photo.sponsor_url) {
       window.open(photo.sponsor_url, '_blank')
     } else {
@@ -200,10 +168,10 @@ export function PhotoGalleryWidget() {
     return (
       <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
         <CardHeader className="pb-4 px-6 pt-6">
-          <CardTitle className="text-base font-medium text-gray-900 flex items-center">
-            <Camera className="w-4 h-4 mr-2 text-gray-600" />
-            Photo Gallery
-          </CardTitle>
+        <CardTitle className="text-base font-medium text-gray-900 flex items-center">
+          <Camera className="w-4 h-4 mr-2 text-gray-600" />
+          Pattaya Pulse
+        </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
           <div className="text-center text-gray-400 py-12">
@@ -235,61 +203,68 @@ export function PhotoGalleryWidget() {
         {/* Photo */}
         <div className="relative cursor-pointer" onClick={() => handlePhotoClick(photo)}>
           <img
-            src={photo.Image ? buildStrapiUrl(photo.Image.url) : "/placeholder.svg"}
-            alt={photo.Title}
+            src={photo.image ? buildStrapiUrl(photo.image.url) : "/placeholder.svg"}
+            alt={photo.caption || "Pattaya photo"}
             className="w-full h-64 object-cover rounded-2xl shadow-sm hover:opacity-90 transition-opacity"
           />
-          <Badge className={`absolute top-3 left-3 text-xs ${getCategoryColor(photo.Category)} border-0 font-medium`}>
-            {photo.Category}
-          </Badge>
-          <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full font-medium">
+          {photo.featured && (
+            <Badge className="absolute top-3 left-3 text-xs bg-yellow-500 text-white border-0 font-medium">
+              Featured
+            </Badge>
+          )}
+          {photo.sponsor_url && (
+            <Badge className="absolute top-3 right-3 text-xs bg-green-500 text-white border-0 font-medium">
+              Sponsored
+            </Badge>
+          )}
+          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full font-medium">
             {currentPhoto + 1}/{photos.length}
           </div>
-          
-          {/* Overlay Text */}
-          {photo.overlay_text && (
-            <div
-              className={`absolute ${getOverlayPosition(photo.overlay_position || 'Bottom-Right')} px-3 py-2 rounded-lg font-medium text-sm shadow-lg`}
-              style={{
-                color: photo.overlay_text_color || '#FFFFFF',
-                backgroundColor: photo.overlay_background_color || 'rgba(0,0,0,0.6)',
-                fontSize: `${photo.overlay_font_size || 1.2}rem`
-              }}
-            >
-              {photo.overlay_text}
-            </div>
-          )}
         </div>
 
         {/* Photo Info */}
         <div className="space-y-3">
           <div>
-            <h3 className="text-sm font-medium text-gray-900 line-clamp-1 leading-tight">{photo.Title}</h3>
+            {photo.caption && (
+              <h3 className="text-sm font-medium text-gray-900 line-clamp-1 leading-tight">{photo.caption}</h3>
+            )}
             <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
               <div className="flex items-center space-x-1 min-w-0">
                 <User className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate font-medium">{photo.Author}</span>
+                <span className="truncate font-medium">{photo.author?.username || 'Anonymous'}</span>
               </div>
-              <span className="flex-shrink-0 font-medium">{photo.TimeAgo}</span>
+              <span className="flex-shrink-0 font-medium">{formatTimeAgo(photo.uploaded_at || photo.createdAt || '')}</span>
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 font-medium">📍 {photo.Location}</p>
+          {photo.location?.address && (
+            <div className="flex items-center text-xs text-gray-500">
+              <MapPin className="w-3 h-3 mr-1" />
+              <span>{photo.location.address}</span>
+            </div>
+          )}
+
+          {/* Hashtags */}
+          {photo.hashtags && photo.hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {photo.hashtags.slice(0, 2).map((hashtag) => (
+                <Badge key={hashtag.id} variant="secondary" className="text-xs">
+                  #{hashtag?.name}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="flex items-center justify-between text-xs text-gray-400">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <Heart className="w-3 h-3 text-red-400 flex-shrink-0" />
-                <span className="font-medium">{photo.Likes}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MessageCircle className="w-3 h-3 flex-shrink-0" />
-                <span className="font-medium">{photo.Comments}</span>
+                <span className="font-medium">{photo.likes || 0}</span>
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="w-3 h-3 flex-shrink-0" />
-                <span className="font-medium">{photo.Views}</span>
+                <span className="font-medium">{photo.views || 0}</span>
               </div>
             </div>
           </div>
@@ -326,8 +301,8 @@ export function PhotoGalleryWidget() {
             {/* Image */}
             <div className="relative">
               <img
-                src={lightboxPhoto.Image ? buildStrapiUrl(lightboxPhoto.Image.url) : "/placeholder.svg"}
-                alt={lightboxPhoto.Title}
+                src={lightboxPhoto.image ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"}
+                alt={lightboxPhoto.caption || "Pattaya photo"}
                 className="w-full h-auto max-h-[80vh] object-contain rounded-lg shadow-2xl"
               />
               
@@ -360,35 +335,36 @@ export function PhotoGalleryWidget() {
                   </button>
                 </>
               )}
-              
-              {/* Overlay Text in Lightbox */}
-              {lightboxPhoto.overlay_text && (
-                <div
-                  className={`absolute ${getOverlayPosition(lightboxPhoto.overlay_position || 'Bottom-Right')} px-4 py-3 rounded-lg font-medium text-lg shadow-lg`}
-                  style={{
-                    color: lightboxPhoto.overlay_text_color || '#FFFFFF',
-                    backgroundColor: lightboxPhoto.overlay_background_color || 'rgba(0,0,0,0.6)',
-                    fontSize: `${(lightboxPhoto.overlay_font_size || 1.2) * 1.2}rem`
-                  }}
-                >
-                  {lightboxPhoto.overlay_text}
-                </div>
-              )}
             </div>
             
             {/* Photo Info in Lightbox */}
             <div className="mt-4 bg-white/90 backdrop-blur-sm rounded-lg p-4">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">{lightboxPhoto.Title}</h3>
+              {lightboxPhoto.caption && (
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">{lightboxPhoto.caption}</h3>
+              )}
               <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                 <div className="flex items-center space-x-1">
                   <User className="w-4 h-4" />
-                  <span className="font-medium">{lightboxPhoto.Author}</span>
+                  <span className="font-medium">{lightboxPhoto.author?.username || 'Anonymous'}</span>
                 </div>
-                <span className="font-medium">{lightboxPhoto.TimeAgo}</span>
+                <span className="font-medium">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
               </div>
-              <p className="text-sm text-gray-500 mb-3">📍 {lightboxPhoto.Location}</p>
-              {lightboxPhoto.Description && (
-                <p className="text-sm text-gray-700 mb-3">{lightboxPhoto.Description}</p>
+              {lightboxPhoto.location?.address && (
+                <div className="flex items-center text-sm text-gray-500 mb-3">
+                  <MapPin className="w-4 h-4 mr-1" />
+                  <span>{lightboxPhoto.location.address}</span>
+                </div>
+              )}
+              
+              {/* Hashtags */}
+              {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {lightboxPhoto.hashtags.map((hashtag) => (
+                    <Badge key={hashtag.id} variant="secondary" className="text-xs">
+                      #{hashtag?.name}
+                    </Badge>
+                  ))}
+                </div>
               )}
               
               {/* Stats */}
@@ -396,28 +372,26 @@ export function PhotoGalleryWidget() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1">
                     <Heart className="w-4 h-4 text-red-400" />
-                    <span className="font-medium">{lightboxPhoto.Likes}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="font-medium">{lightboxPhoto.Comments}</span>
+                    <span className="font-medium">{lightboxPhoto.likes || 0}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <Eye className="w-4 h-4" />
-                    <span className="font-medium">{lightboxPhoto.Views}</span>
+                    <span className="font-medium">{lightboxPhoto.views || 0}</span>
                   </div>
                 </div>
-                <Badge className={`text-xs ${getCategoryColor(lightboxPhoto.Category)} border-0 font-medium`}>
-                  {lightboxPhoto.Category}
-                </Badge>
+                {lightboxPhoto.featured && (
+                  <Badge className="text-xs bg-yellow-500 text-white border-0 font-medium">
+                    Featured
+                  </Badge>
+                )}
               </div>
               
               {/* Submit Your Photo Button */}
               <div className="text-center">
                 <button
                   onClick={() => {
-                    // Navigate to photo submission page or open modal
-                    window.open('/photos', '_blank')
+                    // Navigate to photo submission page
+                    window.location.href = '/photos/upload'
                   }}
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                 >
