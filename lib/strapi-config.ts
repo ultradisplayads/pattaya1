@@ -1,6 +1,6 @@
 // Strapi configuration and URL utilities
 // Prefer env vars; fallback to sensible defaults
-const FALLBACK_BASE = process.env.NODE_ENV === 'production' ? "http://localhost:1337" : "http://localhost:1337"
+const FALLBACK_BASE = process.env.NODE_ENV === 'production' ? "https://api.pattaya1.com" : "https://api.pattaya1.com"
 const FALLBACK_API = `${FALLBACK_BASE}/api`
 
 export const STRAPI_CONFIG = {
