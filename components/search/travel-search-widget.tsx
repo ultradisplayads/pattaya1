@@ -390,8 +390,8 @@ export default function TravelSearchWidget() {
         className="h-full flex flex-col bg-gradient-to-br from-blue-100 via-sky-100 to-blue-50 rounded-xl overflow-hidden relative shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition-shadow duration-300"
         onClick={() => setShowExpandedModal(true)}
       >
-        {/* Clean Header */}
-        <div className="relative p-4 border-b border-blue-200 bg-gradient-to-r from-blue-100 to-sky-100 overflow-hidden">
+        {/* Clean Header - Compact */}
+        <div className="relative p-2 border-b border-blue-200 bg-gradient-to-r from-blue-100 to-sky-100 overflow-hidden">
           {/* Sun Glow - Top Left - Bigger & Brighter */}
           <div className="absolute top-0 left-0 w-16 h-16 bg-yellow-300 rounded-full opacity-80 animate-pulse"></div>
           <div className="absolute -top-1 -left-1 w-20 h-20 bg-yellow-200 rounded-full opacity-60 animate-pulse" style={{ animationDelay: '0.3s' }}></div>
@@ -444,13 +444,13 @@ export default function TravelSearchWidget() {
           <div className="absolute top-7 left-84 w-5 h-4 bg-white rounded-full opacity-60 animate-pulse" style={{ animationDelay: '4.9s', animationDuration: '4s' }}></div>
           <div className="absolute top-6 right-4 w-7 h-4 bg-white rounded-full opacity-75 animate-pulse" style={{ animationDelay: '5.2s', animationDuration: '4s' }}></div>
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-sky-500 rounded-lg shadow-sm">
-                <Plane className="w-5 h-5 text-white animate-pulse" />
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-r from-blue-500 to-sky-500 rounded-lg shadow-sm">
+                <Plane className="w-4 h-4 text-white animate-pulse" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Travel Search</h2>
-                <p className="text-xs text-gray-600">Find your perfect getaway</p>
+                <h2 className="text-sm font-semibold text-gray-900">Travel Search</h2>
+                <p className="text-xs text-gray-600">Find your getaway</p>
               </div>
             </div>
             {/* Popular inline in header */}
@@ -481,9 +481,9 @@ export default function TravelSearchWidget() {
           </div>
         </div>
         
-        {/* Clean Content Area */}
-        <div className="flex-1 min-h-0 overflow-y-auto p-2">
-          <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+        {/* Clean Content Area - Compact */}
+        <div className="flex-1 overflow-y-auto p-1.5 h-full">
+          <div className="space-y-1.5 h-full" onClick={(e) => e.stopPropagation()}>
             {/* Simplified Tabs */}
             <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
               <Button 
@@ -512,10 +512,10 @@ export default function TravelSearchWidget() {
               </Button>
             </div>
 
-            {/* Professional Flight Search Form */}
+            {/* Professional Flight Search Form - Compact */}
             {activeTab === 'flights' && (
-              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-2 rounded-lg border border-blue-200/60 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleFlightSearch} className="space-y-2">
+              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-blue-200/60 shadow-sm flex-1" onClick={(e) => e.stopPropagation()}>
+                <form onSubmit={handleFlightSearch} className="space-y-1.5">
                   {/* Form Header */}
                   <div className="text-center mb-2">
                     <div className="flex items-center justify-center gap-1 mb-1">
@@ -741,10 +741,10 @@ export default function TravelSearchWidget() {
               </div>
             )}
 
-            {/* Professional Hotel Search Form */}
+            {/* Professional Hotel Search Form - Compact */}
             {activeTab === 'hotels' && (
-              <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/50 backdrop-blur-sm p-2 rounded-lg border border-green-200/50 shadow-sm" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleHotelSearch} className="space-y-2">
+              <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-green-200/50 shadow-sm flex-1" onClick={(e) => e.stopPropagation()}>
+                <form onSubmit={handleHotelSearch} className="space-y-1.5">
                   {/* Form Header */}
                   <div className="text-center mb-2">
                     <div className="flex items-center justify-center gap-1 mb-1">

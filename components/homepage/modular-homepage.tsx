@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch"
 import { EnhancedBreakingNewsWidget } from "./widgets/enhanced-breaking-news-widget"
 import { EnhancedWeatherWidget } from "../widgets/enhanced-weather-widget"
 import { RadioWidget } from "./widgets/radio-widget"
-import { YouTubeWidget } from "./widgets/youtube-widget"
+import FeaturedVideosWidget from "../video/featured-videos-widget"
 import { LiveEventsWidget } from "./widgets/live-events-widget"
 import { BusinessSpotlightWidget } from "./widgets/business-spotlight-widget"
 import { PhotoGalleryWidget } from "./widgets/photo-gallery-widget"
@@ -348,7 +348,7 @@ export function ModularHomepage() {
       weather: EnhancedWeatherWidget,
       radio: RadioWidget,
       "google-reviews": GoogleReviewsWidget,
-      youtube: YouTubeWidget,
+      youtube: FeaturedVideosWidget,
       "social-feed": SocialFeedWidget,
       trending: TrendingWidget,
       "business-spotlight": BusinessSpotlightWidget,
