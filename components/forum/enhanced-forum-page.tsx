@@ -36,6 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { CreateTopicModal } from "./create-topic-modal"
 
 interface ForumCategory {
   id: string
@@ -56,18 +57,25 @@ interface ForumTopic {
   id: string
   title: string
   author: {
-    name: string
-    avatar: string
-    reputation: number
-    isVerified: boolean
+    id: number
+    username: string
+    email: string
+    firebaseUid: string
   }
-  category: string
+  category: {
+    id: number
+    name: string
+    slug: string
+    description: string
+    icon: string
+    color: string
+  }
   replies: number
   views: number
   likes: number
   isPinned: boolean
   isLocked: boolean
-  lastReply: {
+  lastReply?: {
     author: string
     timestamp: string
   }
@@ -80,12 +88,10 @@ interface ForumPost {
   id: string
   content: string
   author: {
-    name: string
-    avatar: string
-    reputation: number
-    joinDate: string
-    postCount: number
-    isVerified: boolean
+    id: number
+    username: string
+    email: string
+    firebaseUid: string
   }
   timestamp: string
   likes: number
@@ -103,6 +109,7 @@ export function EnhancedForumPage() {
   const [sortBy, setSortBy] = useState("latest")
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("topics")
+  const [showCreateTopic, setShowCreateTopic] = useState(false)
 
   useEffect(() => {
     loadForumData()
@@ -145,6 +152,12 @@ export function EnhancedForumPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     loadForumData()
+  }
+
+  const handleTopicCreated = (newTopic: any) => {
+    // Add the new topic to the list
+    setTopics(prev => [newTopic, ...prev])
+    setShowCreateTopic(false)
   }
 
   const formatTimeAgo = (timestamp: string) => {
@@ -212,7 +225,10 @@ export function EnhancedForumPage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Community Forum</h1>
               <p className="text-gray-600">Connect with locals, travelers, and business owners in Pattaya</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setShowCreateTopic(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Topic
             </Button>
@@ -269,6 +285,14 @@ export function EnhancedForumPage() {
           </Card>
         </div>
 
+        {/* Create Topic Modal */}
+        <CreateTopicModal
+          isOpen={showCreateTopic}
+          onClose={() => setShowCreateTopic(false)}
+          categories={categories}
+          onTopicCreated={handleTopicCreated}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
@@ -289,24 +313,26 @@ export function EnhancedForumPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer mb-1">
+                              <h3 
+                                className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer mb-1"
+                                onClick={() => window.location.href = `/forum/${topic.id}`}
+                              >
                                 {topic.title}
                               </h3>
                               <p className="text-gray-600 text-sm line-clamp-2 mb-2">{topic.excerpt}</p>
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
                                 <div className="flex items-center space-x-1">
                                   <Avatar className="h-5 w-5">
-                                    <AvatarImage src={topic.author.avatar || "/placeholder.svg"} />
-                                    <AvatarFallback>{topic.author.name[0]}</AvatarFallback>
+                                    <AvatarImage src="/placeholder.svg" />
+                                    <AvatarFallback>{topic.author.username[0]}</AvatarFallback>
                                   </Avatar>
-                                  <span>{topic.author.name}</span>
-                                  {topic.author.isVerified && <Award className="h-3 w-3 text-blue-500" />}
+                                  <span>{topic.author.username}</span>
                                 </div>
                                 <span>•</span>
                                 <span>{formatTimeAgo(topic.createdAt)}</span>
                                 <span>•</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {topic.category}
+                                  {topic.category?.name || 'Uncategorized'}
                                 </Badge>
                               </div>
                             </div>
@@ -378,7 +404,7 @@ export function EnhancedForumPage() {
                       <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-600 mb-2">No topics found</h3>
                       <p className="text-gray-500 mb-4">Be the first to start a conversation!</p>
-                      <Button>
+                      <Button onClick={() => setShowCreateTopic(true)}>
                         <Plus className="h-4 w-4 mr-2" />
                         Create New Topic
                       </Button>

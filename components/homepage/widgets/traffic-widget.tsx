@@ -350,7 +350,7 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
   // Map fallback: placeholder image; replace with CDN-cached static map URL when backend ready
   const getFallbackMapImageUrl = () => 
-    "https://maps.googleapis.com/maps/api/staticmap?center=Pattaya,Thailand&zoom=12&size=600x300&maptype=roadmap&style=feature:road|color:0xffffff&markers=color:red|Pattaya&key=FAKE_KEY_REPLACE"
+    `https://maps.googleapis.com/maps/api/staticmap?center=Pattaya,Thailand&zoom=12&size=600x300&maptype=roadmap&style=feature:road|color:0xffffff&markers=color:red|Pattaya&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'FAKE_KEY'}`
 
   const getParkingStatusBadge = (status: ParkingLot["status"]) => {
     switch (status) {

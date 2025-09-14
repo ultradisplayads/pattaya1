@@ -117,44 +117,62 @@ export function InteractiveTrafficMap({ isOpen, onClose }: InteractiveTrafficMap
         return
       }
 
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        console.error('Google Maps API key not configured')
+        return
+      }
+
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
       script.async = true
       script.defer = true
       script.onload = () => {
+        console.log('Google Maps API loaded successfully')
         initializeMap()
+      }
+      script.onerror = (error) => {
+        console.error('Failed to load Google Maps API:', error)
       }
       document.head.appendChild(script)
     }
 
     const initializeMap = () => {
-      if (!mapRef.current || !window.google) return
+      if (!mapRef.current || !window.google) {
+        console.error('Map container or Google Maps API not available')
+        return
+      }
 
-      const map = new google.maps.Map(mapRef.current, {
-        center: { lat: 12.9236, lng: 100.8825 }, // Pattaya center
-        zoom: 13,
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        styles: [
-          {
-            featureType: "poi",
-            elementType: "labels",
-            stylers: [{ visibility: "off" }]
-          }
-        ]
-      })
+      try {
+        const map = new google.maps.Map(mapRef.current, {
+          center: { lat: 12.9236, lng: 100.8825 }, // Pattaya center
+          zoom: 13,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }]
+            }
+          ]
+        })
 
-      mapInstanceRef.current = map
+        mapInstanceRef.current = map
 
-      // Add traffic layer
-      const traffic = new google.maps.TrafficLayer()
-      traffic.setMap(map)
-      setTrafficLayer(traffic)
+        // Add traffic layer
+        const traffic = new google.maps.TrafficLayer()
+        traffic.setMap(map)
+        setTrafficLayer(traffic)
 
-      // Kick off data fetch once map is ready
-      void fetchParkingLots()
-      void fetchApprovedRoadReports()
+        // Kick off data fetch once map is ready
+        void fetchParkingLots()
+        void fetchApprovedRoadReports()
 
-      setIsLoaded(true)
+        setIsLoaded(true)
+        console.log('Map initialized successfully')
+      } catch (error) {
+        console.error('Failed to initialize map:', error)
+      }
     }
 
     loadGoogleMaps()
