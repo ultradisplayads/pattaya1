@@ -234,27 +234,27 @@ export function DynamicModularHomepage() {
       // Check if there's a saved layout for this widget
       const savedItem = savedLayout?.find(item => item.i === widget.id);
       
-      // Default grid positions based on your specified layout
+      // Default grid positions based on your specified layout - More compact
       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        "weather": { x: 0, y: 0, w: 2, h: 14 },
-        "breaking-news": { x: 2, y: 0, w: 7, h: 8 },
-        "radio": { x: 9, y: 0, w: 3, h: 14 },
-        "hot-deals": { x: 2, y: 8, w: 7, h: 6 },
-        "news-hero": { x: 0, y: 14, w: 6, h: 11 },
-        "business-spotlight": { x: 6, y: 14, w: 6, h: 8 },
-        "social-feed": { x: 6, y: 22, w: 3, h: 15 },
-        "trending": { x: 9, y: 22, w: 3, h: 8 },
-        "youtube": { x: 0, y: 25, w: 3, h: 12 },
-        "events-calendar": { x: 3, y: 25, w: 3, h: 12 },
-        "quick-links": { x: 9, y: 30, w: 3, h: 7 },
-        "photo-gallery": { x: 0, y: 37, w: 6, h: 17 },
-        "forum-activity": { x: 6, y: 37, w: 6, h: 5 },
-        "google-reviews": { x: 6, y: 42, w: 3, h: 12 },
-        "curator-social": { x: 9, y: 42, w: 3, h: 12 },
-        "currency-converter": { x: 8, y: 54, w: 4, h: 10 },
-        "traffic": { x: 0, y: 54, w: 8, h: 10 },
-        "search-widgets": { x: 0, y: 64, w: 12, h: 12 },
-        "flight-tracker": { x: 0, y: 76, w: 12, h: 10 },
+        "weather": { x: 0, y: 0, w: 2, h: 12 },
+        "breaking-news": { x: 2, y: 0, w: 7, h: 6 },
+        "radio": { x: 9, y: 0, w: 3, h: 12 },
+        "hot-deals": { x: 2, y: 6, w: 7, h: 5 },
+        "news-hero": { x: 0, y: 12, w: 6, h: 9 },
+        "business-spotlight": { x: 6, y: 12, w: 6, h: 6 },
+        "social-feed": { x: 6, y: 18, w: 3, h: 12 },
+        "trending": { x: 9, y: 18, w: 3, h: 6 },
+        "youtube": { x: 0, y: 21, w: 3, h: 9 },
+        "events-calendar": { x: 3, y: 21, w: 3, h: 9 },
+        "quick-links": { x: 9, y: 24, w: 3, h: 6 },
+        "photo-gallery": { x: 0, y: 30, w: 6, h: 14 },
+        "forum-activity": { x: 6, y: 30, w: 6, h: 4 },
+        "google-reviews": { x: 6, y: 34, w: 3, h: 10 },
+        "curator-social": { x: 9, y: 34, w: 3, h: 10 },
+        "currency-converter": { x: 8, y: 44, w: 4, h: 8 },
+        "traffic": { x: 0, y: 44, w: 8, h: 8 },
+        "search-widgets": { x: 0, y: 52, w: 12, h: 8 },
+        "flight-tracker": { x: 0, y: 60, w: 12, h: 8 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -644,25 +644,27 @@ export function DynamicModularHomepage() {
   }
 
   const handleResetLayout = () => {
-    // Reset to the exact layout positions you specified
+    // Reset to the exact layout positions you specified - More compact
     const resetLayout: LayoutItem[] = [
-      { i: "weather", x: 0, y: 0, w: 2, h: 14, isDraggable: true, isResizable: true, static: false },
-      { i: "breaking-news", x: 2, y: 0, w: 7, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "radio", x: 9, y: 0, w: 3, h: 14, isDraggable: true, isResizable: true, static: false },
-      { i: "hot-deals", x: 2, y: 8, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "news-hero", x: 0, y: 14, w: 6, h: 11, isDraggable: true, isResizable: true, static: false },
-      { i: "business-spotlight", x: 6, y: 14, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "social-feed", x: 6, y: 22, w: 3, h: 15, isDraggable: true, isResizable: true, static: false },
-      { i: "trending", x: 9, y: 22, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "youtube", x: 0, y: 25, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "events-calendar", x: 3, y: 25, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "quick-links", x: 9, y: 30, w: 3, h: 7, isDraggable: true, isResizable: true, static: false },
-      { i: "photo-gallery", x: 0, y: 37, w: 6, h: 17, isDraggable: true, isResizable: true, static: false },
-      { i: "forum-activity", x: 6, y: 37, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
-      { i: "google-reviews", x: 6, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "curator-social", x: 9, y: 42, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
-      { i: "currency-converter", x: 8, y: 54, w: 4, h: 10, isDraggable: true, isResizable: true, static: false },
-      { i: "traffic", x: 0, y: 54, w: 8, h: 10, isDraggable: true, isResizable: true, static: false }
+      { i: "weather", x: 0, y: 0, w: 2, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "breaking-news", x: 2, y: 0, w: 7, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 0, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 2, y: 6, w: 7, h: 5, isDraggable: true, isResizable: true, static: false },
+      { i: "news-hero", x: 0, y: 12, w: 6, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "business-spotlight", x: 6, y: 12, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "social-feed", x: 6, y: 18, w: 3, h: 12, isDraggable: true, isResizable: true, static: false },
+      { i: "trending", x: 9, y: 18, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 0, y: 21, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "events-calendar", x: 3, y: 21, w: 3, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "quick-links", x: 9, y: 24, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "photo-gallery", x: 0, y: 30, w: 6, h: 14, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 6, y: 30, w: 6, h: 4, isDraggable: true, isResizable: true, static: false },
+      { i: "google-reviews", x: 6, y: 34, w: 3, h: 10, isDraggable: true, isResizable: true, static: false },
+      { i: "curator-social", x: 9, y: 34, w: 3, h: 10, isDraggable: true, isResizable: true, static: false },
+      { i: "currency-converter", x: 8, y: 44, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 0, y: 44, w: 8, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "search-widgets", x: 0, y: 52, w: 12, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "flight-tracker", x: 0, y: 60, w: 12, h: 8, isDraggable: true, isResizable: true, static: false }
     ];
     
     setLayout(resetLayout);

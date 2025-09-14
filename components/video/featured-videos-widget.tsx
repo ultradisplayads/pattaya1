@@ -155,10 +155,10 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
 
   const VideoCard: React.FC<{ video: VideoData; isSelected?: boolean }> = ({ video, isSelected }) => (
     <div
-      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all duration-200 ${
+      className={`relative cursor-pointer rounded-2xl overflow-hidden transition-all duration-200 bg-white/80 backdrop-blur-sm border border-white/60 ${
         isSelected 
-          ? 'ring-2 ring-blue-500 shadow-lg transform scale-105' 
-          : 'hover:shadow-md hover:transform hover:scale-102'
+          ? 'ring-2 ring-purple-500 shadow-xl transform scale-105' 
+          : 'hover:shadow-lg hover:transform hover:scale-[1.02] hover:bg-white/90'
       }`}
       onClick={() => handleVideoSelect(video)}
     >
@@ -169,57 +169,59 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-          <Play className="text-white opacity-0 hover:opacity-100 transition-opacity duration-200" size={32} />
+          <div className="w-12 h-12 bg-white bg-opacity-95 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 shadow-lg">
+            <Play className="text-purple-500 fill-current" size={20} />
+          </div>
         </div>
         
         {/* Promoted badge */}
         {video.isPromoted && (
-          <div className="absolute top-1 left-1">
-            <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center">
-              <Star size={8} className="mr-0.5" />
-              SPONSORED
-            </span>
+          <div className="absolute top-2 left-2">
+            <div className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs font-medium rounded-xl shadow-sm">
+              <Star size={10} />
+              <span>SPONSORED</span>
+            </div>
           </div>
         )}
         
         {/* Duration badge */}
         {video.duration && (
-          <div className="absolute bottom-1 right-1">
-            <span className="bg-black bg-opacity-75 text-white text-xs px-1.5 py-0.5 rounded">
+          <div className="absolute bottom-2 right-2">
+            <span className="bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded-xl font-medium">
               {video.duration.replace('PT', '').replace('M', ':').replace('S', '')}
             </span>
           </div>
         )}
       </div>
       
-      <div className="p-2">
-        <h3 className="font-semibold text-xs line-clamp-2 mb-1 leading-tight" title={video.title}>
+      <div className="p-3">
+        <h3 className="font-semibold text-sm line-clamp-2 mb-2 leading-tight text-gray-900" title={video.title}>
           {video.title}
         </h3>
         
         {video.channelName && (
-          <div className="flex items-center text-gray-600 text-xs mb-1 truncate">
-            <User size={10} className="mr-1 flex-shrink-0" />
-            <span className="truncate">{video.channelName}</span>
+          <div className="flex items-center gap-1.5 mb-2">
+            <User size={12} className="text-gray-500 flex-shrink-0" />
+            <span className="text-xs text-gray-600 font-medium truncate">{video.channelName}</span>
           </div>
         )}
         
-        <div className="flex items-center justify-between text-gray-500 text-xs">
-          <div className="flex items-center">
-            <Eye size={10} className="mr-1" />
-            <span className="text-xs">{formatViewCount(video.viewCount)}</span>
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg shadow-sm">
+            <Eye size={10} className="text-gray-500" />
+            <span className="font-medium text-gray-600">{formatViewCount(video.viewCount)}</span>
           </div>
-          <div className="flex items-center">
-            <Calendar size={10} className="mr-1" />
-            <span className="text-xs">{formatPublishedDate(video.publishedAt)}</span>
+          <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg shadow-sm">
+            <Calendar size={10} className="text-blue-500" />
+            <span className="font-medium text-blue-600">{formatPublishedDate(video.publishedAt)}</span>
           </div>
         </div>
         
         {/* Sponsor info for promoted videos */}
         {video.isPromoted && video.sponsorName && (
-          <div className="mt-1 pt-1 border-t border-gray-200">
-            <div className="flex items-center text-xs text-blue-600">
-              <span className="font-medium text-xs truncate">Sponsored by: {video.sponsorName}</span>
+          <div className="mt-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center text-xs text-orange-600">
+              <span className="font-semibold truncate">Sponsored by: {video.sponsorName}</span>
             </div>
           </div>
         )}
@@ -229,13 +231,23 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-        <div className="animate-pulse">
-          <div className="aspect-video bg-gray-300 rounded-lg mb-4"></div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-video bg-gray-300 rounded-lg"></div>
-            ))}
+      <div className={`bg-white rounded-2xl shadow-sm border-0 overflow-hidden ${className}`}>
+        <div className="bg-white border-b border-gray-100/60 p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-red-500/10 rounded-2xl">
+              <div className="h-6 w-6 bg-red-500/20 rounded-lg"></div>
+            </div>
+            <div className="h-6 bg-gray-100 rounded-xl w-40"></div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="animate-pulse space-y-6">
+            <div className="aspect-video bg-gray-100 rounded-2xl"></div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="aspect-video bg-gray-100 rounded-2xl"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -244,34 +256,49 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
 
   if (error) {
     return (
-      <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-        <div className="text-center text-red-600">
-          <p>{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
+      <div className={`bg-white rounded-2xl shadow-sm border-0 overflow-hidden ${className}`}>
+        <div className="p-6">
+          <div className="text-center text-red-600">
+            <div className="p-6 bg-red-50 rounded-2xl mb-4">
+              <div className="h-16 w-16 bg-red-100 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                <span className="text-red-500 text-2xl">⚠️</span>
+              </div>
+            </div>
+            <p className="text-lg font-semibold mb-2">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 shadow-sm hover:shadow-md font-semibold"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg overflow-hidden ${className}`}>
-      {/* Header with tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex items-center justify-between p-4">
-          <h2 className="text-xl font-bold text-gray-800">Featured Videos</h2>
-          <div className="flex space-x-1">
+    <div className={`bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl shadow-lg border-0 overflow-hidden ${className}`}>
+      {/* Apple-style Header with tabs */}
+      <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+              <Play className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">Featured Videos</h2>
+              <p className="text-sm text-purple-100 font-medium">Discover trending content</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
             {showBrowse && (
               <button
                 onClick={() => handleTabChange('browse')}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   activeTab === 'browse'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-white text-purple-600 shadow-lg'
+                    : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
                 }`}
               >
                 Browse
@@ -281,10 +308,10 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
             {showPromoted && (
               <button
                 onClick={() => handleTabChange('promoted')}
-                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${
                   activeTab === 'promoted'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-white text-orange-600 shadow-lg'
+                    : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
                 }`}
               >
                 Sponsored
@@ -297,24 +324,24 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
                 setShowTrending(!showTrending);
                 console.log('Trending state should now be:', !showTrending);
               }}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${
                 showTrending
-                  ? 'bg-green-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-white text-green-600 shadow-lg'
+                  : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
               }`}
             >
-              <TrendingUp size={16} className="inline mr-1" />
-              Trending {showTrending ? '(ON)' : '(OFF)'}
+              <TrendingUp size={16} className="inline mr-1.5" />
+              Trending
             </button>
           </div>
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-6 max-h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-purple-300 scrollbar-track-purple-100/50">
         {/* Main video player */}
         {selectedVideo && (
-          <div className="mb-4">
-            <div className="aspect-video rounded-lg overflow-hidden mb-2">
+          <div className="mb-6">
+            <div className="aspect-video rounded-2xl overflow-hidden mb-4 shadow-lg">
               <iframe
                 src={getYouTubeEmbedUrl(selectedVideo.videoId, autoPlay)}
                 title={selectedVideo.title}
@@ -327,34 +354,34 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
             
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-sm font-semibold mb-1 line-clamp-2 leading-tight">{selectedVideo.title}</h3>
+                <h3 className="text-lg font-semibold mb-2 line-clamp-2 leading-tight text-gray-900">{selectedVideo.title}</h3>
                 {selectedVideo.description && (
-                  <p className="text-gray-600 text-xs line-clamp-1 mb-1">{selectedVideo.description}</p>
+                  <p className="text-gray-600 text-sm line-clamp-2 mb-3">{selectedVideo.description}</p>
                 )}
                 
-                <div className="flex items-center flex-wrap gap-2 text-xs text-gray-500">
+                <div className="flex items-center flex-wrap gap-3 text-sm">
                   {selectedVideo.channelName && (
-                    <div className="flex items-center">
-                      <User size={12} className="mr-1" />
-                      <span className="truncate max-w-24">{selectedVideo.channelName}</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl shadow-sm">
+                      <User size={14} className="text-gray-600" />
+                      <span className="font-medium text-gray-700">{selectedVideo.channelName}</span>
                     </div>
                   )}
-                  <div className="flex items-center">
-                    <Eye size={12} className="mr-1" />
-                    {formatViewCount(selectedVideo.viewCount)} views
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl shadow-sm">
+                    <Eye size={14} className="text-blue-600" />
+                    <span className="font-medium text-blue-700">{formatViewCount(selectedVideo.viewCount)} views</span>
                   </div>
-                  <div className="flex items-center">
-                    <Calendar size={12} className="mr-1" />
-                    {formatPublishedDate(selectedVideo.publishedAt)}
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-100 to-green-200 rounded-xl shadow-sm">
+                    <Calendar size={14} className="text-green-600" />
+                    <span className="font-medium text-green-700">{formatPublishedDate(selectedVideo.publishedAt)}</span>
                   </div>
                 </div>
                 
                 {/* Sponsor info for promoted videos */}
                 {selectedVideo.isPromoted && selectedVideo.sponsorName && (
-                  <div className="mt-1 p-1.5 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded">
-                    <div className="flex items-center text-xs text-orange-700">
-                      <Star size={12} className="mr-1" />
-                      <span className="font-medium">Sponsored by: {selectedVideo.sponsorName}</span>
+                  <div className="mt-4 p-4 bg-gradient-to-r from-orange-100 to-yellow-100 border border-orange-200 rounded-2xl shadow-sm">
+                    <div className="flex items-center text-sm text-orange-700">
+                      <Star size={16} className="mr-2" />
+                      <span className="font-semibold">Sponsored by: {selectedVideo.sponsorName}</span>
                     </div>
                   </div>
                 )}
@@ -364,9 +391,9 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
                 href={getYouTubeWatchUrl(selectedVideo.videoId)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 flex items-center px-2 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition-colors"
+                className="ml-4 flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl text-sm font-semibold hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
-                <ExternalLink size={12} className="mr-1" />
+                <ExternalLink size={14} />
                 YouTube
               </a>
             </div>
@@ -375,13 +402,13 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
 
         {/* Video grid */}
         {tabLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
             {[...Array(12)].map((_, i) => (
-              <div key={i} className="aspect-video bg-gray-300 rounded-lg animate-pulse"></div>
+              <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
             {getCurrentVideos().map((video) => (
               <VideoCard
                 key={video.id}
@@ -394,65 +421,72 @@ const FeaturedVideosWidget: React.FC<FeaturedVideosWidgetProps> = ({
 
         {/* Trending Topics Section */}
         {showTrending && (
-          <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-            <div className="flex items-center mb-3">
-              <TrendingUp size={18} className="text-green-600 mr-2" />
-              <h3 className="text-lg font-semibold text-gray-800">Trending Topics</h3>
-              <span className="ml-2 text-sm text-gray-500">({trendingTopics.length} topics)</span>
+          <div className="mt-6 p-6 bg-gradient-to-r from-emerald-100 via-teal-100 to-cyan-100 rounded-2xl border border-emerald-200/60 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl shadow-sm">
+                <TrendingUp size={20} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Trending Topics</h3>
+                <p className="text-sm text-gray-600 font-medium">{trendingTopics.length} topics found</p>
+              </div>
             </div>
             
             {trendingTopics.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-gray-500">Loading trending topics...</p>
+              <div className="text-center py-8">
+                <div className="p-4 bg-white/70 rounded-2xl mb-4 shadow-sm">
+                  <TrendingUp className="h-12 w-12 text-gray-400 mx-auto" />
+                </div>
+                <p className="text-gray-600 font-medium">Loading trending topics...</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {trendingTopics.map((topic, index) => (
                   <div
                     key={topic.topic}
-                    className="bg-white rounded-lg p-3 shadow-sm border hover:shadow-md transition-shadow cursor-pointer group"
+                    className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/60 hover:shadow-xl transition-all duration-200 cursor-pointer group hover:scale-[1.02]"
                     onClick={() => {
                       // You can implement topic-based filtering here
                       console.log('Clicked topic:', topic.topic);
                     }}
                   >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center">
-                      <Hash size={12} className="text-gray-400 mr-1" />
-                      <span className="text-sm font-medium text-gray-800 truncate">
-                        {topic.topic}
-                      </span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Hash size={14} className="text-emerald-500" />
+                        <span className="text-sm font-semibold text-gray-900 truncate">
+                          {topic.topic}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center w-7 h-7 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-full text-xs font-bold shadow-sm">
+                        {index + 1}
+                      </div>
                     </div>
-                    <span className="text-xs text-green-600 font-bold">
-                      #{index + 1}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{topic.count} videos</span>
-                    <span>{formatViewCount(topic.totalViews)} views</span>
-                  </div>
-                  
-                  {/* Engagement indicator */}
-                  <div className="mt-1">
-                    <div className="w-full bg-gray-200 rounded-full h-1">
-                      <div 
-                        className="bg-gradient-to-r from-green-400 to-blue-500 h-1 rounded-full transition-all duration-300 group-hover:from-green-500 group-hover:to-blue-600"
-                        style={{ 
-                          width: `${Math.min(100, (topic.engagementScore / Math.max(...trendingTopics.map(t => t.engagementScore))) * 100)}%` 
-                        }}
-                      ></div>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-600 mb-3">
+                      <span className="font-semibold">{topic.count} videos</span>
+                      <span className="font-semibold">{formatViewCount(topic.totalViews)} views</span>
+                    </div>
+                    
+                    {/* Engagement indicator */}
+                    <div className="mb-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2 shadow-inner">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500 h-2 rounded-full transition-all duration-300 group-hover:from-emerald-500 group-hover:via-teal-500 group-hover:to-cyan-600 shadow-sm"
+                          style={{ 
+                            width: `${Math.min(100, (topic.engagementScore / Math.max(...trendingTopics.map(t => t.engagementScore))) * 100)}%` 
+                          }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
-                </div>
                 ))}
               </div>
             )}
             
-            <div className="mt-3 text-center">
+            <div className="mt-4 text-center">
               <button
                 onClick={loadTrendingTopics}
-                className="text-sm text-green-600 hover:text-green-700 font-medium"
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-semibold px-4 py-2 bg-white/80 backdrop-blur-sm rounded-xl hover:bg-white/90 transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 Refresh Trending Topics
               </button>

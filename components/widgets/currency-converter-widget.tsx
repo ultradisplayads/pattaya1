@@ -703,6 +703,8 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [showExpandedModal, setShowExpandedModal] = useState(false);
+  const [compactView, setCompactView] = useState(false);
+  const [activeTab, setActiveTab] = useState("convert");
 
   const [dimensions, setDimensions] = useState({ width: 400, height: 600 });
   const [isResizing, setIsResizing] = useState(false);
@@ -943,30 +945,30 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
           <div className="absolute bottom-8 right-8 w-12 h-12 bg-cyan-200/20 rounded-full animate-float-slow"></div>
         </div>
 
-        {/* Header with Enhanced Glassmorphism */}
-        <div className="relative p-6 border-b border-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl overflow-hidden">
+        {/* Header with Enhanced Glassmorphism - Compact */}
+        <div className="relative p-2 border-b border-white/20 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-xl overflow-hidden">
           {/* Animated Background Icons */}
-          <DollarSign className="absolute top-2 left-2 w-5 h-5 text-white/40 animate-pulse" />
-          <Coins className="absolute top-3 right-4 w-6 h-6 text-emerald-200/60 animate-bounce" style={{ animationDelay: '0.5s' }} />
-          <TrendingUp className="absolute bottom-1 left-6 w-4 h-4 text-teal-300/50 animate-pulse" style={{ animationDelay: '1s' }} />
-          <Star className="absolute bottom-2 right-2 w-5 h-5 text-cyan-200/40 animate-ping" style={{ animationDelay: '1.5s' }} />
-          <Sparkles className="absolute top-1 right-12 w-4 h-4 text-emerald-300/60 animate-spin" style={{ animationDelay: '2s', animationDuration: '3s' }} />
+          <DollarSign className="absolute top-1 left-1 w-3 h-3 text-white/40 animate-pulse" />
+          <Coins className="absolute top-2 right-2 w-4 h-4 text-emerald-200/60 animate-bounce" style={{ animationDelay: '0.5s' }} />
+          <TrendingUp className="absolute bottom-1 left-4 w-3 h-3 text-teal-300/50 animate-pulse" style={{ animationDelay: '1s' }} />
+          <Star className="absolute bottom-1 right-1 w-3 h-3 text-cyan-200/40 animate-ping" style={{ animationDelay: '1.5s' }} />
+          <Sparkles className="absolute top-1 right-6 w-3 h-3 text-emerald-300/60 animate-spin" style={{ animationDelay: '2s', animationDuration: '3s' }} />
           
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="relative p-3 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl rounded-2xl shadow-lg border border-white/30 group-hover:scale-110 transition-transform duration-300">
-                <DollarSign className="w-6 h-6 text-white animate-pulse" />
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-2xl blur-xl animate-pulse"></div>
+            <div className="flex items-center gap-2">
+              <div className="relative p-2 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-xl rounded-xl shadow-lg border border-white/30 group-hover:scale-110 transition-transform duration-300">
+                <DollarSign className="w-4 h-4 text-white animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 rounded-xl blur-xl animate-pulse"></div>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white drop-shadow-lg">Currency Converter</h2>
-                <p className="text-sm text-white/80 font-medium">Live exchange rates</p>
+                <h2 className="text-sm font-bold text-white drop-shadow-lg">Currency Converter</h2>
+                <p className="text-xs text-white/80 font-medium">Live rates</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {lastUpdated && (
-                <span className="text-xs text-white/70 font-medium bg-white/10 backdrop-blur-xl px-3 py-1 rounded-full border border-white/20">
-                  Updated {lastUpdated.toLocaleTimeString()}
+                <span className="text-xs text-white/70 font-medium bg-white/10 backdrop-blur-xl px-2 py-1 rounded-full border border-white/20">
+                  {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
               <Button
@@ -976,153 +978,267 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
                   e.stopPropagation()
                   refreshRates()
                 }}
-                className="p-2 h-8 w-8 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 rounded-xl transition-all duration-300 hover:scale-110"
+                className="p-1 h-6 w-6 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 rounded-lg transition-all duration-300 hover:scale-110"
               >
-                <RefreshCw className="w-4 h-4 text-white" />
+                <RefreshCw className="w-3 h-3 text-white" />
               </Button>
             </div>
           </div>
         </div>
         
-        {/* Content with Enhanced Glassmorphism */}
-        <div className="flex-1 overflow-y-auto p-6 relative z-10" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
-            {/* Quick Converter with Glassmorphism */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-xl rounded-2xl border border-white/30 shadow-xl"></div>
-              <div className="relative p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white drop-shadow-sm">Quick Convert</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      swapCurrencies()
-                    }}
-                    className="p-2 h-8 w-8 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-180"
-                  >
-                    <ArrowRightLeft className="w-4 h-4 text-white" />
-                  </Button>
-                </div>
-                
-                {/* Amount Input with Glassmorphism */}
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full p-4 text-xl font-bold bg-white/10 backdrop-blur-xl border border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300"
-                    placeholder="Enter amount"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-2xl pointer-events-none"></div>
-                </div>
-                
-                {/* Currency Selection with Glassmorphism */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-semibold text-white/90 mb-2 block">From</label>
-                    <select
-                      value={selectedFromCurrency}
-                      onChange={(e) => setSelectedFromCurrency(e.target.value)}
-                      className="w-full p-3 bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {currencies.map(currency => (
-                        <option key={currency.code} value={currency.code} className="bg-gray-800 text-white">
-                          {currency.flag} {currency.code}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-white/90 mb-2 block">To</label>
-                    <select
-                      value={selectedToCurrency}
-                      onChange={(e) => setSelectedToCurrency(e.target.value)}
-                      className="w-full p-3 bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {currencies.map(currency => (
-                        <option key={currency.code} value={currency.code} className="bg-gray-800 text-white">
-                          {currency.flag} {currency.code}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Exchange Rate Display with Enhanced Glassmorphism */}
-                <div className="relative overflow-hidden rounded-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-500/20 backdrop-blur-xl border border-white/40"></div>
-                  <div className="relative p-6 text-center">
-                    <div className="text-sm text-white/80 font-medium mb-2">Exchange Rate</div>
-                    <div className="text-3xl font-bold text-white drop-shadow-lg">
-                      {isLoading ? (
-                        <Loader2 className="w-8 h-8 animate-spin mx-auto text-white" />
-                      ) : exchangeRate ? (
-                        <span className="animate-fade-in">
-                          1 {selectedFromCurrency} = {exchangeRate.toFixed(4)} {selectedToCurrency}
-                        </span>
-                      ) : (
-                        <span className="animate-pulse">Loading...</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Amount Buttons with Glassmorphism */}
+        {/* Content with Enhanced Glassmorphism - Compact with Tabs */}
+        <div className="flex-1 overflow-y-auto p-1.5 relative z-10 h-full">
+          <div className="space-y-3 h-full" onClick={(e) => e.stopPropagation()}>
+            {/* Compact Tabs */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/30 shadow-xl"></div>
-              <div className="relative p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-sm">Quick Amounts</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {[100, 500, 1000, 2000, 5000, 10000].map(quickAmount => (
-                    <Button
-                      key={quickAmount}
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleQuickAmount(quickAmount)
-                      }}
-                      className="h-10 bg-white/10 backdrop-blur-xl hover:bg-white/20 border-white/30 text-white font-semibold transition-all duration-300 hover:scale-105 rounded-xl"
-                    >
-                      {quickAmount.toLocaleString()}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+              <div className="relative p-1.5">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+                  <TabsList className="grid w-full grid-cols-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-lg p-1 mb-3">
+                    <TabsTrigger value="convert" className="flex items-center gap-1 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-md transition-all duration-300 text-xs py-1">
+                      <Calculator className="h-3 w-3" />
+                    </TabsTrigger>
+                    <TabsTrigger value="trending" className="flex items-center gap-1 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-md transition-all duration-300 text-xs py-1">
+                      <TrendingUp className="h-3 w-3" />
+                    </TabsTrigger>
+                    <TabsTrigger value="favorites" className="flex items-center gap-1 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-md transition-all duration-300 text-xs py-1">
+                      <Heart className="h-3 w-3" />
+                    </TabsTrigger>
+                    <TabsTrigger value="tools" className="flex items-center gap-1 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-md transition-all duration-300 text-xs py-1">
+                      <Zap className="h-3 w-3" />
+                    </TabsTrigger>
+                  </TabsList>
 
-            {/* Popular Pairs with Enhanced Glassmorphism */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-2xl border border-white/30 shadow-xl"></div>
-              <div className="relative p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 drop-shadow-sm">Popular Pairs</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {popularPairs.slice(0, 4).map((pair) => (
-                    <Button
-                      key={`${pair.from}-${pair.to}`}
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedFromCurrency(pair.from)
-                        setSelectedToCurrency(pair.to)
-                      }}
-                      className="h-16 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 text-white transition-all duration-300 hover:scale-105 rounded-xl group"
-                    >
-                      <div className="text-left">
-                        <div className="text-xs font-semibold text-white/90 group-hover:text-white transition-colors">{pair.from} → {pair.to}</div>
-                        <div className="text-lg font-bold text-white drop-shadow-sm">{pair.rate}</div>
+                  {/* Convert Tab Content */}
+                  <TabsContent value="convert" className="space-y-3 flex-1 overflow-y-auto">
+                    {/* Quick Converter with Glassmorphism - Compact */}
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-semibold text-white drop-shadow-sm">Quick Convert</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              swapCurrencies()
+                            }}
+                            className="p-1 h-6 w-6 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 rounded-lg transition-all duration-300 hover:scale-110 hover:rotate-180"
+                          >
+                            <ArrowRightLeft className="w-3 h-3 text-white" />
+                          </Button>
+                        </div>
+                        
+                        {/* Amount Input with Glassmorphism - Compact */}
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(Number(e.target.value))}
+                            className="w-full p-2 text-lg font-bold bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300"
+                            placeholder="Enter amount"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-xl pointer-events-none"></div>
+                        </div>
+                        
+                        {/* Currency Selection with Glassmorphism - Compact */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs font-semibold text-white/90 mb-1 block">From</label>
+                            <select
+                              value={selectedFromCurrency}
+                              onChange={(e) => setSelectedFromCurrency(e.target.value)}
+                              className="w-full p-2 bg-white/10 backdrop-blur-xl border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300 text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {currencies.map(currency => (
+                                <option key={currency.code} value={currency.code} className="bg-gray-800 text-white">
+                                  {currency.flag} {currency.code}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-semibold text-white/90 mb-1 block">To</label>
+                            <select
+                              value={selectedToCurrency}
+                              onChange={(e) => setSelectedToCurrency(e.target.value)}
+                              className="w-full p-2 bg-white/10 backdrop-blur-xl border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/40 focus:bg-white/20 transition-all duration-300 text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {currencies.map(currency => (
+                                <option key={currency.code} value={currency.code} className="bg-gray-800 text-white">
+                                  {currency.flag} {currency.code}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        
+                        {/* Exchange Rate Display with Enhanced Glassmorphism - Compact */}
+                        <div className="relative overflow-hidden rounded-xl">
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-500/20 backdrop-blur-xl border border-white/40"></div>
+                          <div className="relative p-3 text-center">
+                            <div className="text-xs text-white/80 font-medium mb-1">Exchange Rate</div>
+                            <div className="text-lg font-bold text-white drop-shadow-lg">
+                              {isLoading ? (
+                                <Loader2 className="w-5 h-5 animate-spin mx-auto text-white" />
+                              ) : exchangeRate ? (
+                                <span className="animate-fade-in">
+                                  1 {selectedFromCurrency} = {exchangeRate.toFixed(4)} {selectedToCurrency}
+                                </span>
+                              ) : (
+                                <span className="animate-pulse">Loading...</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </Button>
-                  ))}
-                </div>
+                    </div>
+
+                    {/* Quick Amount Buttons with Glassmorphism - Compact */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3">
+                        <h3 className="text-sm font-semibold text-white mb-2 drop-shadow-sm">Quick Amounts</h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          {[100, 500, 1000, 2000, 5000, 10000].map(quickAmount => (
+                            <Button
+                              key={quickAmount}
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleQuickAmount(quickAmount)
+                              }}
+                              className="h-7 bg-white/10 backdrop-blur-xl hover:bg-white/20 border-white/30 text-white font-semibold transition-all duration-300 hover:scale-105 rounded-lg text-xs"
+                            >
+                              {quickAmount.toLocaleString()}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Popular Pairs with Enhanced Glassmorphism - Compact */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3">
+                        <h3 className="text-sm font-semibold text-white mb-2 drop-shadow-sm">Popular Pairs</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {popularPairs.slice(0, 4).map((pair) => (
+                            <Button
+                              key={`${pair.from}-${pair.to}`}
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelectedFromCurrency(pair.from)
+                                setSelectedToCurrency(pair.to)
+                              }}
+                              className="h-12 bg-white/10 backdrop-blur-xl hover:bg-white/20 border border-white/30 text-white transition-all duration-300 hover:scale-105 rounded-lg group"
+                            >
+                              <div className="text-left">
+                                <div className="text-xs font-semibold text-white/90 group-hover:text-white transition-colors">{pair.from} → {pair.to}</div>
+                                <div className="text-sm font-bold text-white drop-shadow-sm">{pair.rate}</div>
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Trending Tab Content */}
+                  <TabsContent value="trending" className="space-y-3 flex-1 overflow-y-auto">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3">
+                        <h3 className="text-sm font-semibold text-white mb-3 drop-shadow-sm">📈 Trending Currencies</h3>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {trendingCurrencies.slice(0, 6).map((currency, index) => (
+                            <Button
+                              key={currency.code}
+                              variant="ghost"
+                              onClick={() => handleTrendingCurrencyClick(currency.code)}
+                              className="w-full justify-between h-12 bg-white/5 backdrop-blur-xl hover:bg-white/15 transition-all duration-300 border border-white/20 rounded-lg p-2 hover:border-white/40 hover:scale-105 group"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="text-xs bg-gradient-to-br from-emerald-400/20 to-teal-500/20 backdrop-blur-xl rounded-full w-6 h-6 flex items-center justify-center font-bold text-emerald-300 border border-white/30">
+                                  {currency.rank}
+                                </div>
+                                <div className="text-left">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-lg">{currency.flag}</span>
+                                    <div>
+                                      <div className="font-mono text-sm font-bold text-white group-hover:text-emerald-300 transition-colors duration-300">{currency.code}</div>
+                                      <div className="text-xs text-white/70 group-hover:text-white/90 transition-colors duration-300">{currency.name}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                className="text-xs px-2 py-1 rounded-full font-bold backdrop-blur-xl border transition-all duration-300 group-hover:scale-110"
+                                style={{
+                                  backgroundColor: currency.trend.startsWith("+") ? "rgba(34, 197, 94, 0.2)" : "rgba(239, 68, 68, 0.2)",
+                                  color: currency.trend.startsWith("+") ? "#22c55e" : "#ef4444",
+                                  borderColor: currency.trend.startsWith("+") ? "rgba(34, 197, 94, 0.3)" : "rgba(239, 68, 68, 0.3)",
+                                }}
+                              >
+                                {currency.trend}
+                              </div>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+
+                  {/* Favorites Tab Content */}
+                  <TabsContent value="favorites" className="space-y-3 flex-1 overflow-y-auto">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3 text-center">
+                        <div className="text-2xl mb-3">❤️</div>
+                        <div className="text-sm text-white/80 mb-3">Sign in to save your favorite currency pairs</div>
+                        <Button size="sm" className="text-sm h-8 px-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105">
+                          Sign In
+                        </Button>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  {/* Tools Tab Content */}
+                  <TabsContent value="tools" className="space-y-3 flex-1 overflow-y-auto">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-white/15 to-white/5 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl"></div>
+                      <div className="relative p-3">
+                        <h3 className="text-sm font-semibold text-white mb-3 drop-shadow-sm">🛠️ Currency Tools</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { icon: "📊", title: "Rate Alerts" },
+                            { icon: "🧮", title: "Travel Calc" },
+                            { icon: "💰", title: "Savings" },
+                            { icon: "📈", title: "Investment" }
+                          ].map((tool) => (
+                            <Button 
+                              key={tool.title}
+                              variant="outline" 
+                              size="sm" 
+                              className="w-full justify-start text-xs h-10 bg-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 text-white rounded-lg transition-all duration-300 hover:scale-105 group"
+                            >
+                              <span className="text-sm mr-2 group-hover:scale-110 transition-transform duration-300">{tool.icon}</span>
+                              <span className="font-semibold">{tool.title}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>
@@ -1139,38 +1255,48 @@ export function CurrencyConverterWidget({ onCurrencySelect, showCharts = true, c
             </div>
 
             <DialogHeader className="relative z-10">
-              <DialogTitle className="flex items-center gap-3 text-2xl">
-                <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 backdrop-blur-xl rounded-xl border border-white/20">
-                  <DollarSign className="w-7 h-7 text-emerald-400 animate-pulse" />
+              <DialogTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 backdrop-blur-xl rounded-xl border border-white/20">
+                    <DollarSign className="w-7 h-7 text-emerald-400 animate-pulse" />
+                  </div>
+                  <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent font-bold">
+                    Currency Converter - Full View
+                  </span>
                 </div>
-                <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent font-bold">
-                  Currency Converter - Full View
-                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCompactView(!compactView)}
+                  className="bg-white/10 backdrop-blur-xl border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+                >
+                  {compactView ? 'Full View' : 'Compact View'}
+                </Button>
               </DialogTitle>
             </DialogHeader>
             
             <div className="overflow-y-auto max-h-[calc(90vh-120px)] relative z-10">
               <Tabs defaultValue="convert" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-1">
-                  <TabsTrigger value="convert" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300">
-                    <Calculator className="h-4 w-4" />
-                    Convert
+                <TabsList className={`grid w-full grid-cols-5 ${compactView ? 'mb-3' : 'mb-6'} bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl p-1`}>
+                  <TabsTrigger value="convert" className={`flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300 ${compactView ? 'text-xs py-1' : ''}`}>
+                    <Calculator className={`${compactView ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    {!compactView && 'Convert'}
                   </TabsTrigger>
-                  <TabsTrigger value="trending" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300">
-                    <TrendingUp className="h-4 w-4" />
-                    Trending
+                  <TabsTrigger value="trending" className={`flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300 ${compactView ? 'text-xs py-1' : ''}`}>
+                    <TrendingUp className={`${compactView ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    {!compactView && 'Trending'}
                   </TabsTrigger>
-                  <TabsTrigger value="charts" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300">
-                    <BarChart3 className="h-4 w-4" />
-                    Charts
+                  <TabsTrigger value="charts" className={`flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300 ${compactView ? 'text-xs py-1' : ''}`}>
+                    <BarChart3 className={`${compactView ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    {!compactView && 'Charts'}
                   </TabsTrigger>
-                  <TabsTrigger value="favorites" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300">
-                    <Heart className="h-4 w-4" />
-                    Favorites
+                  <TabsTrigger value="favorites" className={`flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300 ${compactView ? 'text-xs py-1' : ''}`}>
+                    <Heart className={`${compactView ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    {!compactView && 'Favorites'}
                   </TabsTrigger>
-                  <TabsTrigger value="tools" className="flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300">
-                    <Zap className="h-4 w-4" />
-                    Tools
+                  <TabsTrigger value="tools" className={`flex items-center gap-2 text-white data-[state=active]:bg-white/20 data-[state=active]:text-white rounded-xl transition-all duration-300 ${compactView ? 'text-xs py-1' : ''}`}>
+                    <Zap className={`${compactView ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                    {!compactView && 'Tools'}
                   </TabsTrigger>
                 </TabsList>
 

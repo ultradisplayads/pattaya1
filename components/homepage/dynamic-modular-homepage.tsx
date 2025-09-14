@@ -228,11 +228,9 @@ export function DynamicModularHomepage() {
         "breaking-news": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
         "radio": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "hot-deals": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
-        "business-spotlight": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "social-feed": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "trending": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "youtube": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
-        "events-calendar": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "quick-links": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "photo-gallery": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
@@ -286,25 +284,22 @@ export function DynamicModularHomepage() {
         
         // 🎯 HOT DEALS (Below news section for high engagement)
         "hot-deals": { x: 3, y: 11, w: 6, h: 5 },
-        "business-spotlight": { x: 0, y: 40, w: 6, h: 8 },
+        "forum-activity": { x: 0, y: 40, w: 6, h: 8 },
         
         // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
         "youtube": { x: 6, y: 40, w: 6, h: 10 },
         "photo-gallery": { x: 0, y: 48, w: 6, h: 9 },
         
         // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-        "events-calendar": { x: 6, y: 50, w: 6, h: 8 },
+        "traffic": { x: 6, y: 50, w: 6, h: 8 },
         "sports-fixtures": { x: 0, y: 57, w: 6, h: 8 },
         
         // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-        "forum-activity": { x: 6, y: 58, w: 6, h: 6 },
-        "trending": { x: 6, y: 64, w: 6, h: 6 },
+        "trending": { x: 6, y: 58, w: 6, h: 6 },
         
         // 🔍 NAVIGATION (Utility widgets, side by side)
         "quick-links": { x: 0, y: 65, w: 6, h: 8 },
         
-        // 🚗 TRAVEL & TRANSPORT (Practical info, side by side)
-        "traffic": { x: 0, y: 73, w: 9, h: 10 },
       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
@@ -450,18 +445,18 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
-          id: "business-spotlight",
-          name: "Business Spotlight",
-          type: "business",
-          description: "Featured local businesses",
+          id: "forum-activity",
+          name: "Forum Activity",
+          type: "social",
+          description: "Latest forum discussions",
           size: "medium",
-          category: "Business",
+          category: "Community",
           isVisible: true,
           isResizable: true,
           allowUserResizingAndMoving: true,
           isMandatory: false,
           settings: {
-            refreshInterval: 600000,
+            refreshInterval: 180000,
           },
         }),
         addAdminSettings({
@@ -511,17 +506,18 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
-          id: "events-calendar",
-          name: "Events Calendar",
-          type: "events",
-          description: "Upcoming events and activities",
-          size: "small",
-          category: "Events",
+          id: "traffic",
+          name: "Traffic Updates",
+          type: "transport",
+          description: "Live traffic updates",
+          size: "large",
+          category: "Information",
           isVisible: true,
           isResizable: true,
           allowUserResizingAndMoving: true,
-          isMandatory: false,
+          isMandatory: true,
           settings: {
+            apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
           },
         }),
@@ -556,21 +552,6 @@ export function DynamicModularHomepage() {
           },
         }),
         addAdminSettings({
-          id: "forum-activity",
-          name: "Forum Activity",
-          type: "social",
-          description: "Latest forum discussions",
-          size: "medium",
-          category: "Community",
-          isVisible: true,
-          isResizable: true,
-          allowUserResizingAndMoving: true,
-          isMandatory: false,
-          settings: {
-            refreshInterval: 180000,
-          },
-        }),
-        addAdminSettings({
           id: "google-reviews",
           name: "Google Reviews",
           type: "business",
@@ -597,22 +578,6 @@ export function DynamicModularHomepage() {
           allowUserResizingAndMoving: true,
           isMandatory: false,
           settings: {
-            refreshInterval: 300000,
-          },
-        }),
-        addAdminSettings({
-          id: "traffic",
-          name: "Traffic Updates",
-          type: "transport",
-          description: "Live traffic updates",
-          size: "xlarge",
-          category: "Information",
-          isVisible: true,
-          isResizable: true,
-          allowUserResizingAndMoving: true,
-          isMandatory: true,
-          settings: {
-            apiKeys: { google: process.env.GOOGLE_MAPS_API_KEY || "" },
             refreshInterval: 300000,
           },
         }),
@@ -734,25 +699,22 @@ export function DynamicModularHomepage() {
       
       // 🎯 HOT DEALS (Below news section for high engagement)
       { i: "hot-deals", x: 3, y: 11, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
-      { i: "business-spotlight", x: 0, y: 40, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 0, y: 40, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
       { i: "youtube", x: 6, y: 40, w: 6, h: 10, isDraggable: true, isResizable: true, static: false },
       { i: "photo-gallery", x: 0, y: 48, w: 6, h: 9, isDraggable: true, isResizable: true, static: false },
       
       // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-      { i: "events-calendar", x: 6, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 6, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       { i: "sports-fixtures", x: 0, y: 57, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-      { i: "forum-activity", x: 6, y: 58, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "trending", x: 6, y: 64, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "trending", x: 6, y: 58, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       
       // 🔍 NAVIGATION (Utility widgets, side by side)
       { i: "quick-links", x: 0, y: 65, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
-      // 🚗 TRAVEL & TRANSPORT (Practical info, side by side)
-      { i: "traffic", x: 0, y: 73, w: 9, h: 10, isDraggable: true, isResizable: true, static: false }
     ];
     
     setLayout(resetLayout);
@@ -845,9 +807,7 @@ export function DynamicModularHomepage() {
       youtube: FeaturedVideosWidget,
       "social-feed": SocialFeedWidget,
       trending: TrendingWidget,
-      "business-spotlight": BusinessSpotlightWidget,
       "hot-deals": EnhancedHotDealsWidget,
-      "events-calendar": EventsCalendarWidget,
       "forum-activity": ForumActivityWidget,
       "photo-gallery": PhotoGalleryWidget,
       "currency-converter": CurrencyConverterWidget,
