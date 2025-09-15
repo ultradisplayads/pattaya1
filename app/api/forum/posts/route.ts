@@ -4,15 +4,15 @@ import { buildApiUrl } from "@/lib/strapi-config"
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const category = searchParams.get("category")
+    const topic = searchParams.get("topic")
     const page = searchParams.get("page") || "1"
-    const limit = searchParams.get("limit") || "10"
+    const limit = searchParams.get("limit") || "20"
 
-    let strapiUrl = buildApiUrl("forum-topics?populate=*&sort=lastActivity:desc")
+    let strapiUrl = buildApiUrl("forum-posts?populate=*&sort=createdAt:asc")
 
-    // Add category filter if specified
-    if (category && category !== "all") {
-      strapiUrl += `&filters[category][$eq]=${encodeURIComponent(category)}`
+    // Add topic filter if specified
+    if (topic) {
+      strapiUrl += `&filters[topic][$eq]=${encodeURIComponent(topic)}`
     }
 
     // Add pagination
@@ -21,15 +21,15 @@ export async function GET(request: NextRequest) {
     const response = await fetch(strapiUrl)
 
     if (!response.ok) {
-      throw new Error("Failed to fetch forum topics")
+      throw new Error("Failed to fetch forum posts")
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Forum topics error:", error)
+    console.error("Forum posts error:", error)
     return NextResponse.json(
-      { error: "Failed to fetch forum topics" },
+      { error: "Failed to fetch forum posts" },
       { status: 500 }
     )
   }

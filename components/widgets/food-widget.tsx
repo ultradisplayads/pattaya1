@@ -564,12 +564,9 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
       <div 
         className={`
           h-full min-h-[500px] flex flex-col
-          bg-gradient-to-br from-pink-300/30 via-purple-200/30 to-indigo-400/30
-          bg-white/10
+          bg-gradient-to-br from-pink-400/70 via-purple-400/70 to-indigo-400/70
           backdrop-blur-xl rounded-2xl overflow-hidden
-          shadow-xl shadow-indigo-500/30
-          border border-white/30
-          cursor-pointer group
+          shadow-xl border border-white/20 cursor-pointer group
           transition-all duration-500
           hover:shadow-2xl hover:scale-[1.03]
         `}

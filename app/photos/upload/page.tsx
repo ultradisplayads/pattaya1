@@ -27,7 +27,7 @@ interface LocationData {
 }
 
 export default function PhotoUploadPage() {
-  const { user, getStrapiToken } = useAuth()
+  const { user, firebaseUser, getStrapiToken } = useAuth()
   const router = useRouter()
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [caption, setCaption] = useState("")
@@ -114,10 +114,56 @@ export default function PhotoUploadPage() {
     setUploadProgress(0)
 
     try {
-      // For now, allow uploads without authentication
-      // TODO: Implement proper authentication later
-      const token = getStrapiToken()
-      console.log("Auth token:", token ? "Found" : "Not found - proceeding without auth")
+      // Get authentication token - required for photo upload
+      let token = getStrapiToken()
+      
+      console.log("User object:", user)
+      console.log("Firebase user object:", firebaseUser)
+      console.log("User exists:", !!user)
+      console.log("Firebase user exists:", !!firebaseUser)
+      
+      // Force token refresh if needed
+      if (user && firebaseUser) {
+        try {
+          console.log("Getting fresh Firebase token...")
+          console.log("Firebase user UID:", firebaseUser.uid)
+          console.log("Firebase user email:", firebaseUser.email)
+          
+          const freshToken = await firebaseUser.getIdToken(true)
+          console.log("Fresh token length:", freshToken.length)
+          console.log("Fresh token preview:", freshToken.substring(0, 50) + "...")
+          
+          // Update the stored token
+          localStorage.setItem('strapi_token', freshToken)
+          token = freshToken // Use the fresh token
+          console.log("Token updated successfully")
+          
+          // User sync will happen automatically when the backend processes the token
+          console.log("✅ Fresh token obtained, ready for upload")
+        } catch (tokenError) {
+          console.error("Failed to get fresh token:", tokenError)
+          console.error("Token error details:", tokenError instanceof Error ? tokenError.message : String(tokenError))
+          console.error("Token error stack:", tokenError instanceof Error ? tokenError.stack : 'No stack trace')
+        }
+      }
+      
+      if (!token) {
+        console.error("No token available after all attempts")
+        setError("Authentication required. Please log in again.")
+        setUploading(false)
+        return
+      }
+      
+      console.log("Using token for upload:", token.substring(0, 50) + "...")
+      
+      console.log("Final token:", token ? "Found" : "Not found")
+      console.log("Final token length:", token?.length)
+      console.log("Final token preview:", token?.substring(0, 50) + "...")
+      
+      // Also check localStorage directly
+      const storedToken = localStorage.getItem('strapi_token')
+      console.log("Stored token:", storedToken ? "Found" : "Not found")
+      console.log("Stored token length:", storedToken?.length)
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
@@ -170,7 +216,8 @@ export default function PhotoUploadPage() {
             city: "Pattaya",
             country: "Thailand"
           },
-          uploaded_at: new Date().toISOString()
+          uploaded_at: new Date().toISOString(),
+          status: 'pending' // Explicitly set status to pending for admin approval
         }
 
         const photoHeaders: Record<string, string> = {
@@ -241,7 +288,7 @@ export default function PhotoUploadPage() {
                 <Check className="w-5 h-5 text-green-600 mr-2" />
                 <div>
                   <span className="text-green-800 font-medium">Photos uploaded successfully!</span>
-                  <p className="text-green-700 text-sm mt-1">Your photos are now live in the gallery!</p>
+                  <p className="text-green-700 text-sm mt-1">Your photos are pending admin approval and will appear in the gallery once approved.</p>
                 </div>
               </div>
             </CardContent>
@@ -427,3 +474,4 @@ export default function PhotoUploadPage() {
     </div>
   )
 }
+
