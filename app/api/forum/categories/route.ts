@@ -3,7 +3,7 @@ import { buildApiUrl } from "@/lib/strapi-config"
 
 export async function GET() {
   try {
-    const response = await fetch(buildApiUrl("forum-activities?populate=*"))
+    const response = await fetch(buildApiUrl("forum-categories?populate=*"))
 
     if (!response.ok) {
       throw new Error("Failed to fetch forum categories")
