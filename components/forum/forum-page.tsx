@@ -37,9 +37,50 @@ const iconMap: Record<string, React.ElementType> = {
 }
 /* -------------------------------------------------------------- */
 
+interface ForumTopic {
+  id: string
+  title: string
+  content: string
+  excerpt: string
+  author: {
+    id: number
+    username: string
+    email: string
+    firebaseUid: string
+  }
+  category: {
+    id: number
+    name: string
+    slug: string
+    description: string
+    icon: string
+    color: string
+  }
+  replies: number
+  views: number
+  likes: number
+  isPinned: boolean
+  isLocked: boolean
+  createdAt: string
+  lastActivity: string
+  trending?: boolean
+  pinned?: boolean
+}
+
+interface ForumCategory {
+  id: number
+  name: string
+  slug: string
+  description: string
+  icon: string
+  color: string
+  topicCount: number
+  postCount: number
+}
+
 export function ForumPage() {
-  const [topics, setTopics] = useState([])
-  const [categories, setCategories] = useState([])
+  const [topics, setTopics] = useState<ForumTopic[]>([])
+  const [categories, setCategories] = useState<ForumCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeCategory, setActiveCategory] = useState("all")
@@ -88,7 +129,7 @@ export function ForumPage() {
       topic.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       topic.content.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesCategory = activeCategory === "all" || topic.category === activeCategory
+    const matchesCategory = activeCategory === "all" || topic.category?.slug === activeCategory
 
     return matchesSearch && matchesCategory
   })
@@ -263,7 +304,7 @@ export function ForumPage() {
 
               <TabsContent value="pinned" className="space-y-4">
                 {filteredTopics
-                  .filter((topic) => topic.pinned)
+                  .filter((topic) => topic.isPinned)
                   .map((topic) => (
                     <TopicCard key={topic.id} topic={topic} />
                   ))}
@@ -276,26 +317,29 @@ export function ForumPage() {
   )
 }
 
-function TopicCard({ topic }: { topic: any }) {
+function TopicCard({ topic }: { topic: ForumTopic }) {
   return (
     <Card className="hover:shadow-md transition-all duration-200 hover:scale-[1.01]">
       <CardContent className="p-6">
         <div className="flex items-start space-x-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={topic.author.avatar || "/placeholder.svg"} />
-            <AvatarFallback>{topic.author.name[0]}</AvatarFallback>
+            <AvatarImage src="/placeholder.svg" />
+            <AvatarFallback>{topic.author.username[0]}</AvatarFallback>
           </Avatar>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center space-x-2">
-                {topic.pinned && <Pin className="h-4 w-4 text-blue-600" />}
+                {topic.isPinned && <Pin className="h-4 w-4 text-blue-600" />}
                 {topic.trending && <TrendingUp className="h-4 w-4 text-orange-500" />}
-                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
+                <h3 
+                  className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer"
+                  onClick={() => window.location.href = `/forum/${topic.id}`}
+                >
                   {topic.title}
                 </h3>
               </div>
-              <Badge variant="outline">{topic.category}</Badge>
+              <Badge variant="outline">{topic.category?.name || 'Uncategorized'}</Badge>
             </div>
 
             <p className="text-gray-600 mb-3 line-clamp-2">{topic.content}</p>
@@ -317,7 +361,7 @@ function TopicCard({ topic }: { topic: any }) {
               </div>
 
               <div className="flex items-center space-x-2">
-                <span>by {topic.author.name}</span>
+                <span>by {topic.author.username}</span>
                 <div className="flex items-center space-x-1">
                   <Clock className="h-3 w-3" />
                   <span>{topic.lastActivity}</span>
