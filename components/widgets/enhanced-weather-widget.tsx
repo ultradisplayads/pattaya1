@@ -1506,7 +1506,7 @@ export function EnhancedWeatherWidget() {
   }
   if (error || !weather) {
     return (
-      <div className="h-full min-h-[400px] flex items-center justify-center bg-gradient-animated border border-white/10 rounded-2xl p-6 text-center">
+      <div className="h-full min-h-[300px] flex items-center justify-center bg-gradient-animated border border-white/10 rounded-2xl p-6 text-center">
         <div>
           <AlertTriangle className="w-10 h-10 mx-auto mb-3 text-red-400" />
           <p className="font-semibold text-white mb-4">{error || 'Weather data unavailable.'}</p>
@@ -1623,7 +1623,7 @@ export function EnhancedWeatherWidget() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   <div className="bg-white/5 p-6 rounded-xl border border-white/10 text-center">
-                    <div className="text-8xl font-thin text-white tracking-tighter">{Math.round(weather.current.temperature)}°</div>
+                    <div className="text-3xl font-thin text-white tracking-tighter">{Math.round(weather.current.temperature)}°</div>
                     <div className="text-xl text-white/90 capitalize">{weather.current.description}</div>
                     <div className="text-base text-white/60">Feels like {Math.round(weather.current.feelsLike)}°</div>
                   </div>
@@ -1642,8 +1642,8 @@ export function EnhancedWeatherWidget() {
                     </div>
                   )}
                 </div>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-4">
                     {[
                       { icon: Droplets, label: 'Humidity', value: `${weather.current.humidity}%` },
                       { icon: Wind, label: 'Wind', value: `${Math.round(weather.current.windSpeed)} ${units === 'metric' ? 'km/h' : 'mph'}` },
