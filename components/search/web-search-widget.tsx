@@ -559,6 +559,7 @@ interface WebSearchResponse {
   }
 }
 
+
 /* ---------------------------
    Component
    --------------------------- */
@@ -574,7 +575,6 @@ export default function WebSearchWidget(): JSX.Element {
   const [totalResults, setTotalResults] = useState(0)
   const [searchTime, setSearchTime] = useState(0)
   const [activeTab, setActiveTab] = useState<"web" | "images">("web")
-
   const searchInputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const RESULTS_PER_PAGE = 8
@@ -627,7 +627,6 @@ export default function WebSearchWidget(): JSX.Element {
 
   const performWebSearch = async (searchQuery: string, page = 1) => {
     if (!searchQuery.trim()) return
-
     setLoading(true)
     try {
       const response = await fetch(
@@ -655,7 +654,6 @@ export default function WebSearchWidget(): JSX.Element {
 
   const performImageSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return
-
     setLoading(true)
     try {
       const response = await fetch(

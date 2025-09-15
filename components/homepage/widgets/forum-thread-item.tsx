@@ -63,16 +63,16 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
       href={topic.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="block p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 bg-white hover:bg-gray-50"
+      className="block p-5 transition-all duration-200"
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-4">
         {/* User Avatar */}
-        <Avatar className="h-8 w-8 flex-shrink-0">
+        <Avatar className="h-12 w-12 flex-shrink-0 shadow-sm">
           <AvatarImage 
             src={topic.avatar_url || undefined} 
             alt={topic.author.name}
           />
-          <AvatarFallback className="text-xs bg-blue-100 text-blue-700">
+          <AvatarFallback className="text-sm bg-blue-500 text-white font-semibold">
             {getAuthorInitials(topic.author.name)}
           </AvatarFallback>
         </Avatar>
@@ -80,75 +80,83 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Title Row */}
-          <div className="flex items-start gap-2 mb-2">
-            <h3 className="font-medium text-gray-900 text-sm leading-tight line-clamp-2 flex-1">
+          <div className="flex items-start gap-3 mb-4">
+            <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2 flex-1 hover:text-blue-600 transition-colors">
               {topic.title}
             </h3>
-            {topic.is_hot && (
-              <span className="text-lg flex-shrink-0" title="Hot Thread">
-                🔥
-              </span>
-            )}
-            {topic.is_pinned && (
-              <Badge variant="secondary" className="text-xs flex-shrink-0">
-                Pinned
-              </Badge>
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {topic.is_hot && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-xl shadow-sm">
+                  <span className="text-sm">🔥</span>
+                  <span>Hot</span>
+                </div>
+              )}
+              {topic.is_pinned && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-xl shadow-sm">
+                  <span className="text-sm">📌</span>
+                  <span>Pinned</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Metadata Row */}
-          <div className="flex items-center gap-3 text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
             {/* Category */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-xl">
               <span 
-                className="text-sm"
+                className="text-base"
                 style={{ color: topic.category_info.color }}
               >
                 {topic.category_info.icon}
               </span>
-              <span className="font-medium">
+              <span className="font-medium text-gray-700 text-sm">
                 {topic.category_info.name}
               </span>
             </div>
 
-            {/* Separator */}
-            <span>•</span>
-
             {/* Engagement Metrics */}
-            <div className="flex items-center gap-1">
-              <MessageSquare className="h-3 w-3" />
-              <span>{topic.reply_count} Replies</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-xl">
+              <MessageSquare className="h-4 w-4 text-blue-600" />
+              <span className="text-blue-700 font-medium text-sm">{topic.reply_count} Replies</span>
             </div>
 
-            {/* Separator */}
-            <span>•</span>
-
             {/* Last Activity */}
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>
-                Last reply by {topic.author.username} {formatTimeAgo(topic.last_activity)}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-xl">
+              <Clock className="h-4 w-4 text-green-600" />
+              <span className="text-green-700 font-medium text-sm">
+                {formatTimeAgo(topic.last_activity)}
               </span>
             </div>
           </div>
 
-          {/* Additional Stats (Optional) */}
-          {(topic.view_count > 0 || topic.like_count > 0) && (
-            <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-              {topic.view_count > 0 && (
-                <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  <span>{topic.view_count} views</span>
-                </div>
-              )}
-              {topic.like_count > 0 && (
-                <div className="flex items-center gap-1">
-                  <ThumbsUp className="h-3 w-3" />
-                  <span>{topic.like_count} likes</span>
-                </div>
-              )}
+          {/* Author Info */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              <span>by </span>
+              <span className="font-semibold text-gray-700 hover:text-blue-600 transition-colors">
+                {topic.author.username}
+              </span>
             </div>
-          )}
+
+            {/* Additional Stats (Optional) */}
+            {(topic.view_count > 0 || topic.like_count > 0) && (
+              <div className="flex items-center gap-2">
+                {topic.view_count > 0 && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-lg">
+                    <Eye className="h-3.5 w-3.5 text-gray-500" />
+                    <span className="text-xs text-gray-600 font-medium">{topic.view_count}</span>
+                  </div>
+                )}
+                {topic.like_count > 0 && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-pink-100 rounded-lg">
+                    <ThumbsUp className="h-3.5 w-3.5 text-pink-500" />
+                    <span className="text-xs text-pink-600 font-medium">{topic.like_count}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </a>

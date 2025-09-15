@@ -99,7 +99,7 @@ export function EnhancedBreakingNewsWidget() {
   const loadBreakingNews = async () => {
     try {
       setLoading(true)
-      const apiUrl = "https://api.pattaya1.com/api/breaking-news/live"
+      const apiUrl = " http://localhost:1337/api/breaking-news/live"
       // Add cache-busting parameter to ensure fresh data
       const response = await fetch(`${apiUrl}?t=${Date.now()}`)
       if (response.ok) {
@@ -847,3 +847,9 @@ function PinnedNewsCarousel({ pinnedNews, onVoteUpdate }: {
     </div>
   );
 }
+
+
+
+
+
+
