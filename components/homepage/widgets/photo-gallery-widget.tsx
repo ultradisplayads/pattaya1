@@ -410,6 +410,7 @@
 
 "use client"
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Camera, Heart, Eye, User, MapPin } from "lucide-react"
@@ -441,8 +442,10 @@ export function PhotoGalleryWidget() {
   const [loading, setLoading] = useState(true)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxPhoto, setLightboxPhoto] = useState<PattayaPulsePhoto | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     loadPhotoData()
     const interval = setInterval(loadPhotoData, 180000)
     return () => clearInterval(interval)
@@ -512,6 +515,131 @@ export function PhotoGalleryWidget() {
   const closeLightbox = () => {
     setLightboxOpen(false)
     setLightboxPhoto(null)
+  }
+
+  // Lightbox Modal Component
+  const LightboxModal = () => {
+    if (!lightboxOpen || !lightboxPhoto || !mounted) return null
+
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-lg transition-opacity duration-500">
+        <div className={`relative max-w-5xl max-h-[90vh] w-full mx-4 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border border-white/20 ${glassGradientBg}`}>
+          <button
+            onClick={closeLightbox}
+            className="absolute top-5 right-5 z-20 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors shadow-lg"
+            aria-label="Close lightbox"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <div className="relative flex justify-center items-center p-6">
+            <img
+              src={lightboxPhoto.image ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"}
+              alt={lightboxPhoto.caption || "Pattaya photo"}
+              className="max-h-[80vh] max-w-full object-contain rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] transition-transform duration-300"
+              draggable={false}
+              loading="lazy"
+            />
+
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={() => {
+                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
+                    setLightboxPhoto(photos[prevIndex])
+                  }}
+                  className="absolute left-5 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                  aria-label="Previous photo"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                    const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
+                    setLightboxPhoto(photos[nextIndex])
+                  }}
+                  className="absolute right-5 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg"
+                  aria-label="Next photo"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
+
+          <div className="mt-4 bg-white/20 backdrop-blur-md rounded-b-3xl p-6 text-gray-900 select-text">
+            {lightboxPhoto.caption && (
+              <h3 className="text-2xl font-semibold mb-3">{lightboxPhoto.caption}</h3>
+            )}
+            <div className="flex items-center justify-between text-sm text-gray-700 mb-4">
+              <div className="flex items-center space-x-2">
+                <User className="w-5 h-5" />
+                <span className="font-semibold">{lightboxPhoto.author?.username || 'Anonymous'}</span>
+              </div>
+              <span className="font-semibold">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
+            </div>
+            {lightboxPhoto.location?.address && (
+              <div className="flex items-center text-sm text-gray-600 mb-5">
+                <MapPin className="w-5 h-5 mr-2" />
+                <span>{lightboxPhoto.location.address}</span>
+              </div>
+            )}
+
+            {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-5">
+                {lightboxPhoto.hashtags.map((h) => (
+                  <Badge
+                    key={h.id}
+                    variant="secondary"
+                    className="text-sm font-semibold px-3 py-1 backdrop-blur-lg bg-white/30 border border-white/50 rounded-lg shadow-md"
+                  >
+                    #{h?.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-base text-gray-500 mb-6 font-semibold">
+              <div className="flex items-center space-x-8">
+                <div className="flex items-center space-x-2">
+                  <Heart className="w-5 h-5 text-red-500" />
+                  <span>{lightboxPhoto.likes || 0}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Eye className="w-5 h-5" />
+                  <span>{lightboxPhoto.views || 0}</span>
+                </div>
+              </div>
+              {lightboxPhoto.featured && (
+                <Badge className="text-sm bg-yellow-400 text-white border-0 font-semibold shadow-lg px-3 py-1 rounded-lg">
+                  Featured
+                </Badge>
+              )}
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => (window.location.href = '/photos/upload')}
+                className="inline-flex items-center px-6 py-3 bg-blue-500/60 backdrop-blur-md text-white text-base font-semibold rounded-xl hover:bg-blue-600/70 transition-colors shadow-lg"
+                aria-label="Submit your photo"
+              >
+                <Camera className="w-6 h-6 mr-3" />
+                Submit Your Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
   }
 
   // linear gradient glassmorphic background CSS string
@@ -652,124 +780,7 @@ export function PhotoGalleryWidget() {
         </div>
       </CardContent>
 
-      {lightboxOpen && lightboxPhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-lg transition-opacity duration-500">
-          <div className={`relative max-w-5xl max-h-[90vh] w-full mx-4 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border border-white/20 ${glassGradientBg}`}>
-            <button
-              onClick={closeLightbox}
-              className="absolute top-5 right-5 z-20 bg-black/50 text-white p-3 rounded-full hover:bg-black/70 transition-colors shadow-lg"
-              aria-label="Close lightbox"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <div className="relative flex justify-center items-center p-6">
-              <img
-                src={lightboxPhoto.image ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"}
-                alt={lightboxPhoto.caption || "Pattaya photo"}
-                className="max-h-[80vh] max-w-full object-contain rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] transition-transform duration-300"
-                draggable={false}
-                loading="lazy"
-              />
-
-              {photos.length > 1 && (
-                <>
-                  <button
-                    onClick={() => {
-                      const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                      const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
-                      setLightboxPhoto(photos[prevIndex])
-                    }}
-                    className="absolute left-5 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg"
-                    aria-label="Previous photo"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => {
-                      const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                      const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
-                      setLightboxPhoto(photos[nextIndex])
-                    }}
-                    className="absolute right-5 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-black/80 transition-colors shadow-lg"
-                    aria-label="Next photo"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="mt-4 bg-white/20 backdrop-blur-md rounded-b-3xl p-6 text-gray-900 select-text">
-              {lightboxPhoto.caption && (
-                <h3 className="text-2xl font-semibold mb-3">{lightboxPhoto.caption}</h3>
-              )}
-              <div className="flex items-center justify-between text-sm text-gray-700 mb-4">
-                <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5" />
-                  <span className="font-semibold">{lightboxPhoto.author?.username || 'Anonymous'}</span>
-                </div>
-                <span className="font-semibold">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
-              </div>
-              {lightboxPhoto.location?.address && (
-                <div className="flex items-center text-sm text-gray-600 mb-5">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  <span>{lightboxPhoto.location.address}</span>
-                </div>
-              )}
-
-              {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
-                <div className="flex flex-wrap gap-3 mb-5">
-                  {lightboxPhoto.hashtags.map((h) => (
-                    <Badge
-                      key={h.id}
-                      variant="secondary"
-                      className="text-sm font-semibold px-3 py-1 backdrop-blur-lg bg-white/30 border border-white/50 rounded-lg shadow-md"
-                    >
-                      #{h?.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center justify-between text-base text-gray-500 mb-6 font-semibold">
-                <div className="flex items-center space-x-8">
-                  <div className="flex items-center space-x-2">
-                    <Heart className="w-5 h-5 text-red-500" />
-                    <span>{lightboxPhoto.likes || 0}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Eye className="w-5 h-5" />
-                    <span>{lightboxPhoto.views || 0}</span>
-                  </div>
-                </div>
-                {lightboxPhoto.featured && (
-                  <Badge className="text-sm bg-yellow-400 text-white border-0 font-semibold shadow-lg px-3 py-1 rounded-lg">
-                    Featured
-                  </Badge>
-                )}
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={() => (window.location.href = '/photos/upload')}
-                  className="inline-flex items-center px-6 py-3 bg-blue-500/60 backdrop-blur-md text-white text-base font-semibold rounded-xl hover:bg-blue-600/70 transition-colors shadow-lg"
-                  aria-label="Submit your photo"
-                >
-                  <Camera className="w-6 h-6 mr-3" />
-                  Submit Your Photo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <LightboxModal />
     </Card>
   )
 }

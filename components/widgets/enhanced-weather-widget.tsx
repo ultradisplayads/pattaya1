@@ -1280,6 +1280,7 @@ import {
   Activity, Waves, Gauge
 } from 'lucide-react'
 import { useLocation } from '@/components/location/location-provider'
+import { SponsorshipBanner } from '@/components/widgets/sponsorship-banner'
 import { buildApiUrl } from '@/lib/strapi-config'
 
 // Interface Definitions
@@ -1362,12 +1363,12 @@ interface WeatherSettings {
 // --- UI Component Below ---
 export function EnhancedWeatherWidget() {
   const { location, units, setUnits } = useLocation()
-  const [weather, setWeather] = useState(null)
-  const [settings, setSettings] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [error, setError] = useState(null)
+  const [weather, setWeather] = useState<WeatherData | null>(null)
+  const [settings, setSettings] = useState<WeatherSettings | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [suggestionsLoading, setSuggestionsLoading] = useState<boolean>(false)
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Data & effect hooks
   useEffect(() => { loadSettings() }, [])
@@ -1375,16 +1376,16 @@ export function EnhancedWeatherWidget() {
   useEffect(() => { if (weather?.current.condition) fetchWeatherSuggestions(weather.current.condition) }, [weather?.current.condition])
 
   // API fetchers (unchanged functionality)
-  const fetchWeatherSuggestions = async (condition) => {
+  const fetchWeatherSuggestions = async (condition: string) => {
     try {
       setSuggestionsLoading(true)
       const suggestionsResponse = await fetch(buildApiUrl(`weather/suggestions?condition=${condition}`))
       if (suggestionsResponse.ok) {
         const suggestionsData = await suggestionsResponse.json()
         if (suggestionsData.data?.length) {
-          setWeather(prev => prev ? { ...prev, suggestions: suggestionsData.data.map(suggestion => ({
+          setWeather(prev => prev ? { ...prev, suggestions: suggestionsData.data.map((suggestion: any) => ({
             title: suggestion.title || 'Activity Suggestion', description: suggestion.description || '', link: suggestion.link || '#', icon: suggestion.icon || '💡', priority: suggestion.priority || false
-          })) } : null)
+          })) } as WeatherData : null)
           return
         }
       }
@@ -1410,7 +1411,7 @@ export function EnhancedWeatherWidget() {
         defaultLongitude: 100.8825,
         units: 'metric', updateFrequencyMinutes: 30,
         widgetEnabled: true, sponsoredEnabled: false
-      })
+      } as WeatherSettings)
     }
   }
   const loadWeather = async () => {
@@ -1426,15 +1427,16 @@ export function EnhancedWeatherWidget() {
       const data = await response.json()
       if (data.data) setWeather(validateWeatherData(data.data))
       else throw new Error('Invalid weather data format')
-    } catch (error) {
-      setError(error?.message || 'Unable to load weather data')
-      setWeather(getFallbackWeatherData(units || settings?.units || 'metric'))
+    } catch (err: unknown) {
+      const message = typeof err === 'object' && err && 'message' in err ? String((err as any).message) : 'Unable to load weather data'
+      setError(message)
+      setWeather(getFallbackWeatherData((units || settings?.units || 'metric') as 'metric' | 'imperial'))
     } finally {
       setLoading(false)
     }
   }
   // Helper utilities
-  const getFallbackWeatherData = (currentUnits) => ({
+  const getFallbackWeatherData = (currentUnits: 'metric' | 'imperial') : WeatherData => ({
     location: { name: 'Pattaya, Thailand', lat: 12.9236, lon: 100.8825 },
     current: { temperature: 32, feelsLike: 39, condition: 'broken clouds', description: 'Broken Clouds', humidity: 65, windSpeed: 3, pressure: 1013, visibility: 10, uvIndex: 6, icon: '04d', sunrise: new Date(Date.now() - 6 * 3600 * 1000).toISOString(), sunset: new Date(Date.now() + 6 * 3600 * 1000).toISOString() },
     hourly: Array.from({ length: 4 }, (_, i) => ({ time: new Date(Date.now() + (i + 1) * 3600 * 1000).toISOString(), temp: 31 - i, icon: '04d' })),
@@ -1447,7 +1449,7 @@ export function EnhancedWeatherWidget() {
     lastUpdated: new Date().toISOString(),
     source: 'Fallback Data'
   })
-  const validateWeatherData = (data) => ({
+  const validateWeatherData = (data: any): WeatherData => ({
     location: { name: data.location?.name || 'Unknown Location', lat: data.location?.lat || 0, lon: data.location?.lon || 0 },
     current: { temperature: data.current?.temperature || 0, feelsLike: data.current?.feelsLike || 0, condition: data.current?.condition || 'unknown', description: data.current?.description || 'Unknown', humidity: data.current?.humidity || 0, windSpeed: data.current?.windSpeed || 0, pressure: data.current?.pressure || 0, visibility: data.current?.visibility || 0, uvIndex: data.current?.uvIndex || 0, icon: data.current?.icon || '01d', sunrise: data.current?.sunrise || new Date().toISOString(), sunset: data.current?.sunset || new Date().toISOString() },
     hourly: data.hourly || [],
@@ -1455,12 +1457,12 @@ export function EnhancedWeatherWidget() {
     airQuality: data.airQuality,
     alerts: data.alerts || [],
     marine: data.marine,
-    suggestions: data.suggestions?.map((s) => ({ ...s })) || [],
+    suggestions: data.suggestions?.map((s: any) => ({ ...s })) || [],
     units: data.units || 'metric',
     lastUpdated: data.lastUpdated || new Date().toISOString(),
     source: data.source || 'Unknown'
   })
-  const getFallbackSuggestions = (condition, temperature, uvIndex) => {
+  const getFallbackSuggestions = (condition: string, temperature: number, uvIndex: number) => {
     const suggestions = []
     if (temperature >= 30) suggestions.push({ title: 'Stay Hydrated!', description: 'High temperature - drink plenty of water.', link: '/safety', icon: '💧', priority: true })
     if (uvIndex >= 8) suggestions.push({ title: 'High UV Protection Needed', description: 'Use sunscreen SPF 50+.', link: '/safety', icon: '☀️', priority: true })
@@ -1468,7 +1470,7 @@ export function EnhancedWeatherWidget() {
     else if (condition.includes('clear')) suggestions.push({ title: 'Beach Day!', description: 'Great for water sports.', link: '/beaches', icon: '🏄‍♂️', priority: false })
     return suggestions.slice(0, 4)
   }
-  const getWeatherIcon = (condition, size = 'h-12 w-12') => {
+  const getWeatherIcon = (condition: string, size = 'h-12 w-12') => {
     const iconProps = { className: `${size} group-hover:scale-105 transition-transform duration-200` }
     const conditionLower = condition.toLowerCase()
     if (conditionLower.includes('clear') || conditionLower.includes('sun')) return <Sun {...iconProps} style={{ color: '#FBBF24' }} />
@@ -1479,8 +1481,8 @@ export function EnhancedWeatherWidget() {
     if (conditionLower.includes('snow')) return <CloudSnow {...iconProps} style={{ color: '#E5E7EB' }} />
     return <Cloud {...iconProps} style={{ color: '#9CA3AF' }} />
   }
-  const formatTime = (timeString) => new Date(timeString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
-  const formatDate = (dateString) => new Date(dateString).toLocaleDateString([], { weekday: 'short' })
+  const formatTime = (timeString: string) => new Date(timeString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString([], { weekday: 'short' })
   if (!settings?.widgetEnabled) return null
   if (loading) {
     return (
@@ -1536,6 +1538,8 @@ export function EnhancedWeatherWidget() {
         className="group bg-gradient-animated transition-shadow duration-500 hover:shadow-sky-400/20 cursor-pointer h-full min-h-[400px] border border-white/10 relative flex flex-col shadow-xl rounded-2xl"
         onClick={() => setIsModalOpen(true)}
       >
+        {/* Global Sponsorship Banner */}
+        <SponsorshipBanner widgetType="weather" />
         <div className="p-5 relative flex items-center justify-between">
           <div className="flex items-center gap-3">
             <MapPin className="w-4 h-4 text-sky-300" />

@@ -80,7 +80,7 @@ interface ForumTopic {
     timestamp: string
   }
   createdAt: string
-  tags: string[]
+  tags?: string[]
   excerpt: string
 }
 
@@ -375,7 +375,7 @@ export function EnhancedForumPage() {
                             </div>
 
                             <div className="flex items-center space-x-2">
-                              {topic.tags.slice(0, 3).map((tag, index) => (
+                              {(topic.tags || []).slice(0, 3).map((tag, index) => (
                                 <Badge key={index} variant="secondary" className="text-xs">
                                   #{tag}
                                 </Badge>
