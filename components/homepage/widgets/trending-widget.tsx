@@ -125,8 +125,7 @@ export function TrendingWidget() {
 
   if (trendingItems.length === 0) {
     return (
-      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
-        <CardHeader className="pb-4 px-6 pt-6">
+<Card className={`${glassGradientBg} h-full`}>        <CardHeader className="pb-4 px-6 pt-6">
           <CardTitle className="text-base font-medium text-gray-900 flex items-center">
             <TrendingUp className="h-4 w-4 mr-2 text-gray-600" />
             Trending Now
@@ -215,3 +214,20 @@ export function TrendingWidget() {
     </Card>
   )
 }
+
+// Tailwind classes to add colorful glassmorphism background:
+const glassGradientBg = `
+  bg-gradient-to-tr
+  from-red-400/20
+  via-pink-400/20
+  to-orange-400/20
+  backdrop-blur-lg
+  border
+  border-white/30
+  shadow-lg
+  shadow-indigo-400/30
+  rounded-3xl
+  transition-shadow
+  duration-500
+  hover:shadow-indigo-500/50
+`
