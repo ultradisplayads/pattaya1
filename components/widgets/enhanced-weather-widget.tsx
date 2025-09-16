@@ -1361,7 +1361,11 @@ interface WeatherSettings {
   sponsorLogo?: string
 }
 // --- UI Component Below ---
-export function EnhancedWeatherWidget() {
+interface EnhancedWeatherWidgetProps {
+  onExpand?: () => void
+}
+
+export function EnhancedWeatherWidget({ onExpand }: EnhancedWeatherWidgetProps = {}) {
   const { location, units, setUnits } = useLocation()
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [settings, setSettings] = useState<WeatherSettings | null>(null)
@@ -1536,7 +1540,13 @@ export function EnhancedWeatherWidget() {
     <>
       <div
         className="group bg-gradient-animated transition-shadow duration-500 hover:shadow-sky-400/20 cursor-pointer h-full min-h-[400px] border border-white/10 relative flex flex-col shadow-xl rounded-2xl"
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => {
+          if (onExpand) {
+            onExpand()
+          } else {
+            setIsModalOpen(true)
+          }
+        }}
       >
         {/* Global Sponsorship Banner */}
         <SponsorshipBanner widgetType="weather" />
@@ -1615,7 +1625,7 @@ export function EnhancedWeatherWidget() {
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setIsModalOpen(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl max-h-[90vh] bg-gradient-animated border border-white/20 shadow-2xl rounded-2xl flex flex-col"
+            className="w-screen h-screen max-w-none max-h-none bg-gradient-animated border border-white/20 shadow-2xl rounded-none flex flex-col"
           >
             <div className="p-6 relative border-b border-white/10">
               <div className="flex items-center justify-between mb-4">
