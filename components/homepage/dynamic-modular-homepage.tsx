@@ -265,7 +265,7 @@ export function DynamicModularHomepage() {
         "unified-search": { x: 1, y: 0, w: 10, h: 5 },
         
         // 📰 NEWS & INFORMATION (Below search bar)
-        "weather": { x: 0, y: 5, w: 3, h: 11 },
+        "weather": { x: 0, y: 5, w: 3, h: 6 },
         "breaking-news": { x: 3, y: 5, w: 6, h: 6 },
         "radio": { x: 9, y: 5, w: 3, h: 11 },
         
@@ -680,7 +680,7 @@ export function DynamicModularHomepage() {
       { i: "unified-search", x: 1, y: 0, w: 10, h: 5, isDraggable: true, isResizable: true, static: false },
       
       // 📰 NEWS & INFORMATION (Below search bar)
-      { i: "weather", x: 0, y: 5, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
+      { i: "weather", x: 0, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "breaking-news", x: 3, y: 5, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "radio", x: 9, y: 5, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
       
