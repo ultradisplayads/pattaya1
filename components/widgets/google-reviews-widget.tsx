@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Star, ExternalLink, RefreshCw, MapPin, ChevronLeft, ChevronRight, Play, Pause } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SponsorshipBanner } from "./sponsorship-banner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -203,6 +204,7 @@ export function GoogleReviewsWidget() {
 
   return (
     <Card className="top-row-widget reviews-widget bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200 h-full">
+      <SponsorshipBanner widgetType="google-reviews" />
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center space-x-2 text-yellow-800">

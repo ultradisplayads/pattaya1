@@ -96,7 +96,7 @@ export default function TravelSearchWidget() {
 
   const loadWidgetConfiguration = async () => {
     try {
-      const response = await fetch('https://api.pattaya1.com/api/travel-widget/config')
+      const response = await fetch(' http://locahost:1337/api/travel-widget/config')
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data) {
@@ -250,7 +250,7 @@ export default function TravelSearchWidget() {
         params.append('returnDate', searchData.returnDate)
       }
 
-      const response = await fetch(`https://api.pattaya1.com/api/travel-widget/flight-search?${params}`)
+      const response = await fetch(` http://locahost:1337/api/travel-widget/flight-search?${params}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -292,7 +292,7 @@ export default function TravelSearchWidget() {
     if (!widget) return
 
     try {
-      await fetch('https://api.pattaya1.com/api/travel-widget/track', {
+      await fetch(' http://locahost:1337/api/travel-widget/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -387,7 +387,7 @@ export default function TravelSearchWidget() {
     <>
       {/* Main Widget - Clickable to expand */}
       <div 
-        className="h-full flex flex-col bg-gradient-to-br from-blue-100 via-sky-100 to-blue-50 rounded-xl overflow-hidden relative shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition-shadow duration-300"
+        className="h-full pb-36 flex flex-col bg-gradient-to-br from-blue-100 via-sky-100 to-blue-50 rounded-xl overflow-hidden relative shadow-sm border border-blue-200 cursor-pointer hover:shadow-md transition-shadow duration-300"
         onClick={() => setShowExpandedModal(true)}
       >
         {/* Clean Header - Compact */}
@@ -485,7 +485,7 @@ export default function TravelSearchWidget() {
         <div className="flex-1 overflow-y-auto p-1.5 h-full">
           <div className="space-y-1.5 h-full" onClick={(e) => e.stopPropagation()}>
             {/* Simplified Tabs */}
-            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex my-4 gap-1" onClick={(e) => e.stopPropagation()}>
               <Button 
                 variant={activeTab === 'flights' ? 'default' : 'outline'}
                 size="sm"
@@ -514,7 +514,7 @@ export default function TravelSearchWidget() {
 
             {/* Professional Flight Search Form - Compact */}
             {activeTab === 'flights' && (
-              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-blue-200/60 shadow-sm flex-1" onClick={(e) => e.stopPropagation()}>
+              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-blue-200/60 shadow-sm flex-1 py-4" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleFlightSearch} className="space-y-1.5">
                   {/* Form Header */}
                   <div className="text-center mb-2">
@@ -718,7 +718,7 @@ export default function TravelSearchWidget() {
                   {/* Search Button - Enhanced */}
                   <Button 
                     type="submit" 
-                    className="w-full h-8 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-700 hover:via-blue-600 hover:to-sky-600 text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                    className="w-full h-8 mt-8 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-700 hover:via-blue-600 hover:to-sky-600 text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow-md transition-all duration-300 "
                     disabled={loading || !flightSearch.origin || !flightSearch.destination || !flightSearch.departDate}
                     onClick={(e) => e.stopPropagation()}
                   >

@@ -8,11 +8,11 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get("page") || "1"
     const limit = searchParams.get("limit") || "10"
 
-    let strapiUrl = buildApiUrl("forum-activities?populate=*&sort=LastActivity:desc")
+    let strapiUrl = buildApiUrl("forum-topics?populate=*&sort=lastActivity:desc")
 
     // Add category filter if specified
     if (category && category !== "all") {
-      strapiUrl += `&filters[Category][$eq]=${encodeURIComponent(category)}`
+      strapiUrl += `&filters[category][$eq]=${encodeURIComponent(category)}`
     }
 
     // Add pagination
