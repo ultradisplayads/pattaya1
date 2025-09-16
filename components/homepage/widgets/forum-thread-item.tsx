@@ -125,7 +125,7 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
 
   return (
     <div 
-      className="block p-5 transition-all duration-200 cursor-pointer hover:bg-gray-50 rounded-lg"
+      className="block p-5 transition-colors duration-200 cursor-pointer hover:bg-gray-50 rounded-lg"
       onClick={handleTopicClick}
     >
       <div className="flex items-start gap-4">
