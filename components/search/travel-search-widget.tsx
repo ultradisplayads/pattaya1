@@ -96,7 +96,7 @@ export default function TravelSearchWidget() {
 
   const loadWidgetConfiguration = async () => {
     try {
-      const response = await fetch(' https://api.pattaya1.com/api/travel-widget/config')
+      const response = await fetch(' http://locahost:1337/api/travel-widget/config')
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data) {
@@ -250,7 +250,7 @@ export default function TravelSearchWidget() {
         params.append('returnDate', searchData.returnDate)
       }
 
-      const response = await fetch(` https://api.pattaya1.com/api/travel-widget/flight-search?${params}`)
+      const response = await fetch(` http://locahost:1337/api/travel-widget/flight-search?${params}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -292,7 +292,7 @@ export default function TravelSearchWidget() {
     if (!widget) return
 
     try {
-      await fetch(' https://api.pattaya1.com/api/travel-widget/track', {
+      await fetch(' http://locahost:1337/api/travel-widget/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
