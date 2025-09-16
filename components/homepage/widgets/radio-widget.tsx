@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
-import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X, ChevronDown, ChevronUp, Activity, Zap, Headphones, Signal, Clock, TrendingUp, Globe, Wifi, WifiOff, SkipBack, SkipForward, Plus } from "lucide-react"
+import { Play, Pause, Volume2, VolumeX, Heart, Radio, MoreVertical, Users, Music, Star, RefreshCw, ExternalLink, X, ChevronDown, ChevronUp, Activity, Zap, Headphones, Signal, Clock, TrendingUp, Globe, Wifi, WifiOff, SkipBack, SkipForward, Plus, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -1712,22 +1712,22 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
                   <div className="flex items-center gap-1 min-h-[16px]">
                     {currentStation.isSponsored ? (
                       <>
-                        <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
-                          SPONSORED
-                        </Badge>
+                      <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
+                        SPONSORED
+                      </Badge>
                         {currentStation.sponsoredLabel ? (
                           <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-blue-50 text-blue-700 border-blue-200 truncate max-w-[8rem]" title={currentStation.sponsoredLabel}>
-                            {currentStation.sponsoredLabel}
-                          </Badge>
+                          {currentStation.sponsoredLabel}
+                        </Badge>
                         ) : (
                           <span className="invisible text-[8px] px-1.5 py-0.5">placeholder</span>
-                        )}
+                      )}
                       </>
                     ) : (
                       // Reserve space when no badges present
                       <span className="invisible text-[8px] px-1.5 py-0.5">placeholder</span>
-                    )}
-                  </div>
+                  )}
+                </div>
                 </div>
                 {/* Meta row with fixed height */}
                 <div className="flex items-center gap-1.5 text-[11px] text-gray-600 mb-1.5 min-h-[16px]">
@@ -1877,7 +1877,7 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
         ref={audioRef}
         preload="metadata"
         crossOrigin="anonymous"
-        onError={(e) => {
+                    onError={(e) => {
           console.error('Radio stream error:', e)
           setError('Radio stream error occurred')
           setIsPlaying(false)
@@ -1890,9 +1890,9 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
           <div className="flex items-center gap-1 text-xs text-gray-600 bg-white/80 px-2 py-1 rounded-full shadow-sm">
             <Radio className="h-3 w-3 text-gray-500" />
             <span className="font-medium">Sponsored by {sponsoredBanner.sponsorName}</span>
-          </div>
-        </div>
-      )}
+                    </div>
+                    </div>
+                  )}
     </Card>
 
     {isStationsOpen && (
@@ -1905,28 +1905,28 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
           {/* Floating animated music icons */}
           <div className="absolute top-4 right-4 opacity-15">
             <Music className="w-6 h-6 text-purple-400 animate-bounce delay-100" />
-          </div>
+                  </div>
           <div className="absolute top-8 left-6 opacity-10">
             <Radio className="w-5 h-5 text-pink-400 animate-spin" style={{animationDuration: '8s'}} />
-          </div>
+                  </div>
           <div className="absolute bottom-6 right-8 opacity-15">
             <Headphones className="w-5 h-5 text-indigo-400 animate-pulse delay-300" />
-          </div>
+                </div>
           <div className="absolute bottom-4 left-4 opacity-10">
             <Volume2 className="w-4 h-4 text-purple-300 animate-bounce delay-500" />
-          </div>
+                </div>
           <div className="absolute top-1/2 left-2 opacity-10">
             <Zap className="w-5 h-5 text-pink-400 animate-pulse delay-700" />
-          </div>
+              </div>
           <div className="absolute top-1/3 right-2 opacity-10">
             <Activity className="w-4 h-4 text-indigo-400 animate-bounce delay-900" />
           </div>
           <div className="absolute top-1/4 left-1/3 opacity-10">
             <Signal className="w-3.5 h-3.5 text-purple-500 animate-pulse delay-400" />
-          </div>
+        </div>
           <div className="absolute bottom-1/3 right-1/4 opacity-10">
             <TrendingUp className="w-4 h-4 text-pink-500 animate-bounce delay-600" />
-          </div>
+        </div>
 
           {/* Geometric shapes with gradients */}
           <div className="absolute -top-12 -right-12 w-20 h-20 bg-gradient-to-br from-purple-400/15 to-pink-500/15 rounded-full animate-pulse"></div>
@@ -1941,7 +1941,7 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
 
           {/* Animated border glow */}
           <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-purple-400/15 via-pink-500/15 to-indigo-400/15 animate-pulse opacity-30"></div>
-        </div>
+              </div>
         {/* Foreground panel */}
         <div
           onClick={(e) => e.stopPropagation()}
@@ -1954,46 +1954,46 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
             </div>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700" onClick={() => setIsStationsOpen(false)}>
               <X className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+              </Button>
+                </div>
           <div className="p-2.5 sm:p-3 overflow-y-auto flex-1">
             <div className="grid gap-1.5">
-              {stations.map((station) => (
+                  {stations.map((station) => (
                 <div
-                  key={station.id}
+                      key={station.id}
                   className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer ${
                     currentStation?.id === station.id ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200 hover:bg-gray-50'
                   }`}
                   onClick={() => { handleUserInteraction(); playStation(station); setIsStationsOpen(false) }}
                 >
-                  <div className="relative">
-                    <img
-                      src={station.logo || "/placeholder.svg"}
-                      alt={station.name}
+                        <div className="relative">
+                          <img
+                            src={station.logo || "/placeholder.svg"}
+                            alt={station.name}
                       className="w-9 h-9 rounded-lg object-cover shadow-sm"
-                      onLoad={() => handleLogoLoad(station.id)}
-                      onError={(e) => {
-                        handleLogoError(station.id, station.name)
-                        const target = e.target as HTMLImageElement
-                        target.src = "/placeholder.svg?height=40&width=40&text=" + station.name.charAt(0)
-                      }}
-                    />
-                    {station.featured && (
+                            onLoad={() => handleLogoLoad(station.id)}
+                            onError={(e) => {
+                              handleLogoError(station.id, station.name)
+                              const target = e.target as HTMLImageElement
+                              target.src = "/placeholder.svg?height=40&width=40&text=" + station.name.charAt(0)
+                            }}
+                          />
+                          {station.featured && (
                       <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full flex items-center justify-center shadow">
-                        <Star className="w-1.5 h-1.5 text-white fill-white" />
-                      </div>
-                    )}
-                  </div>
+                              <Star className="w-1.5 h-1.5 text-white fill-white" />
+                            </div>
+                          )}
+                        </div>
                   <div className="flex-1 min-w-0 text-[12px]">
                     <div className="flex items-center gap-1.5">
                       <h5 className="font-semibold text-gray-900 truncate max-w-[12rem]" title={station.name}>{station.name}</h5>
-                      {station.isSponsored && (
+                            {station.isSponsored && (
                         <Badge variant="outline" className="text-[10px] leading-none px-1 py-0.5 bg-green-50 text-green-700 border-green-200">
-                          SPONSORED
-                        </Badge>
-                      )}
+                                  SPONSORED
+                                  </Badge>
+                                )}
                       {station.isLive && <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>}
-                    </div>
+                              </div>
                     <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-600">
                       <span className="inline-flex items-center gap-1 bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-md border border-purple-100">
                         <Radio className="w-3 h-3" />
@@ -2007,12 +2007,12 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
                         <Users className="w-3 h-3" />
                         <span>{station.listeners.toLocaleString()}</span>
                       </span>
-                    </div>
+                          </div>
                     <div className="mt-0.5 text-[11px] text-gray-500 flex items-center gap-1 min-w-0">
                       <Music className="w-3 h-3" />
                       <span className="truncate" title={station.nowPlaying}>{station.nowPlaying}</span>
-                    </div>
-                  </div>
+                          </div>
+                        </div>
                   <div className="flex-shrink-0">
                     <Button
                       variant="ghost"
@@ -2023,11 +2023,11 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
                     >
                       {currentStation?.id === station.id && isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
                     </Button>
-                  </div>
+                      </div>
                 </div>
-              ))}
-            </div>
-          </div>
+                  ))}
+                </div>
+              </div>
         </div>
       </div>
     )}
@@ -2060,8 +2060,8 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
                 <div className="w-1 h-1 bg-indigo-300 rounded-full animate-pulse delay-300"></div>
                 <div className="w-1 h-4 bg-purple-300 rounded-full animate-pulse delay-75"></div>
                 <div className="w-1 h-2 bg-pink-300 rounded-full animate-pulse delay-150"></div>
-              </div>
-            </div>
+          </div>
+        </div>
 
             {/* Pulsing circles */}
             <div className="absolute bottom-4 left-4 opacity-10">
@@ -2095,231 +2095,276 @@ export const RadioWidget = React.memo(function RadioWidget({ className }: { clas
                     <div className="absolute inset-0 w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full animate-ping opacity-75"></div>
                   </div>
                   <span className="text-[15px] font-semibold text-gray-900 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    Radio Stations
+            Radio Stations
                   </span>
                   <Badge variant="outline" className="text-[10px] px-2 py-0.5 font-medium border-gray-200 rounded-full">
                     {stations.length} stations
                   </Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsExpanded(false)}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(false)}
                   className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
-                >
+            >
                   <X className="w-4 h-4" />
-                </Button>
+            </Button>
               </div>
             </div>
 
-            <div className="p-4 space-y-4">
-              {/* Current Station Card - matching compact style */}
-              {currentStation && (
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <img
-                        src={currentStation.logo || "/placeholder.svg"}
-                        alt={currentStation.name}
-                        className="w-16 h-16 rounded-xl object-cover shadow-sm"
-                        onLoad={() => currentStation && handleLogoLoad(currentStation.id)}
-                        onError={(e) => {
-                          if (currentStation) {
-                            handleLogoError(currentStation.id, currentStation.name)
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
-                          }
-                        }}
-                      />
-                      {currentStation?.featured && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-                          <Star className="w-2 h-2 text-white fill-white" />
-                        </div>
-                      )}
+            <div className="p-4 space-y-3">
+              {/* Current Station Card - Enhanced with icons and colors */}
+          {currentStation && (
+                <div className="bg-gradient-to-r from-white/95 to-purple-50/95 backdrop-blur-sm rounded-xl border border-purple-200/60 shadow-lg p-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <img
+                    src={currentStation.logo || "/placeholder.svg"}
+                    alt={currentStation.name}
+                        className="w-14 h-14 rounded-xl object-cover shadow-md ring-2 ring-purple-100"
+                    onLoad={() => currentStation && handleLogoLoad(currentStation.id)}
+                    onError={(e) => {
+                      if (currentStation) {
+                        handleLogoError(currentStation.id, currentStation.name)
+                        const target = e.target as HTMLImageElement
+                        target.src = "/placeholder.svg?height=64&width=64&text=" + currentStation.name.charAt(0)
+                      }
+                    }}
+                  />
+                  {currentStation?.featured && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                      <Star className="w-2 h-2 text-white fill-white" />
+                    </div>
+                  )}
                       {!validateStreamUrl(currentStation.streamUrl) && (
                         <div className="absolute -bottom-1 -left-1 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-medium">
                           OFFLINE
-                        </div>
+                </div>
                       )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">{currentStation?.name}</h3>
+                        <div className="flex items-center gap-1.5">
+                          <Radio className="w-4 h-4 text-purple-600" />
+                          <h3 className="text-base font-semibold text-gray-900 truncate">{currentStation?.name}</h3>
+                        </div>
                         {currentStation?.isSponsored && (
-                          <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 rounded-full">
+                          <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-300 rounded-full">
+                            <DollarSign className="w-2.5 h-2.5 mr-1" />
                             {currentStation.sponsoredLabel || "SPONSORED"}
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <span className="font-mono font-medium text-purple-600">{currentStation?.frequency} FM</span>
-                        <span>•</span>
-                        <span>{currentStation?.genre}</span>
-                        <span>•</span>
-                        <span>{currentStation?.listeners.toLocaleString()} listeners</span>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1.5">
+                        <div className="flex items-center gap-1">
+                          <Signal className="w-3.5 h-3.5 text-purple-500" />
+                    <span className="font-mono font-medium text-purple-600">{currentStation?.frequency} FM</span>
+                  </div>
+                        <span className="text-gray-400">•</span>
+                        <div className="flex items-center gap-1">
+                          <Music className="w-3.5 h-3.5 text-pink-500" />
+                          <span className="text-pink-600">{currentStation?.genre}</span>
+                  </div>
+                        <span className="text-gray-400">•</span>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3.5 h-3.5 text-blue-500" />
+                          <span className="text-blue-600">{currentStation?.listeners.toLocaleString()}</span>
+                </div>
                       </div>
-                      <div className="text-sm text-gray-700 truncate" title={currentStation?.nowPlaying}>
-                        {currentStation?.nowPlaying}
+                      <div className="flex items-center gap-1.5 text-sm text-gray-700 truncate" title={currentStation?.nowPlaying}>
+                        <Activity className="w-3.5 h-3.5 text-indigo-500" />
+                        <span className="truncate">{currentStation?.nowPlaying}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => playPreviousStation()}
-                        disabled={!canPlayPrevious()}
-                        title="Previous station"
-                        className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all duration-200"
-                      >
-                        <SkipBack className="w-4 h-4" />
-                      </Button>
+                    <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => playPreviousStation()}
+                    disabled={!canPlayPrevious()}
+                    title="Previous station"
+                        className="h-9 w-9 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-600 transition-all duration-200 shadow-sm"
+                  >
+                        <SkipBack className="w-3.5 h-3.5" />
+                  </Button>
 
-                      <Button
-                        onClick={() => {handleUserInteraction();currentStation && playStation(currentStation)}}
-                        disabled={!currentStation || !validateStreamUrl(currentStation?.streamUrl || '')}
-                        className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 relative"
+                  <Button
+                    onClick={() => {handleUserInteraction();currentStation && playStation(currentStation)}}
+                    disabled={!currentStation || !validateStreamUrl(currentStation?.streamUrl || '')}
+                        className="h-11 w-11 rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 relative"
                       >
                         {isLoading ? (
-                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : isPlaying ? (
-                          <Pause className="w-6 h-6" />
+                          <Pause className="w-5 h-5" />
                         ) : (
-                          <Play className="w-6 h-6 ml-0.5" />
+                          <Play className="w-5 h-5 ml-0.5" />
                         )}
                         {isSwitching && (
                           <div className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-white/80 flex items-center justify-center">
                             <RefreshCw className="w-2 h-2 text-purple-600 animate-spin" />
                           </div>
                         )}
-                      </Button>
+                  </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => playNextStation()}
-                        disabled={!canPlayNext()}
-                        title="Next station"
-                        className="h-10 w-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-all duration-200"
-                      >
-                        <SkipForward className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Volume Control - matching compact style */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/60 shadow-sm p-4">
-                <div className="flex items-center gap-3">
-                  <Volume2 className="h-5 w-5 text-gray-600" />
-                  <div className="flex-1">
-                    <Slider
-                      value={volume}
-                      onValueChange={handleVolumeChange}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-gray-600 min-w-[3rem]">{volume[0]}%</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={toggleMute}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100 transition-all duration-200"
+                    onClick={() => playNextStation()}
+                    disabled={!canPlayNext()}
+                    title="Next station"
+                        className="h-9 w-9 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-600 transition-all duration-200 shadow-sm"
                   >
-                    {isMuted ? <VolumeX className="w-4 h-4 text-red-500" /> : <Volume2 className="w-4 h-4" />}
+                        <SkipForward className="w-3.5 h-3.5" />
                   </Button>
                 </div>
               </div>
+            </div>
+          )}
 
-              {/* All Stations List - professional grid layout */}
-              <div className="space-y-3">
-                <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Radio className="w-5 h-5 text-purple-600" />
-                  All Stations
-                </h4>
-                <div className="grid gap-3 max-h-96 overflow-y-auto scrollbar-thin">
-                  {stations.map((station) => (
-                    <div
-                      key={station.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer hover:shadow-md ${
+              {/* Volume Control - Enhanced with colors and icons */}
+              <div className="bg-gradient-to-r from-white/95 to-blue-50/95 backdrop-blur-sm rounded-xl border border-blue-200/60 shadow-lg p-3">
+            <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 text-blue-600" />
+                    )}
+                    <span className="text-sm font-medium text-gray-700">Volume</span>
+                  </div>
+              <div className="flex-1">
+                <Slider
+                  value={volume}
+                  onValueChange={handleVolumeChange}
+                  max={100}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-blue-600 min-w-[2.5rem]">{volume[0]}%</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMute}
+                      className="h-7 w-7 p-0 rounded-full hover:bg-red-50 transition-all duration-200"
+              >
+                      {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-500" /> : <Volume2 className="w-3.5 h-3.5 text-blue-600" />}
+              </Button>
+            </div>
+            </div>
+          </div>
+
+              {/* All Stations List - Enhanced with icons and colors */}
+          <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <Radio className="w-4 h-4 text-purple-600" />
+                    <h4 className="text-base font-semibold text-gray-900">All Stations</h4>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200">
+                    {stations.length} stations
+                  </Badge>
+                </div>
+                <div className="grid gap-2 max-h-80 overflow-y-auto scrollbar-thin pb-2">
+              {stations.map((station) => (
+                <div
+                  key={station.id}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg border transition-all cursor-pointer hover:shadow-md ${
                         currentStation?.id === station.id 
-                          ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-sm' 
-                          : 'bg-white/90 border-gray-200/60 hover:bg-gray-50/90'
-                      }`}
-                      onClick={() => {
-                        handleUserInteraction()
-                        playStation(station)
+                          ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200 shadow-sm ring-1 ring-purple-100' 
+                          : 'bg-white/90 border-gray-200/60 hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50/50'
+                  }`}
+                  onClick={() => {
+                    handleUserInteraction()
+                    playStation(station)
+                  }}
+                >
+                  <div className="relative">
+                    <img
+                      src={station.logo || "/placeholder.svg"}
+                      alt={station.name}
+                          className="w-10 h-10 rounded-lg object-cover shadow-sm ring-1 ring-gray-100"
+                      onLoad={() => handleLogoLoad(station.id)}
+                      onError={(e) => {
+                        handleLogoError(station.id, station.name)
+                        const target = e.target as HTMLImageElement
+                        target.src = "/placeholder.svg?height=48&width=48&text=" + station.name.charAt(0)
                       }}
-                    >
-                      <div className="relative">
-                        <img
-                          src={station.logo || "/placeholder.svg"}
-                          alt={station.name}
-                          className="w-12 h-12 rounded-xl object-cover shadow-sm"
-                          onLoad={() => handleLogoLoad(station.id)}
-                          onError={(e) => {
-                            handleLogoError(station.id, station.name)
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.svg?height=48&width=48&text=" + station.name.charAt(0)
-                          }}
-                        />
-                        {station.featured && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-                            <Star className="w-1.5 h-1.5 text-white fill-white" />
-                          </div>
-                        )}
-                        {station.isLive && (
+                    />
+                    {station.featured && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-sm">
+                        <Star className="w-1.5 h-1.5 text-white fill-white" />
+                      </div>
+                    )}
+                    {station.isLive && (
                           <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                          </div>
-                        )}
+                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                      </div>
+                    )}
                         {!validateStreamUrl(station.streamUrl) && (
                           <div className="absolute -bottom-1 -left-1 bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full font-medium">
                             OFFLINE
                           </div>
                         )}
-                      </div>
+                  </div>
 
-                      <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h5 className="font-medium text-gray-900 truncate">{station.name}</h5>
-                          {station.isSponsored && (
-                            <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200 rounded-full">
+                          <div className="flex items-center gap-1">
+                            <Radio className="w-3 h-3 text-purple-500" />
+                            <h5 className="text-sm font-medium text-gray-900 truncate">{station.name}</h5>
+                          </div>
+                      {station.isSponsored && (
+                            <Badge variant="outline" className="text-[8px] px-1.5 py-0.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-300 rounded-full">
+                              <DollarSign className="w-2 h-2 mr-1" />
                               {station.sponsoredLabel || "SPONSORED"}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                          <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
-                          <span>•</span>
-                          <span>{station.genre}</span>
-                          <span>•</span>
-                          <span>{station.listeners.toLocaleString()} listeners</span>
-                        </div>
-                        <p className="text-sm text-gray-600 truncate" title={station.nowPlaying}>{station.nowPlaying}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {station.website && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              window.open(station.website, '_blank')
-                            }}
-                            className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                        </Badge>
+                      )}
                     </div>
-                  ))}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                          <div className="flex items-center gap-1">
+                            <Signal className="w-3 h-3 text-purple-500" />
+                            <span className="font-mono font-medium text-purple-600">{station.frequency} FM</span>
+                          </div>
+                          <span className="text-gray-400">•</span>
+                          <div className="flex items-center gap-1">
+                            <Music className="w-3 h-3 text-pink-500" />
+                            <span className="text-pink-600">{station.genre}</span>
+                          </div>
+                          <span className="text-gray-400">•</span>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3 text-blue-500" />
+                            <span className="text-blue-600">{station.listeners.toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-600 truncate" title={station.nowPlaying}>
+                          <Activity className="w-3 h-3 text-indigo-500" />
+                          <span className="truncate">{station.nowPlaying}</span>
+                        </div>
+                  </div>
+
+                      <div className="flex items-center gap-1">
+                    {station.website && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(station.website, '_blank')
+                        }}
+                            className="h-6 w-6 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
+                      >
+                            <ExternalLink className="w-3 h-3" />
+                      </Button>
+                    )}
+                        <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  </div>
+                </div>
+              ))}
                 </div>
               </div>
             </div>
