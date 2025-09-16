@@ -95,7 +95,7 @@ interface WeatherSettings {
 }
 
 export function EnhancedWeatherWidget() {
-  const { location, units, setUnits } = useLocation()
+  const { location, units, setUnits, requestLocation, locationPermission } = useLocation()
   const [weather, setWeather] = useState<WeatherData | null>(null)
   const [settings, setSettings] = useState<WeatherSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -106,6 +106,13 @@ export function EnhancedWeatherWidget() {
   useEffect(() => {
     loadSettings()
   }, [])
+
+  // Prompt for geolocation access on first visit
+  useEffect(() => {
+    if (locationPermission === 'prompted') {
+      requestLocation().catch(() => {})
+    }
+  }, [locationPermission, requestLocation])
 
   useEffect(() => {
     if (settings) {
@@ -156,19 +163,7 @@ export function EnhancedWeatherWidget() {
     } finally {
       setSuggestionsLoading(false)
     }
-    
-    // Fallback to intelligent suggestions if Strapi API fails or returns no data
-    if (weather) {
-      const fallbackSuggestions = getFallbackSuggestions(
-        weather.current.condition, 
-        weather.current.temperature, 
-        weather.current.uvIndex
-      )
-      setWeather(prev => prev ? {
-        ...prev,
-        suggestions: fallbackSuggestions
-      } : null)
-    }
+    // Do not generate synthetic suggestions; leave empty if API fails
   }
 
   const loadSettings = async () => {
@@ -271,64 +266,7 @@ export function EnhancedWeatherWidget() {
       }
       
       setError(errorMessage)
-      
-      // Set fallback weather data for better UX
-      const currentUnits = units || settings?.units || 'metric'
-      const fallbackWeatherData = {
-        location: {
-          name: 'Pattaya, Thailand',
-          lat: 12.9236,
-          lon: 100.8825
-        },
-        current: {
-          temperature: 32,
-          feelsLike: 39,
-          condition: 'broken clouds',
-          description: 'Broken Clouds',
-          humidity: 65,
-          windSpeed: 3,
-          pressure: 1013,
-          visibility: 10,
-          uvIndex: 6,
-          icon: '04d',
-          sunrise: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          sunset: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString()
-        },
-        hourly: [
-          { time: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(), temp: 31, icon: '04d' },
-          { time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), temp: 30, icon: '04d' },
-          { time: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(), temp: 29, icon: '01n' },
-          { time: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(), temp: 28, icon: '01n' }
-        ],
-        daily: [
-          { date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), high: 33, low: 26, icon: '01d', description: 'clear sky' },
-          { date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), high: 32, low: 25, icon: '02d', description: 'few clouds' },
-          { date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), high: 31, low: 24, icon: '03d', description: 'scattered clouds' }
-        ],
-        airQuality: {
-          index: 2,
-          level: 'Fair',
-          pm25: 15,
-          pm10: 25
-        },
-        alerts: [],
-        marine: {
-          tideTimes: [
-            { type: 'High', time: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString() },
-            { type: 'Low', time: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString() }
-          ],
-          seaState: 'Moderate',
-          waveHeightM: 0.8
-        },
-        suggestions: [],
-        units: currentUnits,
-        lastUpdated: new Date().toISOString(),
-        source: 'Fallback Data'
-      }
-      
-      // Validate and normalize the fallback data
-      const validatedFallbackWeather = validateWeatherData(fallbackWeatherData)
-      setWeather(validatedFallbackWeather)
+      // Do not populate synthetic fallback weather data
     } finally {
       setLoading(false)
     }
@@ -374,167 +312,137 @@ export function EnhancedWeatherWidget() {
     }
   }
 
-  // Fallback suggestions based on weather conditions and temperature
-  const getFallbackSuggestions = (condition: string, temperature: number, uvIndex: number) => {
-    const suggestions = []
-    
-    // Temperature-based suggestions
-    if (temperature >= 30) {
-      suggestions.push({
-        title: 'Stay Hydrated!',
-        description: 'High temperature - drink plenty of water and seek shade',
-        link: '/safety',
-        icon: '💧',
-        priority: true
-      })
-    } else if (temperature >= 25) {
-      suggestions.push({
-        title: 'Perfect Outdoor Weather!',
-        description: 'Great temperature for outdoor activities and beach visits',
-        link: '/beaches',
-        icon: '🏖️',
-        priority: false
-      })
-    } else if (temperature < 20) {
-      suggestions.push({
-        title: 'Bring a Jacket',
-        description: 'Cooler weather - consider bringing warm clothing',
-        link: '/travel',
-        icon: '🧥',
-        priority: false
-      })
+  // Removed synthetic fallback suggestions – only show API-provided suggestions
+
+  // Map OpenWeather icon code or text to category and colors
+  const getConditionCategory = (value: string) => {
+    const v = String(value || '').toLowerCase()
+    const codeMatch = v.match(/^(\d{2})[dn]?$/)
+    const code = codeMatch ? codeMatch[1] : ''
+    if (code) {
+      if (code === '01') return 'sunny'
+      if (['02','03','04'].includes(code)) return 'cloudy'
+      if (['09','10'].includes(code)) return 'rain'
+      if (code === '11') return 'thunder'
+      if (code === '13') return 'snow'
+      if (code === '50') return 'drizzle'
     }
-    
-    // UV Index suggestions
-    if (uvIndex >= 8) {
-      suggestions.push({
-        title: 'High UV Protection Needed',
-        description: 'Very high UV index - use sunscreen SPF 50+ and seek shade',
-        link: '/safety',
-        icon: '☀️',
-        priority: true
-      })
-    } else if (uvIndex >= 6) {
-      suggestions.push({
-        title: 'UV Protection Recommended',
-        description: 'High UV index - use sunscreen and limit sun exposure',
-        link: '/safety',
-        icon: '🕶️',
-        priority: false
-      })
-    }
-    
-    // Weather condition-based suggestions
-    if (condition.includes('rain') || condition.includes('drizzle')) {
-      suggestions.push({
-        title: 'Indoor Activities',
-        description: 'Rainy weather - perfect for indoor shopping and dining',
-        link: '/shopping',
-        icon: '🛍️',
-        priority: false
-      })
-    } else if (condition.includes('clear') || condition.includes('sun')) {
-      suggestions.push({
-        title: 'Beach Day!',
-        description: 'Clear skies - perfect for beach activities and water sports',
-        link: '/beaches',
-        icon: '🏄‍♂️',
-        priority: false
-      })
-    } else if (condition.includes('cloud')) {
-      suggestions.push({
-        title: 'Comfortable Outdoor Time',
-        description: 'Cloudy weather - great for outdoor activities without intense sun',
-        link: '/outdoor',
-        icon: '🌤️',
-        priority: false
-      })
-    }
-    
-    return suggestions.slice(0, 4) // Return max 4 suggestions
+    if (v.includes('clear') || v.includes('sun')) return 'sunny'
+    if (v.includes('cloud')) return 'cloudy'
+    if (v.includes('thunder')) return 'thunder'
+    if (v.includes('drizzle')) return 'drizzle'
+    if (v.includes('snow')) return 'snow'
+    if (v.includes('rain')) return 'rain'
+    return 'other'
   }
 
-  const getWeatherIcon = (condition: string, size = 'h-12 w-12') => {
+  const getWeatherIcon = (condition: string, size = 'h-12 w-12', animated: boolean = true) => {
     const conditionLower = condition.toLowerCase()
     
     if (conditionLower.includes('clear') || conditionLower.includes('sun')) {
       return (
         <div className="relative group">
-          <Sun className={`${size} text-amber-500 animate-pulse group-hover:animate-spin transition-all duration-700`} />
-          <div className="absolute inset-0 bg-amber-400/20 rounded-full animate-ping group-hover:animate-bounce"></div>
-          <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-300 rounded-full animate-bounce delay-300 group-hover:animate-ping"></div>
-          <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-orange-300 rounded-full animate-pulse delay-500 group-hover:animate-bounce"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-yellow-200/30 to-orange-200/30 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
+          <Sun className={`${size} text-amber-500 ${animated ? 'animate-pulse group-hover:animate-spin' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute inset-0 bg-amber-400/20 rounded-full animate-ping group-hover:animate-bounce"></div>
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-300 rounded-full animate-bounce delay-300 group-hover:animate-ping"></div>
+              <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-orange-300 rounded-full animate-pulse delay-500 group-hover:animate-bounce"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-yellow-200/30 to-orange-200/30 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
+            </>
+          )}
         </div>
       )
     } else if (conditionLower.includes('cloud')) {
       return (
         <div className="relative group">
-          <Cloud className={`${size} text-gray-400 animate-bounce group-hover:animate-pulse transition-all duration-700`} />
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-300 rounded-full animate-pulse group-hover:animate-bounce delay-100"></div>
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-gray-300 rounded-full animate-pulse group-hover:animate-bounce delay-300"></div>
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-200 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
-          <div className="absolute bottom-0 right-1/2 transform translate-x-1/2 w-1.5 h-1.5 bg-blue-100 rounded-full animate-pulse group-hover:animate-bounce delay-400"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 to-purple-100/20 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+          <Cloud className={`${size} text-gray-400 ${animated ? 'animate-bounce group-hover:animate-pulse' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-300 rounded-full animate-pulse group-hover:animate-bounce delay-100"></div>
+              <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-gray-300 rounded-full animate-pulse group-hover:animate-bounce delay-300"></div>
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-200 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
+              <div className="absolute bottom-0 right-1/2 transform translate-x-1/2 w-1.5 h-1.5 bg-blue-100 rounded-full animate-pulse group-hover:animate-bounce delay-400"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 to-purple-100/20 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+            </>
+          )}
         </div>
       )
     } else if (conditionLower.includes('rain')) {
       return (
         <div className="relative group">
-          <CloudRain className={`${size} text-blue-500 animate-bounce group-hover:animate-pulse transition-all duration-700`} />
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <div className="flex space-x-1">
-              <div className="w-1 h-2 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-75"></div>
-              <div className="w-1 h-3 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-150"></div>
-              <div className="w-1 h-2 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-225"></div>
-            </div>
-          </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-blue-200/30 to-cyan-200/30 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
-          <div className="absolute -top-2 -right-2 w-3 h-3 bg-blue-200 rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
+          <CloudRain className={`${size} text-blue-500 ${animated ? 'animate-bounce group-hover:animate-pulse' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+                <div className="flex space-x-1">
+                  <div className="w-1 h-2 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-75"></div>
+                  <div className="w-1 h-3 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-150"></div>
+                  <div className="w-1 h-2 bg-blue-400 rounded-full animate-bounce group-hover:animate-ping delay-225"></div>
+                </div>
+              </div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-blue-200/30 to-cyan-200/30 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
+              <div className="absolute -top-2 -right-2 w-3 h-3 bg-blue-200 rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
+            </>
+          )}
         </div>
       )
     } else if (conditionLower.includes('thunder')) {
       return (
         <div className="relative group">
-          <Zap className={`${size} text-yellow-600 animate-pulse group-hover:animate-bounce transition-all duration-700`} />
-          <div className="absolute inset-0 bg-yellow-400/30 rounded-full animate-ping group-hover:animate-pulse"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-yellow-200/40 to-orange-200/40 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
-          <div className="absolute -top-1 -left-1 w-2 h-2 bg-yellow-300 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-orange-300 rounded-full animate-pulse group-hover:animate-bounce delay-400"></div>
+          <Zap className={`${size} text-yellow-600 ${animated ? 'animate-pulse group-hover:animate-bounce' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute inset-0 bg-yellow-400/30 rounded-full animate-ping group-hover:animate-pulse"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-yellow-200/40 to-orange-200/40 rounded-full animate-pulse group-hover:scale-150 transition-all duration-1000"></div>
+              <div className="absolute -top-1 -left-1 w-2 h-2 bg-yellow-300 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
+              <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-orange-300 rounded-full animate-pulse group-hover:animate-bounce delay-400"></div>
+            </>
+          )}
         </div>
       )
     } else if (conditionLower.includes('drizzle')) {
       return (
         <div className="relative group">
-          <CloudDrizzle className={`${size} text-gray-500 animate-bounce group-hover:animate-pulse transition-all duration-700`} />
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <div className="flex space-x-1">
-              <div className="w-0.5 h-2 bg-gray-400 rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
-              <div className="w-0.5 h-1.5 bg-gray-400 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
-            </div>
-          </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-gray-200/30 to-blue-200/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+          <CloudDrizzle className={`${size} text-gray-500 ${animated ? 'animate-bounce group-hover:animate-pulse' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+                <div className="flex space-x-1">
+                  <div className="w-0.5 h-2 bg-gray-400 rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
+                  <div className="w-0.5 h-1.5 bg-gray-400 rounded-full animate-bounce group-hover:animate-ping delay-200"></div>
+                </div>
+              </div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-gray-200/30 to-blue-200/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+            </>
+          )}
         </div>
       )
     } else if (conditionLower.includes('snow')) {
       return (
         <div className="relative group">
-          <CloudSnow className={`${size} text-gray-300 animate-bounce group-hover:animate-pulse transition-all duration-700`} />
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <div className="flex space-x-1">
-              <div className="w-1 h-1 bg-white rounded-full animate-ping group-hover:animate-bounce delay-75"></div>
-              <div className="w-1 h-1 bg-white rounded-full animate-ping group-hover:animate-bounce delay-150"></div>
-            </div>
-          </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-white/30 to-blue-100/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
+          <CloudSnow className={`${size} text-gray-300 ${animated ? 'animate-bounce group-hover:animate-pulse' : ''} transition-all duration-700`} />
+          {animated && (
+            <>
+              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+                <div className="flex space-x-1">
+                  <div className="w-1 h-1 bg-white rounded-full animate-ping group-hover:animate-bounce delay-75"></div>
+                  <div className="w-1 h-1 bg-white rounded-full animate-ping group-hover:animate-bounce delay-150"></div>
+                </div>
+              </div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-white/30 to-blue-100/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-bounce group-hover:animate-ping delay-100"></div>
+            </>
+          )}
         </div>
       )
     } else {
       return (
         <div className="relative group">
-          <Cloud className={`${size} text-gray-400 animate-pulse group-hover:animate-bounce transition-all duration-700`} />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-gray-200/30 to-blue-200/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+          <Cloud className={`${size} text-gray-400 ${animated ? 'animate-pulse group-hover:animate-bounce' : ''} transition-all duration-700`} />
+          {animated && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-r from-gray-200/30 to-blue-200/30 rounded-full animate-pulse group-hover:scale-125 transition-all duration-1000"></div>
+          )}
         </div>
       )
     }
@@ -545,6 +453,16 @@ export function EnhancedWeatherWidget() {
     if (index <= 3) return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     if (index <= 4) return 'bg-orange-100 text-orange-800 border-orange-200'
     return 'bg-red-100 text-red-800 border-red-200'
+  }
+
+  const getTimeRemaining = (endTimeIso: string) => {
+    const diffMs = new Date(endTimeIso).getTime() - Date.now()
+    if (diffMs <= 0) return 'now'
+    const hours = Math.floor(diffMs / (1000 * 60 * 60))
+    const minutes = Math.round((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`
+    if (hours > 0) return `${hours}h`
+    return `${minutes}m`
   }
 
   const getSeaStateColor = (state: string) => {
@@ -619,7 +537,7 @@ export function EnhancedWeatherWidget() {
   return (
     <>
       <Card
-        className={`group transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.02] cursor-pointer overflow-hidden h-full min-h-[400px] ${
+        className={`group transition-all duration-700 ease-out hover:shadow-2xl hover:scale-[1.02] cursor-pointer overflow-hidden h-full min-h-[220px] ${
           hasAlerts 
             ? 'bg-gradient-to-br from-red-500/10 via-red-400/20 to-red-600/10 border-red-300/50 shadow-lg' 
             : 'bg-gradient-to-br from-blue-500/10 via-indigo-500/15 to-purple-500/10 border-blue-200/50 shadow-lg'
@@ -733,8 +651,21 @@ export function EnhancedWeatherWidget() {
         </CardHeader>
 
         <CardContent className="pt-0 relative z-10 flex flex-col flex-1 justify-between">
-          {/* Main Content Area */}
-          <div className="flex flex-col space-y-4 flex-1">
+          {/* Main Content Area (Compact) */}
+          <div className="flex flex-col justify-between flex-1">
+            {hasAlerts && weather.alerts && weather.alerts.length > 0 && (
+              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-800 shadow-sm">
+                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">
+                    {weather.alerts[0].event}
+                  </div>
+                  <div className="text-xs opacity-90">
+                    For next {getTimeRemaining(weather.alerts[0].end)}
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Main Weather Display - Enhanced with vibrant styling */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4 flex-1">
@@ -753,6 +684,7 @@ export function EnhancedWeatherWidget() {
                   <div className="text-xs text-gray-500 font-medium group-hover:text-indigo-600 transition-colors duration-500">
                     Feels like {Math.round(weather.current.feelsLike)}°{units === 'metric' ? 'C' : 'F'}
                   </div>
+                  
                 </div>
               </div>
 
@@ -791,151 +723,62 @@ export function EnhancedWeatherWidget() {
               </div>
             </div>
 
-            {/* Weather Details - Enhanced vibrant grid with better height utilization */}
-            <div className="grid grid-cols-2 gap-3 flex-1">
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-100/60 to-cyan-100/40 backdrop-blur-sm rounded-xl border border-blue-300/40 hover:from-blue-200/60 hover:to-cyan-200/40 transition-all duration-300 hover:scale-105 group shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-blue-200/60 to-cyan-200/60 rounded-full group-hover:from-blue-300/60 group-hover:to-cyan-300/60 transition-all duration-300 flex-shrink-0">
-                  <Droplets className="w-4 h-4 text-blue-700 animate-pulse" />
-                  <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-ping opacity-50"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-gray-900 group-hover:text-blue-900 transition-colors duration-300">{weather.current.humidity}%</div>
-                  <div className="text-xs text-gray-600 font-semibold group-hover:text-blue-700 transition-colors duration-300">Humidity</div>
-                </div>
+            {/* Inline quick chips (bottom-aligned, larger) */}
+            <div className="pt-2 flex items-center justify-center gap-2 flex-wrap w-full">
+              {/* Sun (sunrise) */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-xs text-orange-700">
+                <Sunrise className="w-4 h-4" />
+                <span>{formatTime(weather.current.sunrise)}</span>
               </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-100/60 to-teal-100/40 backdrop-blur-sm rounded-xl border border-cyan-300/40 hover:from-cyan-200/60 hover:to-teal-200/40 transition-all duration-300 hover:scale-105 group shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-cyan-200/60 to-teal-200/60 rounded-full group-hover:from-cyan-300/60 group-hover:to-teal-300/60 transition-all duration-300 flex-shrink-0">
-                  <Wind className="w-4 h-4 text-cyan-700 animate-bounce" />
-                  <div className="absolute inset-0 bg-cyan-400/20 rounded-full animate-ping opacity-50 delay-100"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-gray-900 group-hover:text-cyan-900 transition-colors duration-300">
-                    {Math.round(weather.current.windSpeed)} {units === 'metric' ? 'km/h' : 'mph'}
-                  </div>
-                  <div className="text-xs text-gray-600 font-semibold group-hover:text-cyan-700 transition-colors duration-300">Wind</div>
-                </div>
+              {/* UV Index */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                <Gauge className="w-4 h-4" />
+                <span>UV {weather.current.uvIndex ?? '-'}</span>
               </div>
-
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-purple-100/60 to-indigo-100/40 backdrop-blur-sm rounded-xl border border-purple-300/40 hover:from-purple-200/60 hover:to-indigo-200/40 transition-all duration-300 hover:scale-105 group shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-purple-200/60 to-indigo-200/60 rounded-full group-hover:from-purple-300/60 group-hover:to-indigo-300/60 transition-all duration-300 flex-shrink-0">
-                  <Gauge className="w-4 h-4 text-purple-700 animate-pulse delay-200" />
-                  <div className="absolute inset-0 bg-purple-400/20 rounded-full animate-ping opacity-50 delay-200"></div>
+              {/* Beach (sea state) */}
+              {weather.marine?.seaState && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-50 border border-cyan-200 text-xs text-cyan-700">
+                  <Waves className="w-4 h-4" />
+                  <span>{weather.marine.seaState}</span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-gray-900 group-hover:text-purple-900 transition-colors duration-300">{weather.current.pressure} hPa</div>
-                  <div className="text-xs text-gray-600 font-semibold group-hover:text-purple-700 transition-colors duration-300">Pressure</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-100/60 to-emerald-100/40 backdrop-blur-sm rounded-xl border border-green-300/40 hover:from-green-200/60 hover:to-emerald-200/40 transition-all duration-300 hover:scale-105 group shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-green-200/60 to-emerald-200/60 rounded-full group-hover:from-green-300/60 group-hover:to-emerald-300/60 transition-all duration-300 flex-shrink-0">
-                  <Eye className="w-4 h-4 text-green-700 animate-bounce delay-300" />
-                  <div className="absolute inset-0 bg-green-400/20 rounded-full animate-ping opacity-50 delay-300"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-gray-900 group-hover:text-green-900 transition-colors duration-300">{weather.current.visibility} km</div>
-                  <div className="text-xs text-gray-600 font-semibold group-hover:text-green-700 transition-colors duration-300">Visibility</div>
-                </div>
-              </div>
-            </div>
-
-            {/* UV Index & Air Quality - Enhanced vibrant row */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-yellow-100/60 to-amber-100/40 backdrop-blur-sm rounded-xl border border-yellow-300/40 shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-yellow-200/60 to-amber-200/60 rounded-full flex-shrink-0">
-                  <Sun className="w-4 h-4 text-yellow-700 animate-spin" style={{animationDuration: '10s'}} />
-                  <div className="absolute inset-0 bg-yellow-400/20 rounded-full animate-ping opacity-50"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs text-gray-600 font-semibold">UV Index</div>
-                  <div className="text-sm font-bold text-gray-900">{weather.current.uvIndex}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-emerald-100/60 to-green-100/40 backdrop-blur-sm rounded-xl border border-emerald-300/40 shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-emerald-200/60 to-green-200/60 rounded-full flex-shrink-0">
-                  <Activity className="w-4 h-4 text-emerald-700 animate-pulse" />
-                  <div className="absolute inset-0 bg-emerald-400/20 rounded-full animate-ping opacity-50 delay-200"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs text-gray-600 font-semibold">Air Quality</div>
-                  <div className="text-sm font-bold text-gray-900">
-                    {weather.airQuality ? weather.airQuality.level : 'Good'}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sunrise/Sunset - Enhanced vibrant display */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-100/60 to-yellow-100/40 backdrop-blur-sm rounded-xl border border-orange-300/40 shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-orange-200/60 to-yellow-200/60 rounded-full flex-shrink-0">
-                  <Sunrise className="w-4 h-4 text-orange-700 animate-bounce" />
-                  <div className="absolute inset-0 bg-orange-400/20 rounded-full animate-ping opacity-50 delay-100"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs text-gray-600 font-semibold">Sunrise</div>
-                  <div className="text-sm font-bold text-gray-900">{formatTime(weather.current.sunrise)}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-red-100/60 to-pink-100/40 backdrop-blur-sm rounded-xl border border-red-300/40 shadow-sm">
-                <div className="relative p-2 bg-gradient-to-r from-red-200/60 to-pink-200/60 rounded-full flex-shrink-0">
-                  <Sunset className="w-4 h-4 text-red-700 animate-bounce delay-300" />
-                  <div className="absolute inset-0 bg-red-400/20 rounded-full animate-ping opacity-50 delay-300"></div>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs text-gray-600 font-semibold">Sunset</div>
-                  <div className="text-sm font-bold text-gray-900">{formatTime(weather.current.sunset)}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer - Enhanced */}
-          <div className="flex items-center justify-between pt-4 border-t border-gradient-to-r from-blue-200/30 to-purple-200/30 flex-shrink-0">
-            <div className="flex items-center gap-2 text-xs font-semibold">
-              <div className="relative">
-                <Clock className="w-3 h-3 text-blue-500 animate-pulse" />
-                <div className="absolute inset-0 w-3 h-3 text-blue-400 animate-ping opacity-50"></div>
-              </div>
-              <span className="bg-gradient-to-r from-gray-600 to-gray-500 bg-clip-text text-transparent">
-                Updated {formatTime(weather.lastUpdated)}
-              </span>
-              {weather.source !== 'Fallback Data' && (
-                <span className="text-green-600 font-bold animate-pulse">• Live</span>
               )}
+              {/* Air quality */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs text-emerald-700">
+                <Activity className="w-4 h-4" />
+                <span>{weather.airQuality ? weather.airQuality.level : 'Air'}</span>
+              </div>
+              {/* Visibility */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-xs text-purple-800">
+                <Eye className="w-4 h-4" />
+                <span>{weather.current.visibility} km</span>
+              </div>
+              {/* Humidity */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                <Droplets className="w-4 h-4" />
+                <span>{weather.current.humidity}%</span>
+              </div>
+              {/* Wind */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-50 border border-cyan-200 text-xs text-cyan-800">
+                <Wind className="w-4 h-4" />
+                <span>{Math.round(weather.current.windSpeed)} {units === 'metric' ? 'km/h' : 'mph'}</span>
+              </div>
             </div>
-            {error && (
-              <div className="flex items-center gap-2 text-xs text-amber-600">
-                <div className="relative">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-                  <span className="absolute inset-0 w-2 h-2 bg-amber-400 rounded-full animate-ping opacity-50"></span>
-                </div>
-                <span className="font-semibold">Connection issue</span>
-              </div>
-            )}
-            {weather.source === 'Fallback Data' && (
-              <div className="flex items-center gap-2 text-xs text-orange-600">
-                <div className="relative">
-                  <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-                  <span className="absolute inset-0 w-2 h-2 bg-orange-400 rounded-full animate-ping opacity-50"></span>
-                </div>
-                <span className="font-semibold">Offline mode</span>
-              </div>
-            )}
+
+            {/* Key secondary stats removed (wind/humidity tiles) to keep layout minimal */}
           </div>
+          {/* Footer removed in compact to reduce height */}
         </CardContent>
       </Card>
 
       {/* Weather Modal - Apple Design Inspired */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[75vh] overflow-hidden bg-white/95 backdrop-blur-2xl border-0 shadow-2xl rounded-3xl">
+        <DialogContent className="max-w-4xl max-h-[75vh] overflow-hidden rounded-3xl border border-gray-100 shadow-2xl bg-gradient-to-br from-slate-50 via-white to-sky-50">
           {/* Header - Clean and minimal */}
           <DialogHeader className="px-6 pt-6 pb-0">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-blue-600/20 rounded-2xl flex items-center justify-center">
-                  {getWeatherIcon(weather.current.condition, "h-8 w-8")}
+                  {getWeatherIcon(weather.current.condition, "h-8 w-8", false)}
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-semibold text-gray-900 mb-1">
@@ -960,7 +803,7 @@ export function EnhancedWeatherWidget() {
           <div className="px-6 pb-6 overflow-y-auto max-h-[calc(75vh-120px)]">
             
             {/* Hero Section - Current weather prominently displayed */}
-            <div className="text-center mb-6 p-6 bg-gradient-to-br from-gray-50/50 to-gray-100/30 rounded-2xl">
+            <div className="text-center mb-6 p-6 rounded-2xl border border-gray-200/60 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
               <div className="text-7xl font-thin text-gray-900 mb-2 tracking-tight">
                 {Math.round(weather.current.temperature)}°
               </div>
@@ -970,6 +813,26 @@ export function EnhancedWeatherWidget() {
               <div className="text-base text-gray-500 mb-4">
                 Feels like {Math.round(weather.current.feelsLike)}°{units === 'metric' ? 'C' : 'F'}
               </div>
+              {/* Primary suggestion - big text below temperature */}
+              {weather.suggestions && weather.suggestions.length > 0 && (
+                <div className="mt-2">
+                  <div className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900">
+                    {weather.suggestions[0].title}
+                  </div>
+                  {weather.suggestions[0].description && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {weather.suggestions[0].description}
+                    </div>
+                  )}
+                  {weather.suggestions[0].link && weather.suggestions[0].link !== '#' && (
+                    <div className="mt-3">
+                      <Button asChild size="sm" className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700">
+                        <a href={weather.suggestions[0].link}>Learn more</a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
               
               {/* Sponsor section - Right below temperature */}
               {isSponsored && (
@@ -987,9 +850,41 @@ export function EnhancedWeatherWidget() {
               )}
             </div>
 
-            {/* Key metrics in cards - Apple card style */}
+            {/* Severe Weather Alerts */}
+            {hasAlerts && (
+              <div className="mb-6 bg-red-50/70 border border-red-200/70 rounded-2xl p-4">
+                <h3 className="text-sm font-semibold text-red-700 mb-3 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  Government Weather Alerts
+                </h3>
+                <div className="space-y-3">
+                  {weather.alerts!.slice(0, 2).map((alert, idx) => (
+                    <div key={idx} className="bg-white/70 rounded-xl p-3 border border-red-100/70">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-bold text-red-800 truncate pr-2">{alert.event}</div>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 uppercase tracking-wide">
+                          {alert.severity || 'alert'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-red-700 mt-1">
+                        {formatTime(alert.start)} - {formatTime(alert.end)}
+                      </div>
+                      {alert.description && (
+                        <div className="text-xs text-red-800/90 mt-2 line-clamp-3 whitespace-pre-wrap">
+                          {alert.description}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Separator className="my-6 bg-gray-200" />
+
+            {/* Key metrics in cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
+              <div className="rounded-2xl p-6 border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                     <Droplets className="w-5 h-5 text-blue-600" />
@@ -1001,7 +896,7 @@ export function EnhancedWeatherWidget() {
                 </div>
               </div>
               
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
+              <div className="rounded-2xl p-6 border border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
                     <Wind className="w-5 h-5 text-gray-600" />
@@ -1016,7 +911,7 @@ export function EnhancedWeatherWidget() {
                 </div>
               </div>
               
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
+              <div className="rounded-2xl p-6 border border-amber-100 bg-gradient-to-br from-amber-50 to-orange-50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
                     <Sun className="w-5 h-5 text-orange-500" />
@@ -1028,7 +923,7 @@ export function EnhancedWeatherWidget() {
                 </div>
               </div>
               
-              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
+              <div className="rounded-2xl p-6 border border-purple-100 bg-gradient-to-br from-purple-50 to-violet-50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center">
                     <Eye className="w-5 h-5 text-purple-600" />
@@ -1045,21 +940,17 @@ export function EnhancedWeatherWidget() {
             {/* Hourly Forecast - Horizontal scroll */}
             {weather.hourly.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Next 24 Hours</h3>
+                <h3 className="text-lg font-semibold text-blue-900 mb-4">Next 24 Hours</h3>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                   {weather.hourly.map((hour, index) => (
-                    <div key={index} className="flex-shrink-0 text-center p-4 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 min-w-[80px] group hover:scale-110 transition-all duration-300 relative overflow-hidden">
-                      {/* Cute time indicators */}
-                      <div className="absolute top-1 right-1 text-xs animate-pulse delay-100">🕐</div>
-                      <div className="absolute bottom-1 left-1 text-xs animate-bounce delay-300">⏰</div>
-                      
-                      <div className="text-sm text-gray-500 mb-3 font-medium group-hover:text-blue-600 transition-colors duration-300">
+                    <div key={index} className="flex-shrink-0 text-center p-4 bg-white/80 rounded-2xl border border-gray-200 min-w-[80px] hover:border-blue-200">
+                      <div className="text-sm text-gray-500 mb-3 font-medium">
                         {formatTime(hour.time)}
                       </div>
-                      <div className="mb-3 transform group-hover:scale-110 transition-transform duration-300">
-                        {getWeatherIcon(hour.icon, "h-8 w-8 mx-auto")}
+                      <div className="mb-3">
+                        {getWeatherIcon(hour.icon, "h-8 w-8 mx-auto", false)}
                       </div>
-                      <div className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">{hour.temp}°</div>
+                      <div className="text-lg font-semibold text-gray-900">{hour.temp}°</div>
                     </div>
                   ))}
                 </div>
@@ -1069,38 +960,27 @@ export function EnhancedWeatherWidget() {
             {/* Daily Forecast - Compact list */}
             {weather.daily.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="text-2xl animate-pulse">📅</span>
-                  5-Day Forecast
-                  <span className="text-xl animate-bounce delay-200">🗓️</span>
-                </h3>
-                <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 overflow-hidden">
+                <h3 className="text-lg font-semibold text-indigo-900 mb-4">5-Day Forecast</h3>
+                <div className="rounded-2xl border border-gray-200 overflow-hidden bg-gradient-to-br from-slate-50 to-white">
                   {weather.daily.map((day, index) => (
-                    <div key={index} className={`flex items-center justify-between p-4 group hover:bg-gray-50/50 transition-all duration-300 ${index !== weather.daily.length - 1 ? 'border-b border-gray-200/30' : ''}`}>
-                      {/* Cute day indicators */}
-                      <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-xs animate-pulse delay-100">
-                        {index === 0 ? '🌟' : '⭐'}
-                      </div>
-                      
+                    <div key={index} className={`flex items-center justify-between p-4 ${index !== weather.daily.length - 1 ? 'border-b border-gray-200' : ''}`}>
                       <div className="flex items-center gap-4 flex-1">
                         <div className="w-12 text-left">
-                          <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                          <div className="text-sm font-medium text-gray-900">
                             {index === 0 ? 'Today' : formatDate(day.date)}
                           </div>
                         </div>
                         <div className="flex items-center gap-3 flex-1">
-                          <div className="transform group-hover:scale-110 transition-transform duration-300">
-                            {getWeatherIcon(day.icon, "h-6 w-6")}
-                          </div>
-                          <div className="text-sm text-gray-600 capitalize group-hover:text-gray-800 transition-colors duration-300">{day.description}</div>
+                          <div>{getWeatherIcon((day as any).icon || (day as any).description, "h-6 w-6", false)}</div>
+                          <div className="text-sm text-gray-600 capitalize">{day.description}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm text-gray-500 w-8 text-right group-hover:text-blue-500 transition-colors duration-300">{day.low}°</span>
+                        <span className="text-sm text-gray-500 w-8 text-right">{day.low}°</span>
                         <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-gradient-to-r from-blue-400 to-red-400 rounded-full group-hover:from-blue-500 group-hover:to-red-500 transition-all duration-300" style={{width: '60%'}}></div>
+                          <div className="h-full bg-gradient-to-r from-blue-400 to-red-400 rounded-full" style={{width: '60%'}}></div>
                         </div>
-                        <span className="text-sm font-semibold text-gray-900 w-8 group-hover:text-red-600 transition-colors duration-300">{day.high}°</span>
+                        <span className="text-sm font-semibold text-gray-900 w-8">{day.high}°</span>
                       </div>
                     </div>
                   ))}
@@ -1114,38 +994,30 @@ export function EnhancedWeatherWidget() {
               {/* Sun & Air Quality */}
               <div className="space-y-4">
                 {/* Sun times */}
-                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 group hover:scale-105 transition-all duration-300 relative overflow-hidden">
-                  {/* Cute sun animations */}
-                  <div className="absolute top-2 right-2 text-lg animate-ping delay-100">🌅</div>
-                  <div className="absolute bottom-2 left-2 text-sm animate-bounce delay-300">🌇</div>
-                  
-                  <h4 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-xl animate-pulse">☀️</span>
-                    Sun
-                    <span className="text-lg animate-bounce delay-200">🌞</span>
-                  </h4>
+                <div className="rounded-2xl p-6 border border-orange-100 bg-gradient-to-br from-orange-50 to-amber-50">
+                  <h4 className="text-base font-semibold text-orange-900 mb-4">Sun</h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between group/item hover:bg-orange-50/50 p-2 rounded-lg transition-all duration-300">
+                    <div className="flex items-center justify-between p-2 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <Sunrise className="w-5 h-5 text-orange-500 animate-pulse group-hover/item:animate-bounce" />
-                        <span className="text-sm text-gray-600 group-hover/item:text-orange-600 transition-colors duration-300">Sunrise</span>
+                        <Sunrise className="w-5 h-5 text-orange-500" />
+                        <span className="text-sm text-gray-600">Sunrise</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900 group-hover/item:text-orange-700 transition-colors duration-300">{formatTime(weather.current.sunrise)}</span>
+                      <span className="text-sm font-semibold text-gray-900">{formatTime(weather.current.sunrise)}</span>
                     </div>
-                    <div className="flex items-center justify-between group/item hover:bg-red-50/50 p-2 rounded-lg transition-all duration-300">
+                    <div className="flex items-center justify-between p-2 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <Sunset className="w-5 h-5 text-red-500 animate-pulse group-hover/item:animate-bounce" />
-                        <span className="text-sm text-gray-600 group-hover/item:text-red-600 transition-colors duration-300">Sunset</span>
+                        <Sunset className="w-5 h-5 text-red-500" />
+                        <span className="text-sm text-gray-600">Sunset</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900 group-hover/item:text-red-700 transition-colors duration-300">{formatTime(weather.current.sunset)}</span>
+                      <span className="text-sm font-semibold text-gray-900">{formatTime(weather.current.sunset)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Air Quality */}
                 {weather.airQuality && (
-                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
-                    <h4 className="text-base font-semibold text-gray-900 mb-4">Air Quality</h4>
+                  <div className="rounded-2xl p-6 border border-emerald-100 bg-gradient-to-br from-emerald-50 to-green-50">
+                    <h4 className="text-base font-semibold text-emerald-900 mb-4">Air Quality</h4>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm text-gray-600">AQI</span>
                       <div className={`px-3 py-1 rounded-full text-sm font-medium ${getAirQualityColor(weather.airQuality.index)}`}>
@@ -1170,8 +1042,8 @@ export function EnhancedWeatherWidget() {
               <div className="space-y-4">
                 {/* Marine conditions */}
                 {weather.marine && (
-                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
-                    <h4 className="text-base font-semibold text-gray-900 mb-4">Beach Conditions</h4>
+                  <div className="rounded-2xl p-6 border border-cyan-100 bg-gradient-to-br from-cyan-50 to-sky-50">
+                    <h4 className="text-base font-semibold text-cyan-900 mb-4">Beach Conditions</h4>
                     
                     {weather.marine.seaState && (
                       <div className="flex items-center justify-between mb-4">
@@ -1205,36 +1077,23 @@ export function EnhancedWeatherWidget() {
                   </div>
                 )}
 
-                {/* Smart suggestions - Simplified */}
-                {weather.suggestions && weather.suggestions.length > 0 && (
-                  <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 group hover:scale-105 transition-all duration-300 relative overflow-hidden">
-                    {/* Cute recommendation animations */}
-                    <div className="absolute top-2 right-2 text-lg animate-pulse delay-100">💡</div>
-                    <div className="absolute bottom-2 left-2 text-sm animate-bounce delay-300">✨</div>
-                    
-                    <h4 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <span className="text-xl animate-pulse">🎯</span>
-                      Recommendations
-                      <span className="text-lg animate-bounce delay-200">🌟</span>
-                    </h4>
+                {/* Smart suggestions - Professional list */}
+                {weather.suggestions && weather.suggestions.length > 1 && (
+                  <div className="rounded-2xl p-6 border border-indigo-100 bg-gradient-to-br from-indigo-50 to-blue-50">
+                    <h4 className="text-base font-semibold text-indigo-900 mb-4">Recommendations</h4>
                     <div className="space-y-3">
-                      {weather.suggestions.map((suggestion, index) => (
-                        <div key={index} className="p-4 bg-gray-50/50 rounded-xl border border-gray-200/30 hover:bg-gradient-to-r hover:from-pink-50/50 hover:to-purple-50/50 transition-all duration-300 group/item hover:scale-105 relative overflow-hidden">
-                          {/* Individual suggestion sparkles */}
-                          <div className="absolute top-1 right-1 text-xs animate-ping delay-100">⭐</div>
-                          <div className="absolute bottom-1 left-1 text-xs animate-bounce delay-300">💫</div>
-                          
+                      {weather.suggestions.slice(1).map((suggestion, index) => (
+                        <div key={index} className="p-4 bg-white rounded-xl border border-gray-200">
                           <div className="flex items-start gap-3">
-                            <span className="text-2xl transform group-hover/item:scale-110 transition-transform duration-300">{suggestion.icon}</span>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-semibold text-gray-900 mb-1 group-hover/item:text-blue-600 transition-colors duration-300">
+                              <div className="text-sm font-semibold text-gray-900 mb-1">
                                 {suggestion.title}
                                 {suggestion.priority && (
-                                  <span className="ml-2 text-xs bg-gradient-to-r from-pink-200 to-purple-200 text-pink-800 px-2 py-1 rounded-full animate-pulse">🔥 Priority</span>
+                                  <span className="ml-2 text-[10px] uppercase tracking-wide bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Priority</span>
                                 )}
                               </div>
                               {suggestion.description && (
-                                <div className="text-xs text-gray-600 leading-relaxed group-hover/item:text-gray-700 transition-colors duration-300">
+                                <div className="text-xs text-gray-600 leading-relaxed">
                                   {suggestion.description}
                                 </div>
                               )}

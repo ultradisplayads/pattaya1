@@ -46,6 +46,11 @@ import 'react-resizable/css/styles.css';
 // ResponsiveGridLayout component with width provider
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
+// Minimal placeholder for empty reserved cells
+const EmptyPlaceholderWidget = () => (
+  <div className="h-full w-full bg-transparent" />
+)
+
 interface Widget {
   id: string
   name: string
@@ -355,7 +360,9 @@ export function DynamicModularHomepage() {
         // 📰 NEWS & INFORMATION (Below search bar)
         "weather": { x: 0, y: 5, w: 3, h: 6 },
         "breaking-news": { x: 3, y: 5, w: 6, h: 6 },
-        "radio": { x: 9, y: 5, w: 3, h: 11 },
+        "radio": { x: 9, y: 5, w: 3, h: 6 },
+        // Reserve second row under radio (empty for now)
+        "radio-empty": { x: 9, y: 11, w: 3, h: 6 },
         
         // 🎬 CINEMA & FOOD (Below radio/news/weather with 4:6 ratio - cinema first)
         "cinema": { x: 0, y: 16, w: 4, h: 8 },
@@ -514,6 +521,22 @@ export function DynamicModularHomepage() {
           isMandatory: false,
           settings: {
             refreshInterval: 30000,
+          },
+        }),
+        // Empty reserved slot directly under radio column (compact view spacing)
+        addAdminSettings({
+          id: "radio-empty",
+          name: "Reserved Space",
+          type: "layout",
+          description: "Reserved for future content",
+          size: "small",
+          category: "Layout",
+          isVisible: true,
+          isResizable: false,
+          allowUserResizingAndMoving: false,
+          isMandatory: false,
+          settings: {
+            refreshInterval: 0,
           },
         }),
         addAdminSettings({
@@ -770,7 +793,8 @@ export function DynamicModularHomepage() {
       // 📰 NEWS & INFORMATION (Below search bar)
       { i: "weather", x: 0, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "breaking-news", x: 3, y: 5, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "radio", x: 9, y: 5, w: 3, h: 11, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "radio-empty", x: 9, y: 11, w: 3, h: 6, isDraggable: false, isResizable: false, static: true },
       
       // 🎬 CINEMA & FOOD (Below radio/news/weather with 4:6 ratio - cinema first)
       { i: "cinema", x: 0, y: 16, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
@@ -1074,6 +1098,7 @@ export function DynamicModularHomepage() {
       "breaking-news": EnhancedBreakingNewsWidget,
       weather: EnhancedWeatherWidget,
       radio: RadioWidget,
+      "radio-empty": EmptyPlaceholderWidget,
       "google-reviews": GoogleReviewsWidget,
       youtube: FeaturedVideosWidget,
       "social-feed": SocialFeedWidget,
