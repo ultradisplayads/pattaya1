@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { SimpleVoteButton } from "@/components/ui/simple-vote-button"
 import { buildApiUrl, buildStrapiUrl } from "@/lib/strapi-config"
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
+import { useStrapiArticles } from '@/hooks/use-strapi-articles'
 
 interface StrapiBreakingNews {
   id: number
@@ -76,6 +77,7 @@ export function EnhancedBreakingNewsWidget() {
   const [advertisements, setAdvertisements] = useState<Advertisement[]>([])
   const [currentRegularIndex, setCurrentRegularIndex] = useState(0)
   const [currentPinnedIndex, setCurrentPinnedIndex] = useState(0)
+  const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [showAds, setShowAds] = useState(true)
   const [lastFetchTime, setLastFetchTime] = useState<Date>(new Date())
@@ -83,6 +85,9 @@ export function EnhancedBreakingNewsWidget() {
   const [lastPinnedCount, setLastPinnedCount] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [currentModalIndex, setCurrentModalIndex] = useState(0)
+  
+  // Use Strapi articles as fallback
+  const { articles: strapiArticles } = useStrapiArticles()
 
   // Keyboard navigation for modal carousel
   useEffect(() => {
@@ -223,16 +228,16 @@ export function EnhancedBreakingNewsWidget() {
         if (strapiArticles.length > 0) {
           const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
             id: article.id,
-            Title: article.title || 'Untitled Article',
-            Summary: article.description || '',
-            Description: article.description || '',
-            URL: `/articles/${article.slug || article.id}`,
-            ImageURL: article.cover?.url,
-            PublishedAt: article.publishedAt || article.createdAt,
-            PublishedTimestamp: article.publishedAt || article.createdAt,
-            apiSource: article.author?.name || 'Pattaya1',
-            Source: article.author?.name || 'Pattaya1',
-            Category: article.category?.name || 'News',
+            Title: article.attributes.title || 'Untitled Article',
+            Summary: article.attributes.description || '',
+            Description: article.attributes.description || '',
+            URL: `/articles/${article.attributes.slug || article.id}`,
+            ImageURL: article.attributes.featuredImage?.data?.attributes.url,
+            PublishedAt: article.attributes.publishedAt || article.attributes.createdAt,
+            PublishedTimestamp: article.attributes.publishedAt || article.attributes.createdAt,
+            apiSource: article.attributes.author?.data?.attributes.name || 'Pattaya1',
+            Source: article.attributes.author?.data?.attributes.name || 'Pattaya1',
+            Category: article.attributes.category?.data?.attributes.name || 'News',
             Severity: 'medium' as const,
             IsBreaking: false,
             upvotes: 0,
@@ -241,9 +246,9 @@ export function EnhancedBreakingNewsWidget() {
             isPinned: false,
             moderationStatus: 'approved' as const,
             isHidden: false,
-            createdAt: article.createdAt,
-            updatedAt: article.updatedAt,
-            publishedAt: article.publishedAt
+            createdAt: article.attributes.createdAt,
+            updatedAt: article.attributes.updatedAt,
+            publishedAt: article.attributes.publishedAt
           }));
           setRegularNews(transformedArticles);
           setPinnedNews([]);
@@ -280,16 +285,16 @@ export function EnhancedBreakingNewsWidget() {
       if (strapiArticles.length > 0) {
         const transformedArticles = strapiArticles.slice(0, 5).map(article => ({
           id: article.id,
-          Title: article.title || 'Untitled Article',
-          Summary: article.description || '',
-          Description: article.description || '',
-          URL: `/articles/${article.slug || article.id}`,
-          ImageURL: article.cover?.url,
-          PublishedAt: article.publishedAt || article.createdAt,
-          PublishedTimestamp: article.publishedAt || article.createdAt,
-          apiSource: article.author?.name || 'Pattaya1',
-          Source: article.author?.name || 'Pattaya1',
-          Category: article.category?.name || 'News',
+          Title: article.attributes.title || 'Untitled Article',
+          Summary: article.attributes.description || '',
+          Description: article.attributes.description || '',
+          URL: `/articles/${article.attributes.slug || article.id}`,
+          ImageURL: article.attributes.featuredImage?.data?.attributes.url,
+          PublishedAt: article.attributes.publishedAt || article.attributes.createdAt,
+          PublishedTimestamp: article.attributes.publishedAt || article.attributes.createdAt,
+          apiSource: article.attributes.author?.data?.attributes.name || 'Pattaya1',
+          Source: article.attributes.author?.data?.attributes.name || 'Pattaya1',
+          Category: article.attributes.category?.data?.attributes.name || 'News',
           Severity: 'medium' as const,
           IsBreaking: false,
           upvotes: 0,
@@ -298,9 +303,9 @@ export function EnhancedBreakingNewsWidget() {
           isPinned: false,
           moderationStatus: 'approved' as const,
           isHidden: false,
-          createdAt: article.createdAt,
-          updatedAt: article.updatedAt,
-          publishedAt: article.publishedAt
+          createdAt: article.attributes.createdAt,
+          updatedAt: article.attributes.updatedAt,
+          publishedAt: article.attributes.publishedAt
         }));
         setRegularNews(transformedArticles);
         setPinnedNews([]);
@@ -432,6 +437,26 @@ export function EnhancedBreakingNewsWidget() {
     return pinnedNews.length > 0 ? pinnedNews[currentPinnedIndex % pinnedNews.length] : null;
   }, [pinnedNews, currentPinnedIndex]);
   
+  // Combined carousel items for the image carousel
+  const carouselItems = useMemo(() => {
+    return [...pinnedNews, ...regularNews];
+  }, [pinnedNews, regularNews]);
+  
+  const currentCarouselItem = useMemo(() => {
+    return carouselItems[currentCarouselIndex % Math.max(carouselItems.length, 1)];
+  }, [carouselItems, currentCarouselIndex]);
+
+  // Auto-rotate carousel every 8 seconds
+  useEffect(() => {
+    if (carouselItems.length <= 1) return
+    
+    const carouselInterval = setInterval(() => {
+      setCurrentCarouselIndex((prev) => (prev + 1) % carouselItems.length)
+    }, 8000) // 8 seconds
+
+    return () => clearInterval(carouselInterval)
+  }, [carouselItems.length]);
+  
 
 
   const getSeverityColor = (severity: string) => {
@@ -543,17 +568,29 @@ export function EnhancedBreakingNewsWidget() {
           {/* Right: Carousel (3/5) */}
           <div className="col-span-3 relative h-56 sm:h-64 md:h-72">
             <div className="absolute inset-0">
-              {(currentPinnedItem || currentRegularItem) ? (
+              {currentCarouselItem ? (
                 <>
                   <img
-                    src={(currentPinnedItem || currentRegularItem as any).image || (currentPinnedItem || currentRegularItem as any).ImageURL || ''}
-                    alt={(currentPinnedItem || currentRegularItem as any).imageAlt || (currentPinnedItem || currentRegularItem as any).Title}
+                    src={currentCarouselItem.image || currentCarouselItem.ImageURL || ''}
+                    alt={currentCarouselItem.imageAlt || currentCarouselItem.Title}
                     className="w-full h-full object-cover"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3">
-                    <h3 className="text-white text-sm sm:text-base font-semibold drop-shadow">{(currentPinnedItem || currentRegularItem as any).Title}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      {currentCarouselItem.isPinned && (
+                        <Badge className="bg-blue-500/90 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                          📌 PINNED
+                        </Badge>
+                      )}
+                      {currentCarouselItem.IsBreaking && (
+                        <Badge className="bg-red-500/90 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                          🔴 BREAKING
+                        </Badge>
+                      )}
+                    </div>
+                    <h3 className="text-white text-sm sm:text-base font-semibold drop-shadow">{currentCarouselItem.Title}</h3>
                   </div>
                 </>
               ) : (
@@ -561,12 +598,30 @@ export function EnhancedBreakingNewsWidget() {
               )}
             </div>
             {/* Controls */}
-            <button aria-label="Prev" className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow" onClick={() => setCurrentPinnedIndex((i)=> (i-1 + Math.max(pinnedNews.length,1))%Math.max(pinnedNews.length,1))}>
-              <ChevronLeft className="w-4 h-4 text-gray-700" />
-            </button>
-            <button aria-label="Next" className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow" onClick={() => setCurrentPinnedIndex((i)=> (i+1)%Math.max(pinnedNews.length,1))}>
-              <ChevronRight className="w-4 h-4 text-gray-700" />
-            </button>
+            {carouselItems.length > 1 && (
+              <>
+                <button aria-label="Prev" className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow transition-all hover:scale-105" onClick={() => setCurrentCarouselIndex((i)=> (i-1 + carouselItems.length)%carouselItems.length)}>
+                  <ChevronLeft className="w-4 h-4 text-gray-700" />
+                </button>
+                <button aria-label="Next" className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow transition-all hover:scale-105" onClick={() => setCurrentCarouselIndex((i)=> (i+1)%carouselItems.length)}>
+                  <ChevronRight className="w-4 h-4 text-gray-700" />
+                </button>
+                {/* Carousel indicator */}
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                  {carouselItems.slice(0, Math.min(carouselItems.length, 5)).map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                        index === currentCarouselIndex % carouselItems.length
+                          ? 'bg-white' 
+                          : 'bg-white/50 hover:bg-white/75'
+                      }`}
+                      onClick={() => setCurrentCarouselIndex(index)}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </Card>
@@ -835,7 +890,7 @@ function PinnedNewsCarousel({ pinnedNews, onVoteUpdate }: {
                   Source: <span className="text-blue-800 font-medium">{currentPinnedItem.Source}</span>
                 </div>
                 
-                <IsolatedVoteButton 
+                <SimpleVoteButton 
                   article={currentPinnedItem}
                   onVoteUpdate={onVoteUpdate}
                 />
