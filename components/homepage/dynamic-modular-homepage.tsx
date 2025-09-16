@@ -364,36 +364,38 @@ export function DynamicModularHomepage() {
         // Reserve second row under radio (empty for now)
         "radio-empty": { x: 9, y: 11, w: 3, h: 6 },
         
-        // 🎬 CINEMA & FOOD (Below radio/news/weather with 4:6 ratio - cinema first)
-        "cinema": { x: 0, y: 16, w: 4, h: 8 },
-        "food": { x: 4, y: 16, w: 8, h: 8 },
+        // 🎬 CINEMA (Below weather widget with same height)
+        "cinema": { x: 0, y: 11, w: 3, h: 6 },
+        
+        // 🍽️ FOOD (Below breaking news, spans wider)
+        "food": { x: 3, y: 11, w: 9, h: 6 },
         
         // ✈️ FLIGHT & CURRENCY (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-        "flight-tracker": { x: 0, y: 24, w: 3, h: 8 },
-        "search-widgets": { x: 3, y: 24, w: 6, h: 8 },
-        "currency-converter": { x: 9, y: 24, w: 3, h: 8 },
+        "flight-tracker": { x: 0, y: 17, w: 3, h: 8 },
+        "search-widgets": { x: 3, y: 17, w: 6, h: 8 },
+        "currency-converter": { x: 9, y: 17, w: 3, h: 8 },
         
         // 💬 SOCIAL & REVIEWS (Below flight/search/currency with 8:2 ratio)
-        "social-feed": { x: 0, y: 32, w: 8, h: 8 },
-        "google-reviews": { x: 8, y: 32, w: 4, h: 8 },
+        "social-feed": { x: 0, y: 25, w: 8, h: 8 },
+        "google-reviews": { x: 8, y: 25, w: 4, h: 8 },
         
         // 🎯 HOT DEALS (Below news section for high engagement)
-        "hot-deals": { x: 3, y: 11, w: 6, h: 5 },
-        "forum-activity": { x: 0, y: 40, w: 6, h: 8 },
+        "hot-deals": { x: 3, y: 11, w: 6, h: 6 },
+        "forum-activity": { x: 0, y: 33, w: 6, h: 8 },
         
         // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
-        "youtube": { x: 6, y: 40, w: 6, h: 10 },
-        "photo-gallery": { x: 0, y: 48, w: 6, h: 9 },
+        "youtube": { x: 6, y: 33, w: 6, h: 10 },
+        "photo-gallery": { x: 0, y: 41, w: 6, h: 9 },
         
         // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-        "traffic": { x: 6, y: 50, w: 6, h: 8 },
-        "sports-fixtures": { x: 0, y: 57, w: 6, h: 8 },
+        "traffic": { x: 6, y: 43, w: 6, h: 8 },
+        "sports-fixtures": { x: 0, y: 50, w: 6, h: 8 },
         
         // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-        "trending": { x: 6, y: 58, w: 6, h: 6 },
+        "trending": { x: 6, y: 51, w: 6, h: 6 },
         
         // 🔍 NAVIGATION (Utility widgets, side by side)
-        "quick-links": { x: 0, y: 65, w: 6, h: 8 },
+        "quick-links": { x: 0, y: 58, w: 6, h: 8 },
         
       };
       
@@ -796,36 +798,38 @@ export function DynamicModularHomepage() {
       { i: "radio", x: 9, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "radio-empty", x: 9, y: 11, w: 3, h: 6, isDraggable: false, isResizable: false, static: true },
       
-      // 🎬 CINEMA & FOOD (Below radio/news/weather with 4:6 ratio - cinema first)
-      { i: "cinema", x: 0, y: 16, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "food", x: 4, y: 16, w: 8, h: 8, isDraggable: true, isResizable: true, static: false },
+      // 🎬 CINEMA (Below weather widget with same height)
+      { i: "cinema", x: 0, y: 11, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      
+      // 🍽️ FOOD (Below breaking news, spans wider)
+      { i: "food", x: 3, y: 11, w: 9, h: 6, isDraggable: true, isResizable: true, static: false },
       
       // ✈️ FLIGHT & CURRENCY (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-      { i: "flight-tracker", x: 0, y: 24, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "search-widgets", x: 3, y: 24, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "currency-converter", x: 9, y: 24, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "flight-tracker", x: 0, y: 17, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "search-widgets", x: 3, y: 17, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "currency-converter", x: 9, y: 17, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 💬 SOCIAL & REVIEWS (Below flight/search/currency with 8:2 ratio)
-      { i: "social-feed", x: 0, y: 32, w: 8, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "google-reviews", x: 8, y: 32, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "social-feed", x: 0, y: 25, w: 8, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "google-reviews", x: 8, y: 25, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 🎯 HOT DEALS (Below news section for high engagement)
-      { i: "hot-deals", x: 3, y: 11, w: 6, h: 5, isDraggable: true, isResizable: true, static: false },
-      { i: "forum-activity", x: 0, y: 40, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 3, y: 11, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 0, y: 33, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
-      { i: "youtube", x: 6, y: 40, w: 6, h: 10, isDraggable: true, isResizable: true, static: false },
-      { i: "photo-gallery", x: 0, y: 48, w: 6, h: 9, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 6, y: 33, w: 6, h: 10, isDraggable: true, isResizable: true, static: false },
+      { i: "photo-gallery", x: 0, y: 41, w: 6, h: 9, isDraggable: true, isResizable: true, static: false },
       
       // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-      { i: "traffic", x: 6, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "sports-fixtures", x: 0, y: 57, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 6, y: 43, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "sports-fixtures", x: 0, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
       // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-      { i: "trending", x: 6, y: 58, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "trending", x: 6, y: 51, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       
       // 🔍 NAVIGATION (Utility widgets, side by side)
-      { i: "quick-links", x: 0, y: 65, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "quick-links", x: 0, y: 58, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
     ];
     
