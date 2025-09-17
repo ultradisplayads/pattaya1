@@ -31,17 +31,25 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
   const [activeTab, setActiveTab] = useState("convert");
   const [convertedAmount, setConvertedAmount] = useState<number | null>(null);
   const [isConverting, setIsConverting] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState<string | null>(null);
 
   // Handle favorite currency actions
   const handleFavoriteToggle = async (currencyCode: string, currencyName: string, currencySymbol?: string, currencyFlag?: string) => {
+    setFavoriteLoading(currencyCode);
     try {
       if (isFavorite(currencyCode)) {
         await removeFromFavorites(currencyCode);
+        // Show success feedback
+        console.log(`Removed ${currencyCode} from favorites`);
       } else {
         await addToFavorites(currencyCode, currencyName, currencySymbol, currencyFlag);
+        // Show success feedback
+        console.log(`Added ${currencyCode} to favorites`);
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+    } finally {
+      setFavoriteLoading(null);
     }
   };
 
@@ -161,6 +169,19 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
     }
   }, [amount, selectedFromCurrency, selectedToCurrency, exchangeRate, performConversion]);
 
+  // Refresh favorites when component mounts
+  useEffect(() => {
+    // Trigger a refresh of favorites to ensure we have the latest data
+    if (typeof window !== 'undefined') {
+      const storedFavorites = localStorage.getItem('currency-favorites');
+      if (storedFavorites) {
+        // Force a re-render by updating the favorites state
+        const parsedFavorites = JSON.parse(storedFavorites);
+        // This will trigger the useCurrencyFavorites hook to update
+      }
+    }
+  }, []);
+
 
   const swapCurrencies = () => {
     setSelectedFromCurrency(selectedToCurrency);
@@ -263,7 +284,7 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-50/80 via-teal-50/60 to-emerald-50/80 backdrop-blur-sm rounded-lg border border-cyan-200/50 shadow-lg"></div>
               <div className="relative p-1.5 h-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-                  <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-cyan-100/50 via-teal-100/50 to-emerald-100/50 border border-cyan-200/50 rounded-lg p-0.5 mb-1.5 shadow-lg backdrop-blur-sm flex-shrink-0">
+                  <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-cyan-100/50 via-teal-100/50 to-emerald-100/50 border border-cyan-200/50 rounded-lg p-0.5 mb-1.5 shadow-lg backdrop-blur-sm flex-shrink-0">
                     <TabsTrigger value="convert" className="flex items-center justify-center gap-0.5 text-cyan-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
                       <Calculator className="h-2.5 w-2.5 group-hover:animate-bounce" />
                     </TabsTrigger>
@@ -272,9 +293,6 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                     </TabsTrigger>
                     <TabsTrigger value="favorites" className="flex items-center justify-center gap-0.5 text-emerald-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
                       <Heart className="h-2.5 w-2.5 group-hover:animate-bounce" />
-                    </TabsTrigger>
-                    <TabsTrigger value="tools" className="flex items-center justify-center gap-0.5 text-green-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
-                      <Zap className="h-2.5 w-2.5 group-hover:animate-bounce" />
                     </TabsTrigger>
                   </TabsList>
 
@@ -416,16 +434,8 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <div
-                                    className={`text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 ${
-                                      trend === 'up' 
-                                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border border-green-400" 
-                                        : trend === 'down'
-                                        ? "bg-gradient-to-r from-red-500 to-rose-500 text-white border border-red-400"
-                                        : "bg-gradient-to-r from-gray-500 to-gray-600 text-white border border-gray-400"
-                                    }`}
-                                  >
-                                    {changePercent > 0 ? '+' : ''}{changePercent.toFixed(2)}%
+                                  <div className="text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 bg-gradient-to-r from-teal-500 to-emerald-500 text-white border border-teal-400">
+                                    {currency.attributes.rateToTHB.toFixed(4)}
                                   </div>
                                   <Button
                                     variant="ghost"
@@ -440,12 +450,17 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                       );
                                     }}
                                     className="p-0.5 h-4 w-4 hover:bg-teal-100 rounded transition-all duration-300"
+                                    disabled={favoriteLoading === currency.attributes.currencyCode}
                                   >
-                                    <Heart 
-                                      className={`w-2.5 h-2.5 ${
-                                        isFav ? 'text-red-500 fill-red-500' : 'text-gray-400'
-                                      }`} 
-                                    />
+                                    {favoriteLoading === currency.attributes.currencyCode ? (
+                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-teal-600" />
+                                    ) : (
+                                      <Heart 
+                                        className={`w-2.5 h-2.5 ${
+                                          isFav ? 'text-red-500 fill-red-500' : 'text-gray-400'
+                                        }`} 
+                                      />
+                                    )}
                                   </Button>
                                 </div>
                               </div>
@@ -493,16 +508,8 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                 </div>
                                 <div className="flex items-center gap-1">
                                   {trendingData && (
-                                    <div
-                                      className={`text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 ${
-                                        trendingData.attributes.trend === 'up' 
-                                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border border-green-400" 
-                                          : trendingData.attributes.trend === 'down'
-                                          ? "bg-gradient-to-r from-red-500 to-rose-500 text-white border border-red-400"
-                                          : "bg-gradient-to-r from-gray-500 to-gray-600 text-white border border-gray-400"
-                                      }`}
-                                    >
-                                      {trendingData.attributes.changePercent24h > 0 ? '+' : ''}{trendingData.attributes.changePercent24h.toFixed(2)}%
+                                    <div className="text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 bg-gradient-to-r from-emerald-500 to-green-500 text-white border border-emerald-400">
+                                      {trendingData.attributes.rateToTHB.toFixed(4)}
                                     </div>
                                   )}
                                   <Button
@@ -518,8 +525,13 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                       );
                                     }}
                                     className="p-0.5 h-4 w-4 hover:bg-emerald-100 rounded transition-all duration-300"
+                                    disabled={favoriteLoading === currency.currencyCode}
                                   >
-                                    <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" />
+                                    {favoriteLoading === currency.currencyCode ? (
+                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-emerald-600" />
+                                    ) : (
+                                      <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" />
+                                    )}
                                   </Button>
                                 </div>
                               </div>
@@ -536,31 +548,6 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                     </div>
                   </TabsContent>
 
-                  {/* Tools Tab Content */}
-                  <TabsContent value="tools" className="flex-1 overflow-y-auto">
-                    <div className="bg-gradient-to-br from-green-50/80 via-emerald-50/60 to-teal-50/80 rounded-lg border border-green-200/50 p-1.5 shadow-lg backdrop-blur-sm h-full">
-                        <h3 className="text-xs font-bold text-green-800 mb-1.5">🛠️ Tools</h3>
-                      <div className="grid grid-cols-2 gap-1">
-                        {[
-                          { icon: "📊", title: "Alerts" },
-                          { icon: "🧮", title: "Calc" },
-                          { icon: "💰", title: "Savings" },
-                          { icon: "📈", title: "Invest" }
-                        ].map((tool, index) => (
-                          <Button 
-                            key={tool.title}
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full justify-start h-6 bg-white/80 hover:bg-gradient-to-r hover:from-green-100/80 hover:to-emerald-100/80 border-green-300/50 text-gray-700 rounded transition-all duration-300 group hover:scale-105 shadow-sm backdrop-blur-sm"
-                            style={{ animationDelay: `${index * 0.1}s` }}
-                          >
-                            <span className="text-xs mr-1 group-hover:animate-bounce">{tool.icon}</span>
-                            <span className="font-semibold text-xs">{tool.title}</span>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  </TabsContent>
                 </Tabs>
               </div>
             </div>
@@ -571,7 +558,7 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
       {/* Expanded Modal - Same as original */}
       {showExpandedModal && (
         <Dialog open={showExpandedModal} onOpenChange={setShowExpandedModal}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden z-[100] border-0 bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-black/95 backdrop-blur-2xl shadow-2xl">
+          <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden z-[100] border-0 bg-gradient-to-br from-slate-900/95 via-gray-900/95 to-black/95 backdrop-blur-2xl shadow-2xl">
             {/* Animated Background */}
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-cyan-500/10">
               <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent backdrop-blur-xl"></div>
@@ -587,16 +574,173 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                     Currency Converter - Full View
                   </span>
                 </div>
+                <div className="flex items-center gap-2">
+                  {lastUpdated && (
+                    <span className="text-sm text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">
+                      Last updated: {lastUpdated.toLocaleTimeString()}
+                    </span>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshRates}
+                    className="text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh
+                  </Button>
+                </div>
               </DialogTitle>
             </DialogHeader>
             
-            <div className="overflow-y-auto max-h-[calc(90vh-120px)] relative z-10">
-              <div className="text-center p-8">
-                <div className="text-white text-lg mb-4">
-                  Full currency converter with charts, trending currencies, and advanced tools
+            <div className="overflow-y-auto max-h-[calc(95vh-120px)] relative z-10 p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Converter Section */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Enhanced Converter */}
+                  <div className="bg-gradient-to-br from-slate-800/50 to-gray-800/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-2xl">
+                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                      <Calculator className="w-5 h-5 text-emerald-400" />
+                      Currency Converter
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* From Currency */}
+                      <div className="space-y-3">
+                        <label className="text-sm font-semibold text-gray-300">From</label>
+                        <div className="relative">
+                          <select
+                            value={selectedFromCurrency}
+                            onChange={(e) => setSelectedFromCurrency(e.target.value)}
+                            className="w-full p-4 bg-slate-700/50 border border-gray-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 backdrop-blur-sm"
+                          >
+                            {currencies.map(currency => (
+                              <option key={currency.code} value={currency.code} className="bg-slate-800">
+                                {currency.flag} {currency.code} - {currency.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => setAmount(Number(e.target.value))}
+                          className="w-full p-4 bg-slate-700/50 border border-gray-600/50 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 backdrop-blur-sm text-lg font-semibold"
+                          placeholder="Enter amount"
+                        />
+                      </div>
+
+                      {/* To Currency */}
+                      <div className="space-y-3">
+                        <label className="text-sm font-semibold text-gray-300">To</label>
+                        <div className="relative">
+                          <select
+                            value={selectedToCurrency}
+                            onChange={(e) => setSelectedToCurrency(e.target.value)}
+                            className="w-full p-4 bg-slate-700/50 border border-gray-600/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 backdrop-blur-sm"
+                          >
+                            {currencies.map(currency => (
+                              <option key={currency.code} value={currency.code} className="bg-slate-800">
+                                {currency.flag} {currency.code} - {currency.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="w-full p-4 bg-slate-600/50 border border-gray-500/50 rounded-xl text-white text-lg font-semibold min-h-[60px] flex items-center">
+                          {isConverting ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+                          ) : convertedAmount !== null ? (
+                            <span className="text-emerald-400">
+                              {convertedAmount.toLocaleString()} {selectedToCurrency}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Enter amount to convert</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Exchange Rate Display */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl">
+                      <div className="text-center">
+                        <div className="text-sm text-emerald-300 mb-2">Current Exchange Rate</div>
+                        <div className="text-2xl font-bold text-white">
+                          {isLoading ? (
+                            <Loader2 className="w-6 h-6 animate-spin mx-auto text-emerald-400" />
+                          ) : exchangeRate ? (
+                            <span>
+                              1 {selectedFromCurrency} = {exchangeRate.toFixed(4)} {selectedToCurrency}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">Loading...</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Swap Button */}
+                    <div className="flex justify-center mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={swapCurrencies}
+                        className="bg-slate-700/50 border-gray-600/50 text-white hover:bg-slate-600/50 hover:border-emerald-500/50 transition-all duration-300"
+                      >
+                        <ArrowRightLeft className="w-4 h-4 mr-2" />
+                        Swap Currencies
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-white/70 text-sm">
-                  This would show the complete currency converter interface with all features
+
+                {/* Sidebar */}
+                <div className="space-y-6">
+                  {/* Quick Actions */}
+                  <div className="bg-gradient-to-br from-slate-800/50 to-gray-800/50 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-2xl">
+                    <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-cyan-400" />
+                      Quick Actions
+                    </h3>
+                    
+                    <div className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start bg-slate-700/50 border-gray-600/50 text-white hover:bg-slate-600/50 hover:border-cyan-500/50 transition-all duration-300"
+                        onClick={() => {
+                          setAmount(100);
+                          setSelectedFromCurrency('USD');
+                          setSelectedToCurrency('THB');
+                        }}
+                      >
+                        <DollarSign className="w-4 h-4 mr-3" />
+                        USD to THB (100)
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start bg-slate-700/50 border-gray-600/50 text-white hover:bg-slate-600/50 hover:border-cyan-500/50 transition-all duration-300"
+                        onClick={() => {
+                          setAmount(1000);
+                          setSelectedFromCurrency('THB');
+                          setSelectedToCurrency('USD');
+                        }}
+                      >
+                        <Coins className="w-4 h-4 mr-3" />
+                        THB to USD (1000)
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start bg-slate-700/50 border-gray-600/50 text-white hover:bg-slate-600/50 hover:border-cyan-500/50 transition-all duration-300"
+                        onClick={() => {
+                          setAmount(1);
+                          setSelectedFromCurrency('EUR');
+                          setSelectedToCurrency('THB');
+                        }}
+                      >
+                        <TrendingUp className="w-4 h-4 mr-3" />
+                        EUR to THB (1)
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

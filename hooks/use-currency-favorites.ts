@@ -11,11 +11,6 @@ export function useCurrencyFavorites() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchFavorites = useCallback(async () => {
-    if (!user || !token) {
-      setFavorites([]);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     
@@ -28,7 +23,7 @@ export function useCurrencyFavorites() {
     } finally {
       setLoading(false);
     }
-  }, [user, token]);
+  }, [token]);
 
   const addToFavorites = useCallback(async (
     currencyCode: string,
@@ -36,10 +31,6 @@ export function useCurrencyFavorites() {
     currencySymbol?: string,
     currencyFlag?: string
   ) => {
-    if (!user || !token) {
-      throw new Error('Authentication required');
-    }
-
     try {
       const newFavorite = await currencyFavoritesAPI.addToFavorites(
         currencyCode,
@@ -54,13 +45,9 @@ export function useCurrencyFavorites() {
       setError(err.message || 'Failed to add to favorites');
       throw err;
     }
-  }, [user, token]);
+  }, [token]);
 
   const removeFromFavorites = useCallback(async (currencyCode: string) => {
-    if (!user || !token) {
-      throw new Error('Authentication required');
-    }
-
     try {
       await currencyFavoritesAPI.removeFromFavorites(currencyCode, token);
       setFavorites(prev => prev.filter(fav => fav.attributes.currencyCode !== currencyCode));
@@ -68,13 +55,9 @@ export function useCurrencyFavorites() {
       setError(err.message || 'Failed to remove from favorites');
       throw err;
     }
-  }, [user, token]);
+  }, [token]);
 
   const updateSortOrder = useCallback(async (sortedFavorites: CurrencyFavorite[]) => {
-    if (!user || !token) {
-      throw new Error('Authentication required');
-    }
-
     try {
       const favoritesData = sortedFavorites.map((fav, index) => ({
         id: fav.id,
@@ -87,7 +70,7 @@ export function useCurrencyFavorites() {
       setError(err.message || 'Failed to update sort order');
       throw err;
     }
-  }, [user, token]);
+  }, [token]);
 
   const isFavorite = useCallback((currencyCode: string) => {
     return favorites.some(fav => fav.attributes.currencyCode === currencyCode);
