@@ -230,7 +230,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
   const loadWebSuggestions = async (searchQuery: string) => {
     try {
-      const response = await fetch(`http://localhost:1337/api/web-search/suggestions?query=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`https://api.pattaya1.com/api/web-search/suggestions?query=${encodeURIComponent(searchQuery)}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
@@ -284,7 +284,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
-      const response = await fetch(`http://localhost:1337/api/web-search?query=${encodeURIComponent(searchQuery)}&page=${page}&num=8`)
+      const response = await fetch(`https://api.pattaya1.com/api/web-search?query=${encodeURIComponent(searchQuery)}&page=${page}&num=8`)
       if (response.ok) {
         const data = await response.json()
         if (data && (data.success === true || data.status === 'ok')) {
@@ -321,7 +321,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
-      const response = await fetch(`http://localhost:1337/api/web-search/images?query=${encodeURIComponent(searchQuery)}&num=8&imgSize=medium`)
+      const response = await fetch(`https://api.pattaya1.com/api/web-search/images?query=${encodeURIComponent(searchQuery)}&num=8&imgSize=medium`)
       if (response.ok) {
         const data = await response.json()
         if (data && (data.success === true || data.status === 'ok')) {
