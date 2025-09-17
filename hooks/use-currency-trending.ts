@@ -59,3 +59,4 @@ export function useCurrencyTrending() {
     refetch: fetchTrendingCurrencies
   };
 }
+

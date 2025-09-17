@@ -132,7 +132,11 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
     const el = formRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    setDropdownRect({ left: rect.left + window.scrollX, top: rect.bottom + window.scrollY, width: rect.width })
+    setDropdownRect({ 
+      left: rect.left + window.scrollX, 
+      top: rect.bottom + window.scrollY + 4, // Add small gap
+      width: rect.width 
+    })
   }
 
   useEffect(() => {
@@ -146,6 +150,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
       window.removeEventListener('scroll', onScroll, true)
     }
   }, [])
+
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const hitsPerPage = 5
   const isWebMode = searchMode === 'web'
@@ -225,7 +230,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
   const loadWebSuggestions = async (searchQuery: string) => {
     try {
-      const response = await fetch(` http://locahost:1337/api/web-search/suggestions?query=${encodeURIComponent(searchQuery)}`)
+      const response = await fetch(`http://localhost:1337/api/web-search/suggestions?query=${encodeURIComponent(searchQuery)}`)
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
@@ -279,7 +284,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
-      const response = await fetch(` http://locahost:1337/api/web-search?query=${encodeURIComponent(searchQuery)}&page=${page}&num=8`)
+      const response = await fetch(`http://localhost:1337/api/web-search?query=${encodeURIComponent(searchQuery)}&page=${page}&num=8`)
       if (response.ok) {
         const data = await response.json()
         if (data && (data.success === true || data.status === 'ok')) {
@@ -316,7 +321,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
-      const response = await fetch(` http://locahost:1337/api/web-search/images?query=${encodeURIComponent(searchQuery)}&num=8&imgSize=medium`)
+      const response = await fetch(`http://localhost:1337/api/web-search/images?query=${encodeURIComponent(searchQuery)}&num=8&imgSize=medium`)
       if (response.ok) {
         const data = await response.json()
         if (data && (data.success === true || data.status === 'ok')) {
@@ -343,6 +348,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
+      updateDropdownRect() // Ensure rect is updated before showing results
       if (searchMode === 'site') {
         performSiteSearch(query, 0)
       } else {
@@ -429,14 +435,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
   const currentSuggestions = searchMode === 'site' ? siteSuggestions : webSuggestions
 
-  // If user switches to Web mode, delegate to the simpler, proven web widget
-  if (searchMode === 'web') {
-    return (
-      <div className="h-full w-full">
-        <WebSearchWidget />
-      </div>
-    )
-  }
+  // Web search now handled internally with same styling as site search
 
   return (
     <div className="h-full w-full">
@@ -448,7 +447,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
         <div className={`flex flex-col items-center justify-center h-full ${compact ? 'px-0 py-0' : 'px-6 py-8'} relative z-10`}>
           {/* Simple, clean search bar */}
           <div className={`w-full ${compact ? 'max-w-xl' : 'max-w-3xl'}`}>
-            <form ref={formRef} onSubmit={handleSearch} className={`flex items-center gap-2 bg-white rounded-xl shadow-lg border-2 ${compact ? 'px-2 py-1' : 'p-2'} transition-all duration-150 relative ${
+            <form ref={formRef} onSubmit={handleSearch} className={`flex items-center gap-1 bg-white rounded-xl shadow-lg border-2 ${compact ? 'px-2 py-1 h-8' : 'p-2'} transition-all duration-150 relative ${
               searchMode === 'site' 
                 ? 'border-pink-200 hover:border-pink-300 focus-within:border-pink-400' 
                 : 'border-purple-200 hover:border-purple-300 focus-within:border-purple-400'
@@ -459,7 +458,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
               transition: 'all 0.15s ease-in-out'
             }}>
               {/* Subtle search icon with gentle glow */}
-              <Search className={`${compact ? 'h-4 w-4 ml-1.5' : 'h-5 w-5 ml-3'} transition-all duration-150 ${
+              <Search className={`${compact ? 'h-3 w-3 ml-1' : 'h-5 w-5 ml-3'} transition-all duration-150 ${
                 searchMode === 'site' ? 'text-pink-500' : 'text-purple-500'
               }`} style={{
                 filter: searchMode === 'site' 
@@ -472,14 +471,19 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                 ref={searchInputRef}
                 type="text"
                 placeholder={
-                  searchMode === 'site' 
-                    ? "Search news, articles, events, businesses..." 
-                    : "Search the entire web, images, videos..."
+                  compact 
+                    ? (searchMode === 'site' ? "Search site..." : "Search web...")
+                    : (searchMode === 'site' 
+                        ? "Search news, articles, events, businesses..." 
+                        : "Search the entire web, images, videos...")
                 }
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className={`flex-1 border-0 bg-transparent ${compact ? 'text-sm' : 'text-lg'} placeholder:text-gray-500 focus:ring-0 focus:outline-none ${compact ? 'leading-none py-1' : ''}`}
-                onFocus={() => query.length >= 2 && setShowSuggestions(true)}
+                className={`flex-1 border-0 bg-transparent ${compact ? 'text-xs h-6' : 'text-lg'} placeholder:text-gray-500 focus:ring-0 focus:outline-none text-gray-900`}
+                onFocus={() => {
+                  updateDropdownRect()
+                  if (query.length >= 2) setShowSuggestions(true)
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
@@ -499,9 +503,9 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                     setImageResults([])
                     setShowSuggestions(false)
                   }}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className={`${compact ? 'p-1' : 'p-2'} rounded-full hover:bg-gray-100 transition-colors`}
                 >
-                  <X className="h-4 w-4 text-gray-400" />
+                  <X className={`${compact ? 'h-3 w-3' : 'h-4 w-4'} text-gray-400`} />
                 </button>
               )}
 
@@ -529,25 +533,55 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                 </button>
               )}
               
+              {/* Web search tabs - only show when in web mode and not compact */}
+              {isWebMode && !compact && (
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('web')}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      activeTab === 'web' 
+                        ? 'bg-purple-100 text-purple-700' 
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Globe className="h-3 w-3 inline mr-1" />
+                    Web
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('images')}
+                    className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      activeTab === 'images' 
+                        ? 'bg-purple-100 text-purple-700' 
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Image className="h-3 w-3 inline mr-1" />
+                    Images
+                  </button>
+                </div>
+              )}
+              
               {/* Subtle mode toggle with gentle glow */}
               <Select value={searchMode} onValueChange={(value: 'site' | 'web') => setSearchMode(value)}>
-                <SelectTrigger className={`w-24 ${compact ? 'h-8' : 'h-10'} border-0 bg-transparent hover:bg-gray-50 rounded-lg transition-all duration-150 ${
+                <SelectTrigger className={`${compact ? 'w-16 h-6' : 'w-24 h-10'} border-0 bg-transparent hover:bg-gray-50 rounded-lg transition-all duration-150 ${
                   searchMode === 'site' ? 'text-pink-600' : 'text-purple-600'
                 }`} style={{
                   boxShadow: searchMode === 'site' 
                     ? '0 0 6px rgba(236, 72, 153, 0.2)' 
                     : '0 0 6px rgba(168, 85, 247, 0.2)'
                 }}>
-                  <div className="flex items-center gap-2">
+                  <div className={`flex items-center ${compact ? 'gap-1' : 'gap-2'}`}>
                     {searchMode === 'site' ? (
-                      <Search className="h-4 w-4" />
+                      <Search className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     ) : (
-                      <Globe className="h-4 w-4" />
+                      <Globe className={`${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     )}
-                    <span className="font-medium">
+                    <span className={`font-medium ${compact ? 'text-xs' : ''}`}>
                       {searchMode === 'site' ? 'Site' : 'Web'}
                     </span>
-                    <ChevronDown className="h-3 w-3" />
+                    {!compact && <ChevronDown className="h-3 w-3" />}
                   </div>
                 </SelectTrigger>
                 <SelectContent className="border-0 shadow-xl rounded-lg bg-white/95 backdrop-blur-sm transition-all duration-150">
@@ -617,16 +651,16 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
       {/* Subtle results container with gentle glow */}
       {((isSiteMode && siteResults.length > 0) || 
         (isWebMode && (webResults.length > 0 || imageResults.length > 0)) || 
-        loading) && (
-        dropdownRect && createPortal(
+        loading) && dropdownRect && createPortal(
         <div className={`fixed z-[99999] bg-white/95 backdrop-blur-sm border-0 rounded-xl shadow-2xl max-h-96 overflow-y-auto transition-all duration-150 ${
           searchMode === 'site' 
             ? 'shadow-pink-200/20' 
             : 'shadow-purple-200/20'
         }`} style={{
-          left: dropdownRect.left,
-          top: dropdownRect.top + 4,
-          width: dropdownRect.width,
+          left: dropdownRect?.left || 0,
+          top: dropdownRect?.top || 0,
+          width: dropdownRect?.width || 300,
+          minWidth: '300px',
           boxShadow: searchMode === 'site' 
             ? '0 10px 20px -5px rgba(236, 72, 153, 0.15), 0 0 0 1px rgba(236, 72, 153, 0.1)' 
             : '0 10px 20px -5px rgba(168, 85, 247, 0.15), 0 0 0 1px rgba(168, 85, 247, 0.1)'
@@ -740,9 +774,9 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                 <span>Page {webCurrentPage}</span>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {webResults.map((result, index) => (
-                  <div key={index} className="border-b border-gray-100 pb-4 last:border-b-0">
+                  <div key={index} className="border-b border-gray-100 pb-3 last:border-b-0">
                     <div className="flex gap-3">
                       {result.thumbnail && (
                         <div className="flex-shrink-0">
@@ -786,12 +820,13 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                     size="sm"
                     disabled={webCurrentPage === 1}
                     onClick={() => performWebSearch(query, webCurrentPage - 1)}
+                    className="h-8 px-3 text-xs"
                   >
                     Previous
                   </Button>
                   
-                  <span className="text-sm text-gray-600">
-                    Page {webCurrentPage}
+                  <span className="text-xs text-gray-600 px-3">
+                    {webCurrentPage} of {webTotalPages}
                   </span>
                   
                   <Button
@@ -799,6 +834,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
                     size="sm"
                     disabled={webCurrentPage >= 10} // Google CSE limit
                     onClick={() => performWebSearch(query, webCurrentPage + 1)}
+                    className="h-8 px-3 text-xs"
                   >
                     Next
                   </Button>
@@ -849,7 +885,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
             </div>
           )}
         </div>, document.body)
-      )}
+      }
 
       {/* Nightlife themed Quick Actions for Site Search with glow (hidden in compact/inline use) */}
       {!compact && isSiteMode && (

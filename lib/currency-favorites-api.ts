@@ -190,3 +190,4 @@ class CurrencyTrendingAPI {
 
 export const currencyFavoritesAPI = new CurrencyFavoritesAPI();
 export const currencyTrendingAPI = new CurrencyTrendingAPI();
+
