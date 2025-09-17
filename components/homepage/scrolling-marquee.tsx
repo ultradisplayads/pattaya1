@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import UnifiedSearchWidget from "@/components/search/unified-search-widget"
 
 interface MarqueeItem {
   id: string
@@ -518,8 +519,8 @@ export function ScrollingMarquee() {
           </div>
         </div>
 
-        {/* Bottom Stats Bar */}
-        <div className="flex justify-center items-center mt-2 space-x-8 text-white/60 text-xs">
+        {/* Bottom Stats Bar with inline tiny search */}
+        <div className="flex justify-center items-center mt-2 space-x-5 text-white/60 text-xs">
           <div className="flex items-center space-x-1">
             <Fire className="w-4 h-4 text-orange-400" />
             <span>8 Hot Deals</span>
@@ -527,6 +528,10 @@ export function ScrollingMarquee() {
           <div className="flex items-center space-x-1">
             <Zap className="w-4 h-4 text-yellow-400" />
             <span>12 Live Events</span>
+          </div>
+          {/* Tiny search inline */}
+          <div className="flex-1 min-w-[260px] max-w-[440px] w-full">
+            <UnifiedSearchWidget compact />
           </div>
           <div className="flex items-center space-x-1">
             <Crown className="w-4 h-4 text-purple-400" />

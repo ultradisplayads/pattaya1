@@ -28,7 +28,7 @@ import { ForumActivityWidget } from "./widgets/forum-activity-widget"
 import { EventsCalendarWidget } from "./widgets/events-calendar-widget"
 import { TrafficWidget } from "./widgets/traffic-widget"
 import { GoogleReviewsWidget } from "../widgets/google-reviews-widget"
-import { CurrencyConverterWidget } from "../widgets/currency-converter-widget"
+import { CompactCurrencyConverterWidget } from "../widgets/compact-currency-converter-widget"
 import { NewCurrencyConverterWidget } from "../widgets/new-currency-converter-widget"
 import { EnhancedHotDealsWidget } from "./widgets/enhanced-hot-deals-widget"
 import { FoodWidget } from "../widgets/food-widget"
@@ -320,6 +320,7 @@ export function DynamicModularHomepage() {
         "weather": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
         "breaking-news": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
         "radio": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
+        "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "hot-deals": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
         "social-feed": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "trending": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
@@ -328,7 +329,6 @@ export function DynamicModularHomepage() {
         "photo-gallery": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "forum-activity": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "google-reviews": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
-        "currency-converter": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "traffic": { allowResize: true, allowDrag: true, allowDelete: false, isLocked: false },
         "search-widgets": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
         "flight-tracker": { allowResize: true, allowDrag: true, allowDelete: true, isLocked: false },
@@ -354,48 +354,47 @@ export function DynamicModularHomepage() {
       
       // Beautifully organized layout with logical content groupings and optimal visual flow
       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        // 🔍 UNIFIED SEARCH BAR (Top Priority - Clean centered search bar)
-        "unified-search": { x: 1, y: 0, w: 10, h: 5 },
+        
         
         // 📰 NEWS & INFORMATION (Below search bar)
         "weather": { x: 0, y: 5, w: 3, h: 6 },
         "breaking-news": { x: 3, y: 5, w: 6, h: 6 },
         "radio": { x: 9, y: 5, w: 3, h: 6 },
-        // Reserve second row under radio (empty for now)
-        "radio-empty": { x: 9, y: 11, w: 3, h: 6 },
+        // Hot deals between radio and currency (same size as Google Reviews)
+        "hot-deals": { x: 9, y: 11, w: 3, h: 8 },
+        // Currency converter below hot deals
+        "currency-converter": { x: 9, y: 19, w: 3, h: 6 },
         
         // 🎬 CINEMA (Below weather widget with same height)
         "cinema": { x: 0, y: 11, w: 3, h: 6 },
         
         // 🍽️ FOOD (Below breaking news, spans wider)
-        "food": { x: 3, y: 11, w: 9, h: 6 },
+        "food": { x: 3, y: 11, w: 6, h: 6 },
         
-        // ✈️ FLIGHT & CURRENCY (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-        "flight-tracker": { x: 0, y: 17, w: 3, h: 8 },
-        "search-widgets": { x: 3, y: 17, w: 6, h: 8 },
-        "currency-converter": { x: 9, y: 17, w: 3, h: 8 },
+        // ✈️ FLIGHT & SEARCH (Below cinema/food with 3:6:3 ratio like weather/radio/news)
+        // Swap positions: move Google Reviews where Traffic was
+        "google-reviews": { x: 9, y: 33, w: 3, h: 8 },
+        "search-widgets": { x: 3, y: 17, w: 6, h: 6 },
+        "youtube": { x: 3, y: 23, w: 6, h: 6 },
+        "flight-tracker": { x: 0, y: 25, w: 3, h: 6 },
         
-        // 💬 SOCIAL & REVIEWS (Below flight/search/currency with 8:2 ratio)
-        "social-feed": { x: 0, y: 25, w: 8, h: 8 },
-        "google-reviews": { x: 8, y: 25, w: 4, h: 8 },
+        // 💬 SOCIAL & COMMUNITY
+        // Social feed placed directly below currency converter (same size as Google Reviews)
+        "social-feed": { x: 9, y: 25, w: 3, h: 8 },
+        // Trending same size as weather (w:3,h:6)
+        "trending": { x: 0, y: 33, w: 3, h: 6 },
         
-        // 🎯 HOT DEALS (Below news section for high engagement)
-        "hot-deals": { x: 3, y: 11, w: 6, h: 6 },
-        "forum-activity": { x: 0, y: 33, w: 6, h: 8 },
-        
-        // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
-        "youtube": { x: 6, y: 33, w: 6, h: 10 },
-        "photo-gallery": { x: 0, y: 41, w: 6, h: 9 },
+        // Photo gallery just below featured videos (youtube) and forum below photo gallery
+        "photo-gallery": { x: 3, y: 29, w: 6, h: 6 },
+        "forum-activity": { x: 3, y: 35, w: 6, h: 6 },
         
         // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-        "traffic": { x: 6, y: 43, w: 6, h: 8 },
+        // Swap positions: move Traffic to where Google Reviews was, keep weather-sized height
+        "traffic": { x: 0, y: 17, w: 3, h: 6 },
         "sports-fixtures": { x: 0, y: 50, w: 6, h: 8 },
         
-        // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-        "trending": { x: 6, y: 51, w: 6, h: 6 },
-        
-        // 🔍 NAVIGATION (Utility widgets, side by side)
-        "quick-links": { x: 0, y: 58, w: 6, h: 8 },
+        // Quick access (quick-links) below trending, same size as weather
+        "quick-links": { x: 0, y: 39, w: 3, h: 6 },
         
       };
       
@@ -464,21 +463,6 @@ export function DynamicModularHomepage() {
 
       const defaultWidgets: Widget[] = [
         addAdminSettings({
-          id: "unified-search",
-          name: "Unified Search",
-          type: "search",
-          description: "Search site content or the web with toggle functionality",
-          size: "large",
-          category: "Search",
-          isVisible: true,
-          isResizable: true,
-          allowUserResizingAndMoving: true,
-          isMandatory: true,
-          settings: {
-            refreshInterval: 300000,
-          },
-        }),
-        addAdminSettings({
           id: "weather",
           name: "Weather Widget",
           type: "weather",
@@ -523,22 +507,6 @@ export function DynamicModularHomepage() {
           isMandatory: false,
           settings: {
             refreshInterval: 30000,
-          },
-        }),
-        // Empty reserved slot directly under radio column (compact view spacing)
-        addAdminSettings({
-          id: "radio-empty",
-          name: "Reserved Space",
-          type: "layout",
-          description: "Reserved for future content",
-          size: "small",
-          category: "Layout",
-          isVisible: true,
-          isResizable: false,
-          allowUserResizingAndMoving: false,
-          isMandatory: false,
-          settings: {
-            refreshInterval: 0,
           },
         }),
         addAdminSettings({
@@ -789,47 +757,44 @@ export function DynamicModularHomepage() {
   const handleResetLayout = () => {
     // Reset to beautifully organized layout with logical content groupings
     const resetLayout: LayoutItem[] = [
-      // 🔍 UNIFIED SEARCH BAR (Top Priority - Clean centered search bar)
-      { i: "unified-search", x: 1, y: 0, w: 10, h: 5, isDraggable: true, isResizable: true, static: false },
+      
       
       // 📰 NEWS & INFORMATION (Below search bar)
       { i: "weather", x: 0, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "breaking-news", x: 3, y: 5, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "radio", x: 9, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "radio-empty", x: 9, y: 11, w: 3, h: 6, isDraggable: false, isResizable: false, static: true },
+      { i: "hot-deals", x: 9, y: 11, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "currency-converter", x: 9, y: 19, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
       // 🎬 CINEMA (Below weather widget with same height)
       { i: "cinema", x: 0, y: 11, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // 🍽️ FOOD (Below breaking news, spans wider)
-      { i: "food", x: 3, y: 11, w: 9, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 🍽️ FOOD (Below breaking news, spans wider but leaves space for currency converter)
+      { i: "food", x: 3, y: 11, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // ✈️ FLIGHT & CURRENCY (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-      { i: "flight-tracker", x: 0, y: 17, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "search-widgets", x: 3, y: 17, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "currency-converter", x: 9, y: 17, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      // ✈️ FLIGHT & SEARCH (Below cinema/food with 3:6:3 ratio like weather/radio/news)
+      // Swap positions: move Google Reviews where Traffic was
+      { i: "google-reviews", x: 9, y: 33, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "search-widgets", x: 3, y: 17, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 3, y: 23, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "flight-tracker", x: 0, y: 25, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // 💬 SOCIAL & REVIEWS (Below flight/search/currency with 8:2 ratio)
-      { i: "social-feed", x: 0, y: 25, w: 8, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "google-reviews", x: 8, y: 25, w: 4, h: 8, isDraggable: true, isResizable: true, static: false },
+      // 💬 SOCIAL & COMMUNITY
+      { i: "social-feed", x: 9, y: 25, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      // Trending same size as weather (w:3,h:6)
+      { i: "trending", x: 0, y: 33, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // 🎯 HOT DEALS (Below news section for high engagement)
-      { i: "hot-deals", x: 3, y: 11, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "forum-activity", x: 0, y: 33, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      
-      // 🎬 ENTERTAINMENT & MEDIA (Visual content, grouped together)
-      { i: "youtube", x: 6, y: 33, w: 6, h: 10, isDraggable: true, isResizable: true, static: false },
-      { i: "photo-gallery", x: 0, y: 41, w: 6, h: 9, isDraggable: true, isResizable: true, static: false },
+      // Photo gallery just below featured videos (youtube) and forum below photo gallery
+      { i: "photo-gallery", x: 3, y: 29, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 3, y: 35, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
       
       // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-      { i: "traffic", x: 6, y: 43, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      // Swap positions: move Traffic to where Google Reviews was, keep weather-sized height
+      { i: "traffic", x: 0, y: 17, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       { i: "sports-fixtures", x: 0, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
-      // 💬 SOCIAL & COMMUNITY (Interactive content, vertical stack)
-      { i: "trending", x: 6, y: 51, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      
-      // 🔍 NAVIGATION (Utility widgets, side by side)
-      { i: "quick-links", x: 0, y: 58, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      // Quick access (quick-links) below trending, same size as weather
+      { i: "quick-links", x: 0, y: 39, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
     ];
     
@@ -1102,7 +1067,6 @@ export function DynamicModularHomepage() {
       "breaking-news": EnhancedBreakingNewsWidget,
       weather: EnhancedWeatherWidget,
       radio: RadioWidget,
-      "radio-empty": EmptyPlaceholderWidget,
       "google-reviews": GoogleReviewsWidget,
       youtube: FeaturedVideosWidget,
       "social-feed": SocialFeedWidget,
@@ -1110,7 +1074,7 @@ export function DynamicModularHomepage() {
       "hot-deals": EnhancedHotDealsWidget,
       "forum-activity": ForumActivityWidget,
       "photo-gallery": PhotoGalleryWidget,
-      "currency-converter": CurrencyConverterWidget,
+      "currency-converter": CompactCurrencyConverterWidget,
       "live-events": LiveEventsWidget,
       "quick-links": QuickLinksWidget,
       traffic: TrafficWidget,
@@ -1140,9 +1104,9 @@ export function DynamicModularHomepage() {
         <div key={widget.id} className="widget-container bg-transparent overflow-visible relative">
           <InView triggerOnce>
             {({ inView, ref }) => (
-              <div ref={ref} className="widget-content h-full">
+              <div ref={ref} className="widget-content h-full min-h-0">
                 {inView ? (
-                  <div className="widget-loaded h-full flex flex-col">
+                  <div className="widget-loaded h-full min-h-0 flex flex-col">
                     {/* Widget Header with Controls - Only show in edit mode */}
                     {isEditMode && (
                       <div className="widget-header bg-gradient-to-r from-pink-600 to-purple-600 text-white p-2 flex justify-between items-center mb-2 rounded-lg">
@@ -1214,9 +1178,9 @@ export function DynamicModularHomepage() {
       <div key={widget.id} className="widget-container bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
         <InView triggerOnce>
           {({ inView, ref }) => (
-            <div ref={ref} className="widget-content h-full">
+            <div ref={ref} className="widget-content h-full min-h-0">
               {inView ? (
-                <div className="widget-loaded h-full flex flex-col">
+                <div className="widget-loaded h-full min-h-0 flex flex-col">
                   {/* Widget Header with Controls - Only show in edit mode */}
                   {isEditMode && (
                     <div className="widget-header bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 flex justify-between items-center">
@@ -1264,13 +1228,13 @@ export function DynamicModularHomepage() {
                   )}
                   
                   {/* Widget Body */}
-                  <div className="widget-body flex-1 p-0">
-                    {widget.id === 'flight-tracker' ? (
-                      <div className="widget-inner-content h-full overflow-auto">
+                  <div className="widget-body flex-1 min-h-0 p-0">
+                    {(widget.id === 'flight-tracker' || widget.id === 'social-feed' || widget.id === 'google-reviews') ? (
+                      <div className="widget-inner-content h-full min-h-0 overflow-auto">
                         <WidgetComponent />
                       </div>
                     ) : (
-                      <div className="widget-inner-content h-full">
+                      <div className="widget-inner-content h-full min-h-0">
                         {widget.id === 'weather' ? (
                           <WidgetComponent onExpand={() => handleExpandWidget(widget.id)} />
                         ) : (
@@ -1482,7 +1446,7 @@ export function DynamicModularHomepage() {
           containerPadding={[16, 16]}
           draggableHandle=".drag-handle"
         >
-          {widgets.map(renderWidget)}
+          {visibleWidgets.map(renderWidget)}
         </ResponsiveGridLayout>
       </div>
 

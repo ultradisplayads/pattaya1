@@ -95,7 +95,6 @@ interface SponsoredWidgetBanner {
 
 export function EnhancedHotDealsWidget({ className }: { className?: string }) {
   const [deals, setDeals] = useState<Deal[]>([])
-  const [currentDeal, setCurrentDeal] = useState(0)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -104,23 +103,11 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
     bannerPosition: "top"
   })
   const [logoLoadingStates, setLogoLoadingStates] = useState<Record<string, boolean>>({})
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     loadDeals()
     loadSponsoredBanner()
-    
-    // Auto-rotate deals every 5 seconds
-    intervalRef.current = setInterval(() => {
-      setCurrentDeal((prev) => (prev + 1) % deals.length)
-    }, 5000)
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [deals.length])
+  }, [])
 
   const loadDeals = async () => {
     try {
@@ -326,13 +313,6 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
     }
   }
 
-  const nextDeal = () => {
-    setCurrentDeal((prev) => (prev + 1) % deals.length)
-  }
-
-  const prevDeal = () => {
-    setCurrentDeal((prev) => (prev - 1 + deals.length) % deals.length)
-  }
 
   const handleViewDeal = (deal: Deal) => {
     // Track the view action
@@ -445,7 +425,6 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
     )
   }
 
-  const currentDealData = deals[currentDeal]
 
   return (
     <>
@@ -513,156 +492,120 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
               <span className="text-[15px] font-medium text-gray-900">Hot Deals</span>
-              {currentDealData?.urgent && (
-                <Badge className="text-xs px-2 py-0.5 bg-gradient-to-r from-red-500/80 to-orange-500/80 text-white border-none rounded-xl animate-badge-glow">
-                  URGENT
-                </Badge>
-              )}
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  prevDeal()
-                }}
-                className="h-6 w-6 p-0 rounded-full hover:bg-white/30 transition-all duration-200"
-              >
-                <ChevronLeft className="w-3 h-3" />
-              </Button>
-              <span className="text-xs text-gray-600 font-medium min-w-[2rem] text-center">
-                {currentDeal + 1}/{deals.length}
-            </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  nextDeal()
-                }}
-                className="h-6 w-6 p-0 rounded-full hover:bg-white/30 transition-all duration-200"
-              >
-                <ChevronRight className="w-3 h-3" />
-              </Button>
+              <span className="text-xs text-gray-600 font-medium">
+                {deals.length} deals
+              </span>
             </div>
           </div>
       </CardHeader>
 
-      <CardContent className="px-4 pb-4 space-y-3 flex-1 overflow-y-auto">
-          {/* Current Deal Display */}
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-lg">
-            <div className="flex items-start gap-3">
-              <div className="relative">
-                <img
-                  src={currentDealData.image}
-                  alt={currentDealData.title}
-                  className="w-16 h-16 rounded-xl object-cover shadow-md"
-                  onLoad={() => setLogoLoadingStates(prev => ({ ...prev, [currentDealData.id]: false }))}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = "/placeholder.svg?height=64&width=64&text=Deal"
-                  }}
-                />
-                {currentDealData.urgent && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-                )}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-gray-900 truncate text-sm">
-                    {currentDealData.title}
-                  </h3>
-                  {currentDealData.featured && (
-                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
+      <CardContent className="px-3 pb-3 flex-1 overflow-y-auto">
+        {/* Scrolling Deals List */}
+        <div className="space-y-2">
+          {deals.map((deal, index) => (
+            <div
+              key={deal.id}
+              className="bg-white/80 backdrop-blur-md rounded-xl p-3 border border-white/20 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+            >
+              <div className="flex items-start gap-2">
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={deal.image}
+                    alt={deal.title}
+                    className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                    onLoad={() => setLogoLoadingStates(prev => ({ ...prev, [deal.id]: false }))}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src = "/placeholder.svg?height=48&width=48&text=Deal"
+                    }}
+                  />
+                  {deal.urgent && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
                   )}
                 </div>
                 
-                <p className="text-xs text-gray-600 truncate mb-2">
-                  {currentDealData.business} • {currentDealData.location}
-                </p>
-                
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge className={`text-xs px-2 py-0.5 ${getCategoryColor(currentDealData.category)} border-none rounded-lg`}>
-                    {currentDealData.category}
-                  </Badge>
-                  <Badge className="text-xs px-2 py-0.5 bg-gradient-to-r from-red-500/80 to-orange-500/80 text-white border-none rounded-lg animate-badge-glow">
-                    {currentDealData.discount} OFF
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-red-600">
-                      ฿{currentDealData.salePrice.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-gray-500 line-through">
-                      ฿{currentDealData.originalPrice.toLocaleString()}
-                    </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1 mb-1">
+                    <h3 className="font-semibold text-gray-900 truncate text-xs">
+                      {deal.title}
+                    </h3>
+                    {deal.featured && (
+                      <Star className="w-2.5 h-2.5 text-yellow-500 fill-current flex-shrink-0" />
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Clock className="w-3 h-3" />
-                    <span>{currentDealData.timeLeft}</span>
+                  
+                  <p className="text-[10px] text-gray-600 truncate mb-1">
+                    {deal.business} • {deal.location}
+                  </p>
+                  
+                  <div className="flex items-center gap-1 mb-1">
+                    <Badge className={`text-[10px] px-1.5 py-0.5 ${getCategoryColor(deal.category)} border-none rounded-md`}>
+                      {deal.category}
+                    </Badge>
+                    <Badge className="text-[10px] px-1.5 py-0.5 bg-gradient-to-r from-red-500/80 to-orange-500/80 text-white border-none rounded-md">
+                      {deal.discount} OFF
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-bold text-red-600">
+                        ฿{deal.salePrice.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-gray-500 line-through">
+                        ฿{deal.originalPrice.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                      <Clock className="w-2.5 h-2.5" />
+                      <span>{deal.timeLeft}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Compact Action Buttons */}
+                  <div className="flex gap-1 mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-6 text-[10px] bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleViewDeal(deal)
+                      }}
+                    >
+                      <Eye className="w-2.5 h-2.5 mr-1" />
+                      View
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1 h-6 text-[10px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-none shadow-sm hover:shadow-md transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleBuyNow(deal)
+                      }}
+                    >
+                      <ShoppingBag className="w-2.5 h-2.5 mr-1" />
+                      Buy
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-6 w-6 p-0 bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleShareDeal(deal)
+                      }}
+                    >
+                      <Share2 className="w-2.5 h-2.5" />
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 text-center">
-              <div className="text-xs font-semibold text-gray-900">{currentDealData.views}</div>
-              <div className="text-[10px] text-gray-600">Views</div>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 text-center">
-              <div className="text-xs font-semibold text-gray-900">{currentDealData.clicks}</div>
-              <div className="text-[10px] text-gray-600">Clicks</div>
-            </div>
-            <div className="bg-white/60 backdrop-blur-sm rounded-lg p-2 text-center">
-              <div className="text-xs font-semibold text-gray-900">{currentDealData.rating}</div>
-              <div className="text-[10px] text-gray-600">Rating</div>
-            </div>
+          ))}
         </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 h-8 text-xs bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleViewDeal(currentDealData)
-              }}
-            >
-              <Eye className="w-3 h-3 mr-1" />
-              View Deal
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 h-8 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-none shadow-md hover:shadow-lg transition-all duration-200"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleBuyNow(currentDealData)
-              }}
-            >
-              <ShoppingBag className="w-3 h-3 mr-1" />
-              Buy Now
-            </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-              className="h-8 w-8 p-0 bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleShareDeal(currentDealData)
-              }}
-            >
-              <Share2 className="w-3 h-3" />
-        </Button>
-          </div>
       </CardContent>
     </Card>
 
@@ -687,112 +630,107 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
           </DialogHeader>
           
           <div className="space-y-6">
-            {/* Featured Deals Section */}
+            {/* All Deals Section */}
             <div>
               <h4 className="text-lg font-semibold text-orange-600 mb-4 flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
-                Featured Deals
+                All Hot Deals
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+              <div className="space-y-4 max-h-96 overflow-y-auto">
                 {deals.map((deal) => (
                   <div
                     key={deal.id}
-                    className={`bg-white rounded-xl border transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${
-                      deal.id === currentDealData.id 
-                        ? "ring-2 ring-orange-500 shadow-lg" 
-                        : "border-gray-200 hover:border-orange-300"
-                    }`}
+                    className="bg-white rounded-xl border border-gray-200 hover:border-orange-300 transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
                   >
-                    <div className="relative">
-                      <img
-                        src={deal.image}
-                        alt={deal.title}
-                        className="w-full h-32 object-cover rounded-t-xl"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = "/placeholder.svg?height=128&width=200&text=Deal"
-                        }}
-                      />
-                      <div className="absolute top-2 left-2 flex gap-1">
-                        <Badge className="text-xs px-2 py-0.5 bg-gradient-to-r from-red-500 to-orange-500 text-white border-none rounded-lg">
-                          {deal.discount} OFF
-                        </Badge>
+                    <div className="flex items-start gap-4 p-4">
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={deal.image}
+                          alt={deal.title}
+                          className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/placeholder.svg?height=80&width=80&text=Deal"
+                          }}
+                        />
                         {deal.urgent && (
-                          <Badge className="text-xs px-2 py-0.5 bg-red-600 text-white border-none rounded-lg animate-pulse">
-                            URGENT
-                          </Badge>
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
                         )}
-                      </div>
-                      {deal.featured && (
-                        <div className="absolute top-2 right-2">
-                          <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h5 className="font-semibold text-gray-900 truncate">{deal.title}</h5>
                         {deal.featured && (
-                          <Sparkles className="w-4 h-4 text-yellow-500" />
+                          <div className="absolute -top-1 -left-1">
+                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          </div>
                         )}
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2 truncate">
-                        {deal.business} • {deal.location}
-                      </p>
-                      
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge className={`text-xs px-2 py-0.5 ${getCategoryColor(deal.category)} border-none rounded-lg`}>
-                          {deal.category}
-                        </Badge>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="w-3 h-3" />
-                          <span>{deal.timeLeft}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h5 className="font-semibold text-gray-900 truncate">{deal.title}</h5>
+                          {deal.featured && (
+                            <Sparkles className="w-4 h-4 text-yellow-500" />
+                          )}
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-red-600">
-                            ฿{deal.salePrice.toLocaleString()}
-                          </span>
-                          <span className="text-sm text-gray-500 line-through">
-                            ฿{deal.originalPrice.toLocaleString()}
-                          </span>
+                        
+                        <p className="text-sm text-gray-600 mb-2 truncate">
+                          {deal.business} • {deal.location}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge className={`text-xs px-2 py-0.5 ${getCategoryColor(deal.category)} border-none rounded-lg`}>
+                            {deal.category}
+                          </Badge>
+                          <Badge className="text-xs px-2 py-0.5 bg-gradient-to-r from-red-500 to-orange-500 text-white border-none rounded-lg">
+                            {deal.discount} OFF
+                          </Badge>
+                          {deal.urgent && (
+                            <Badge className="text-xs px-2 py-0.5 bg-red-600 text-white border-none rounded-lg animate-pulse">
+                              URGENT
+                            </Badge>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                          <span>{deal.rating}</span>
+                        
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-red-600">
+                              ฿{deal.salePrice.toLocaleString()}
+                            </span>
+                            <span className="text-sm text-gray-500 line-through">
+                              ฿{deal.originalPrice.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>{deal.timeLeft}</span>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => handleViewDeal(deal)}
-                        >
-                          <ExternalLink className="w-3 h-3 mr-1" />
-                          View Deal
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="flex-1 h-8 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-none shadow-md hover:shadow-lg transition-all duration-200"
-                          onClick={() => handleBuyNow(deal)}
-                        >
-                          <ShoppingBag className="w-3 h-3 mr-1" />
-                          Buy Now
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleShareDeal(deal)}
-                        >
-                          <Share2 className="w-3 h-3" />
-                        </Button>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-8 text-xs"
+                            onClick={() => handleViewDeal(deal)}
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View Deal
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1 h-8 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-none shadow-md hover:shadow-lg transition-all duration-200"
+                            onClick={() => handleBuyNow(deal)}
+                          >
+                            <ShoppingBag className="w-3 h-3 mr-1" />
+                            Buy Now
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleShareDeal(deal)}
+                          >
+                            <Share2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

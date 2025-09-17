@@ -680,7 +680,7 @@ export function PhotoGalleryWidget() {
   const photo = photos[currentPhoto]
 
   return (
-    <Card className={`${glassGradientBg} backdrop-blur-lg border border-white/40 rounded-3xl shadow-lg shadow-indigo-400/30 hover:shadow-indigo-500/50 transition-shadow duration-500 ease-in-out overflow-hidden`}>
+    <Card className={`${glassGradientBg} backdrop-blur-lg border border-white/40 rounded-3xl shadow-lg shadow-indigo-400/30 hover:shadow-indigo-500/50 transition-shadow duration-500 ease-in-out overflow-hidden h-full flex flex-col`}>
       <SponsorshipBanner widgetType="photos" />
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="text-base font-semibold text-white flex items-center justify-between select-none drop-shadow-lg">
@@ -691,9 +691,9 @@ export function PhotoGalleryWidget() {
           <span className="text-xs font-semibold">{photos.length} photos</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-6 pb-6 space-y-6">
+      <CardContent className="px-6 pb-6 space-y-6 flex-1 flex flex-col min-h-0">
         <div
-          className="relative cursor-pointer rounded-3xl overflow-hidden shadow-lg transform transition-transform duration-500 hover:scale-[1.02] hover:opacity-95"
+          className="relative cursor-pointer rounded-3xl overflow-hidden shadow-lg transform transition-transform duration-500 hover:scale-[1.02] hover:opacity-95 aspect-video"
           onClick={() => handlePhotoClick(photo)}
           role="button"
           tabIndex={0}
@@ -703,7 +703,7 @@ export function PhotoGalleryWidget() {
           <img
             src={photo.image ? buildStrapiUrl(photo.image.url) : "/placeholder.svg"}
             alt={photo.caption || "Pattaya photo"}
-            className="w-full h-64 object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             draggable={false}
             loading="lazy"
           />
@@ -766,7 +766,7 @@ export function PhotoGalleryWidget() {
           </div>
         </div>
 
-        <div className="flex justify-center items-center space-x-3 select-none">
+        <div className="flex justify-center items-center space-x-3 select-none mt-auto">
           {photos.map((_, i) => (
             <button
               key={i}
