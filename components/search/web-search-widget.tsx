@@ -72,7 +72,7 @@
 // }
 
 // export default function WebSearchWidget() {
-//   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://locahost:1337'
+//   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://api.pattaya1.com'
 //   const [query, setQuery] = useState('')
 //   const [webResults, setWebResults] = useState<WebSearchResult[]>([])
 //   const [imageResults, setImageResults] = useState<ImageSearchResult[]>([])
@@ -564,7 +564,7 @@ interface WebSearchResponse {
    Component
    --------------------------- */
 export default function WebSearchWidget(): JSX.Element {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://locahost:1337"
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://api.pattaya1.com"
   const [query, setQuery] = useState("")
   const [webResults, setWebResults] = useState<WebSearchResult[]>([])
   const [imageResults, setImageResults] = useState<ImageSearchResult[]>([])
