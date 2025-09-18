@@ -292,14 +292,9 @@ export function InteractiveTrafficMap({ isOpen, onClose }: InteractiveTrafficMap
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl h-[85vh] p-0 flex flex-col">
         <DialogHeader className="p-4 pb-2 flex-shrink-0">
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-blue-600" />
-              Interactive Traffic Map
-            </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+          <DialogTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-blue-600" />
+            Interactive Traffic Map
           </DialogTitle>
         </DialogHeader>
 
