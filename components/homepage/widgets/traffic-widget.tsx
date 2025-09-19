@@ -819,33 +819,67 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
                 const incidentsData = await incidentsResponse.json()
 
                 if (routesData.data && routesData.data.length > 0) {
-                    const transformedRoutes: TrafficRoute[] = routesData.data.map((strapiRoute: any) => ({
-                        id: strapiRoute.id.toString(),
-                        from: strapiRoute.From,
-                        to: strapiRoute.To,
-                        distance: strapiRoute.Distance,
-                        normalTime: strapiRoute.NormalTime,
-                        currentTime: strapiRoute.CurrentTime,
-                        delay: strapiRoute.Delay,
-                        status: strapiRoute.Status as TrafficRoute["status"],
-                        incidents: strapiRoute.Incidents,
-                        lastUpdated: strapiRoute.LastUpdated,
-                    }))
+                    const transformedRoutes: TrafficRoute[] = routesData.data.map((item: any) => {
+                        const r = item.attributes ? item.attributes : item
+                        const getVal = (obj: any, keys: string[]) => {
+                            for (const k of keys) {
+                                if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k]
+                            }
+                            return undefined
+                        }
+                        const id = String(item.id ?? r.id ?? Math.random())
+                        const from = getVal(r, ["From", "from"]) || ""
+                        const to = getVal(r, ["To", "to"]) || ""
+                        const distance = getVal(r, ["Distance", "distance"]) || ""
+                        const normalTime = getVal(r, ["NormalTime", "normalTime"]) || ""
+                        const currentTime = getVal(r, ["CurrentTime", "currentTime"]) || ""
+                        const delay = Number(getVal(r, ["Delay", "delay"]) ?? 0)
+                        const status = (getVal(r, ["Status", "status"]) || "clear") as TrafficRoute["status"]
+                        const incidentsCount = Number(getVal(r, ["Incidents", "incidents"]) ?? 0)
+                        const lastUpdated = getVal(r, ["LastUpdated", "updatedAt", "createdAt"]) || new Date().toISOString()
+                        return {
+                            id,
+                            from,
+                            to,
+                            distance,
+                            normalTime,
+                            currentTime,
+                            delay,
+                            status,
+                            incidents: incidentsCount,
+                            lastUpdated,
+                        }
+                    })
                     setRoutes(transformedRoutes)
+                    if (process.env.NODE_ENV !== "production") {
+                        console.debug("TrafficWidget: loaded routes", transformedRoutes.length)
+                    }
                 } else {
                     setRoutes(getFallbackRoutes())
                 }
 
                 if (incidentsData.data && incidentsData.data.length > 0) {
-                    const transformedIncidents: TrafficIncident[] = incidentsData.data.map((strapiIncident: any) => ({
-                        id: strapiIncident.id.toString(),
-                        type: strapiIncident.Type as TrafficIncident["type"],
-                        description: strapiIncident.Description,
-                        estimatedClearTime: strapiIncident.EstimatedClearTime,
-                        location: strapiIncident.Location,
-                        severity: strapiIncident.Severity as TrafficIncident["severity"],
-                    }))
+                    const transformedIncidents: TrafficIncident[] = incidentsData.data.map((item: any) => {
+                        const r = item.attributes ? item.attributes : item
+                        const getVal = (obj: any, keys: string[]) => {
+                            for (const k of keys) {
+                                if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k]
+                            }
+                            return undefined
+                        }
+                        return {
+                            id: String(item.id ?? r.id ?? Math.random()),
+                            type: (getVal(r, ["Type", "type"]) || "event") as TrafficIncident["type"],
+                            description: getVal(r, ["Description", "description"]) || "",
+                            estimatedClearTime: getVal(r, ["EstimatedClearTime", "estimatedClearTime"]) || "",
+                            location: getVal(r, ["Location", "location"]) || "",
+                            severity: (getVal(r, ["Severity", "severity"]) || "low") as TrafficIncident["severity"],
+                        }
+                    })
                     setIncidents(transformedIncidents)
+                    if (process.env.NODE_ENV !== "production") {
+                        console.debug("TrafficWidget: loaded incidents", transformedIncidents.length)
+                    }
                 } else {
                     setIncidents(getFallbackIncidents())
                 }
@@ -1077,8 +1111,11 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
         },
     ]
 
-    const getFallbackMapImageUrl = () =>
-        "https://maps.googleapis.com/maps/api/staticmap?center=Pattaya,Thailand&zoom=12&size=600x300&maptype=roadmap&style=feature:road|color:0xffffff&markers=color:red|Pattaya&key=FAKE_KEY_REPLACE"
+    const getFallbackMapImageUrl = () => {
+        // Use a placeholder image or create a simple map representation
+        // For now, return empty string to show the interactive placeholder
+        return ""
+    }
 
     const getFallbackParkingLots = (): ParkingLot[] => [
         { id: "cf", name: "Central Festival Parking", status: "spaces", spacesAvailable: 120 },
@@ -1385,7 +1422,153 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
                                     )}
                                 </TabsContent>
 
-                                {/* Map view content can be added here if needed */}
+                                <TabsContent value="map" key="map">
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <h5 className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Live Traffic Map</h5>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsInteractiveMapOpen(true)}
+                                                className="h-6 text-[10px] font-medium hover:bg-white/50 rounded-lg transition-colors backdrop-blur-sm border border-white/30"
+                                            >
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                Expand
+                                            </Button>
+                                        </div>
+                                        <div
+                                            className="rounded-xl overflow-hidden border border-white/30 cursor-pointer bg-white/20 backdrop-blur-sm"
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label="Open interactive traffic map"
+                                            onClick={() => setIsInteractiveMapOpen(true)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.preventDefault()
+                                                    setIsInteractiveMapOpen(true)
+                                                }
+                                            }}
+                                        >
+                                            <div className="h-40 bg-gradient-to-br from-purple-100/50 to-blue-100/50 flex flex-col items-center justify-center text-slate-500 text-sm backdrop-blur-sm relative overflow-hidden">
+                                                {/* Compact Map Image */}
+                                                <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200">
+                                                    <div className="w-full h-full bg-gradient-to-br from-emerald-100 via-amber-100 to-rose-100 relative">
+                                                        {/* Simulated map roads */}
+                                                        <div className="absolute inset-0 opacity-30">
+                                                            <div className="absolute top-1/4 left-0 right-0 h-1 bg-slate-400 transform -skew-y-1"></div>
+                                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-400 transform skew-y-1"></div>
+                                                            <div className="absolute top-3/4 left-0 right-0 h-1 bg-slate-400 transform -skew-y-1"></div>
+                                                            <div className="absolute left-1/4 top-0 bottom-0 w-1 bg-slate-400 transform -skew-x-1"></div>
+                                                            <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-slate-400 transform skew-x-1"></div>
+                                                            <div className="absolute left-3/4 top-0 bottom-0 w-1 bg-slate-400 transform -skew-x-1"></div>
+                                                        </div>
+                                                        
+                                                        {/* Traffic indicators */}
+                                                        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                                                        <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                                                        <div className="absolute top-3/4 left-3/4 w-2 h-2 bg-rose-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                                                        
+                                                        {/* Parking indicators */}
+                                                        <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 bg-emerald-500 rounded-sm"></div>
+                                                        <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-amber-500 rounded-sm"></div>
+                                                        
+                                                        {/* Map center marker */}
+                                                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                                            <div className="w-3 h-3 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Overlay content */}
+                                                <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center">
+                                                    <motion.div
+                                                        animate={{ 
+                                                            scale: [1, 1.1, 1],
+                                                            rotate: [0, 5, -5, 0]
+                                                        }}
+                                                        transition={{ 
+                                                            duration: 3,
+                                                            repeat: Infinity,
+                                                            ease: "easeInOut"
+                                                        }}
+                                                        className="mb-2"
+                                                    >
+                                                        <MapPin className="h-6 w-6 text-white drop-shadow-lg" />
+                                                    </motion.div>
+                                                    <p className="text-xs font-medium text-white drop-shadow-lg">Live Traffic Map</p>
+                                                    <p className="text-[10px] mt-1 text-white/80 drop-shadow">Click to expand</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500">Map auto-refreshes every few minutes. Click expand for interactive layers.</p>
+                                    </motion.div>
+                                </TabsContent>
+
+                                <TabsContent value="parking" key="parking">
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="space-y-3">
+                                        <h5 className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Parking Status</h5>
+                                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-2">
+                                            {parkingLots.map((lot) => (
+                                                <motion.div
+                                                    key={lot.id}
+                                                    variants={itemVariants}
+                                                    className="p-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 flex items-center justify-between hover:bg-white/60 transition-all duration-200"
+                                                    whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+                                                >
+                                                    <div>
+                                                        <div className="text-[12px] font-medium text-slate-800">{lot.name}</div>
+                                                        {lot.location && <div className="text-[11px] text-slate-500">{lot.location}</div>}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {typeof lot.spacesAvailable === "number" && (
+                                                            <Badge variant="outline" className="text-[10px] font-medium bg-white/50 border-white/30 text-slate-700 backdrop-blur-sm">
+                                                                {lot.spacesAvailable} spaces
+                                                            </Badge>
+                                                        )}
+                                                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getParkingStatusBadge(lot.status)}`}>
+                                                            {lot.status === "spaces" ? "Spaces Available" : lot.status === "likely-full" ? "Likely Full" : "Closed"}
+                                                        </Badge>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
+                                    </motion.div>
+                                </TabsContent>
+
+                                <TabsContent value="transport" key="transport">
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="space-y-3">
+                                        <h5 className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Public Transport</h5>
+                                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-2">
+                                            {transportStatuses.map((svc) => (
+                                                <motion.div
+                                                    key={svc.id}
+                                                    variants={itemVariants}
+                                                    className="p-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 flex items-center justify-between hover:bg-white/60 transition-all duration-200"
+                                                    whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+                                                >
+                                                    <div>
+                                                        <div className="text-[12px] font-medium text-slate-800">{svc.name}</div>
+                                                        {svc.notes && <div className="text-[11px] text-slate-500">{svc.notes}</div>}
+                                                    </div>
+                                                    <div>
+                                                        <Badge 
+                                                            variant="outline" 
+                                                            className={`text-[10px] font-medium px-2 py-1 rounded-full border ${
+                                                                svc.status === "on-schedule" 
+                                                                    ? "bg-emerald-400/20 text-emerald-700 border-emerald-400/30 backdrop-blur-sm" 
+                                                                    : svc.status === "delayed" 
+                                                                        ? "bg-amber-400/20 text-amber-700 border-amber-400/30 backdrop-blur-sm" 
+                                                                        : "bg-slate-400/20 text-slate-700 border-slate-400/30 backdrop-blur-sm"
+                                                            }`}
+                                                        >
+                                                            {svc.status === "on-schedule" ? "On Schedule" : svc.status === "delayed" ? "Delayed" : "Suspended"}
+                                                        </Badge>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
+                                    </motion.div>
+                                </TabsContent>
 
                             </AnimatePresence>
                         </Tabs>
