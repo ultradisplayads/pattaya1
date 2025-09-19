@@ -125,17 +125,17 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
 
   return (
     <div 
-      className="block p-5 transition-colors duration-200 cursor-pointer hover:bg-gray-50 rounded-lg"
+      className="block p-3 transition-colors duration-200 cursor-pointer hover:bg-gray-50 rounded-lg"
       onClick={handleTopicClick}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3">
         {/* User Avatar */}
-        <Avatar className="h-12 w-12 flex-shrink-0 shadow-sm">
+        <Avatar className="h-8 w-8 flex-shrink-0 shadow-sm">
           <AvatarImage 
             src={topic.avatar_url || undefined} 
             alt={topic.author.name}
           />
-          <AvatarFallback className="text-sm bg-blue-500 text-white font-semibold">
+          <AvatarFallback className="text-xs bg-blue-500 text-white font-semibold">
             {getAuthorInitials(topic.author.name)}
           </AvatarFallback>
         </Avatar>
@@ -143,20 +143,20 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Title Row */}
-          <div className="flex items-start gap-3 mb-4">
-            <h3 className="font-semibold text-gray-900 text-base leading-tight line-clamp-2 flex-1 hover:text-blue-600 transition-colors">
+          <div className="flex items-start gap-2 mb-2">
+            <h3 className="font-semibold text-gray-900 text-sm leading-tight line-clamp-2 flex-1 hover:text-blue-600 transition-colors">
               {topic.title}
             </h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               {topic.is_hot && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-xl shadow-sm">
-                  <span className="text-sm">🔥</span>
+                <div className="flex items-center gap-1 px-2 py-1 bg-orange-500 text-white text-[10px] font-medium rounded-lg shadow-sm">
+                  <span className="text-xs">🔥</span>
                   <span>Hot</span>
                 </div>
               )}
               {topic.is_pinned && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-xl shadow-sm">
-                  <span className="text-sm">📌</span>
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 text-white text-[10px] font-medium rounded-lg shadow-sm">
+                  <span className="text-xs">📌</span>
                   <span>Pinned</span>
                 </div>
               )}
@@ -165,36 +165,36 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
 
           {/* Excerpt */}
           {topic.excerpt && (
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+            <p className="text-gray-600 text-xs mb-2 line-clamp-2">
               {topic.excerpt}
             </p>
           )}
 
           {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+          <div className="flex flex-wrap items-center gap-1.5 mb-2">
             {/* Category */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-xl">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-lg">
               <span 
-                className="text-base"
+                className="text-sm"
                 style={{ color: topic.category_info.color }}
               >
                 {topic.category_info.icon}
               </span>
-              <span className="font-medium text-gray-700 text-sm">
+              <span className="font-medium text-gray-700 text-xs">
                 {topic.category_info.name}
               </span>
             </div>
 
             {/* Engagement Metrics */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-xl">
-              <MessageSquare className="h-4 w-4 text-blue-600" />
-              <span className="text-blue-700 font-medium text-sm">{topic.reply_count} Replies</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded-lg">
+              <MessageSquare className="h-3 w-3 text-blue-600" />
+              <span className="text-blue-700 font-medium text-xs">{topic.reply_count} Replies</span>
             </div>
 
             {/* Last Activity */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 rounded-xl">
-              <Clock className="h-4 w-4 text-green-600" />
-              <span className="text-green-700 font-medium text-sm">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded-lg">
+              <Clock className="h-3 w-3 text-green-600" />
+              <span className="text-green-700 font-medium text-xs">
                 {formatTimeAgo(topic.last_activity)}
               </span>
             </div>
@@ -202,7 +202,7 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
 
           {/* Author Info and Reactions */}
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+            <div className="text-xs text-gray-500">
               <span>by </span>
               <span className="font-semibold text-gray-700 hover:text-blue-600 transition-colors">
                 {topic.author.username}
@@ -210,7 +210,7 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
             </div>
 
             {/* Reaction Buttons */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {reactions.map(({ type, icon: Icon, color, bgColor }) => {
                 const count = reactionCounts[type as keyof typeof reactionCounts] || 0
                 if (count === 0) return null
@@ -220,12 +220,12 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
                     key={type}
                     variant="ghost"
                     size="sm"
-                    className={`h-8 px-2 ${bgColor} hover:opacity-80 transition-opacity`}
+                    className={`h-6 px-1.5 ${bgColor} hover:opacity-80 transition-opacity`}
                     onClick={(e) => handleReaction(type, e)}
                     disabled={isReacting}
                   >
-                    <Icon className={`h-3.5 w-3.5 ${color} mr-1`} />
-                    <span className={`text-xs font-medium ${color}`}>{count}</span>
+                    <Icon className={`h-3 w-3 ${color} mr-0.5`} />
+                    <span className={`text-[10px] font-medium ${color}`}>{count}</span>
                   </Button>
                 )
               })}
@@ -234,12 +234,12 @@ export function ForumThreadItem({ topic }: ForumThreadItemProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 px-2 bg-blue-100 hover:bg-blue-200 transition-colors"
+                className="h-6 px-1.5 bg-blue-100 hover:bg-blue-200 transition-colors"
                 onClick={(e) => handleReaction('like', e)}
                 disabled={isReacting}
               >
-                <ThumbsUp className="h-3.5 w-3.5 text-blue-500 mr-1" />
-                <span className="text-xs font-medium text-blue-500">Like</span>
+                <ThumbsUp className="h-3 w-3 text-blue-500 mr-0.5" />
+                <span className="text-[10px] font-medium text-blue-500">Like</span>
               </Button>
             </div>
           </div>

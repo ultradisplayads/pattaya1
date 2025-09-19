@@ -219,45 +219,49 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
 
   return (
     <>
-      {/* Main Widget - Compact Design */}
+      {/* Main Widget - Thai-themed Compact Design */}
       <div 
-        className="h-full flex flex-col relative overflow-hidden rounded-xl cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+        className="h-full flex flex-col relative overflow-hidden rounded-2xl cursor-pointer group transition-all duration-500 hover:scale-[1.02] hover:shadow-xl ccw-enter"
         onClick={() => setShowExpandedModal(true)}
       >
-        {/* Unique Color Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-teal-500/15 to-emerald-500/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/5 via-teal-500/8 to-emerald-600/5 animate-pulse"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent"></div>
+        {/* Enhanced Thai-themed background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/15 via-orange-500/20 to-red-500/15">
+          <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/8 via-orange-500/12 to-red-600/8 animate-pulse"></div>
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/25 to-transparent backdrop-blur-sm"></div>
         </div>
 
-        {/* Animated Background Elements */}
+        {/* Enhanced animated background elements with Thai theme */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-200/20 rounded-full animate-ping"></div>
-          <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-teal-200/20 rounded-full animate-ping delay-500"></div>
-          <div className="absolute top-1/4 -right-1 w-2 h-2 bg-emerald-300/40 rounded-full animate-float-delayed"></div>
-          <div className="absolute bottom-1/3 left-1/4 w-2 h-2 bg-cyan-300/50 rounded-full animate-pulse"></div>
+          <div className="absolute -top-4 -right-4 w-10 h-10 bg-amber-300/25 rounded-full animate-ping"></div>
+          <div className="absolute -bottom-5 -left-5 w-8 h-8 bg-orange-300/25 rounded-full animate-ping" style={{ animationDelay: '0.8s' }}></div>
+          <div className="absolute top-1/3 -right-2 w-3 h-3 bg-red-400/40 rounded-full animate-float-delayed"></div>
+          <div className="absolute bottom-1/4 left-1/5 w-2 h-2 bg-amber-400/60 rounded-full animate-pulse" style={{ animationDelay: '1.2s' }}></div>
+          {/* Thai-inspired geometric patterns */}
+          <div className="absolute top-2 right-6 w-4 h-4 border border-amber-400/30 rotate-45 animate-spin-slow"></div>
+          <div className="absolute bottom-4 left-3 w-3 h-3 border border-orange-400/30 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }}></div>
         </div>
 
-        {/* Compact Header */}
-        <div className="relative p-2 border-b border-cyan-200/50 bg-gradient-to-r from-cyan-50/80 via-teal-50/60 to-emerald-50/80 backdrop-blur-sm overflow-hidden">
-          {/* Animated Background Icons */}
-          <DollarSign className="absolute top-1 left-1 w-2 h-2 text-cyan-400/60 animate-pulse" />
-          <Coins className="absolute top-1 right-2 w-2 h-2 text-teal-400/60 animate-bounce" style={{ animationDelay: '0.5s' }} />
+        {/* Thai-themed Header */}
+        <div className="relative p-3 border-b border-amber-300/50 bg-gradient-to-r from-amber-50/90 via-orange-50/80 to-red-50/70 backdrop-blur-md overflow-hidden shadow-lg">
+          {/* Thai-inspired decorative elements */}
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-100/40 via-orange-100/30 to-red-100/40"></div>
+          <DollarSign className="absolute top-1 left-2 w-3 h-3 text-amber-500/70 animate-pulse" />
+          <Coins className="absolute top-2 right-3 w-3 h-3 text-orange-500/70 animate-bounce" style={{ animationDelay: '0.7s' }} />
           
           <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center gap-1.5">
-              <div className="relative p-1.5 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-lg shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <DollarSign className="w-2.5 h-2.5 text-white animate-pulse" />
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-lg blur-sm animate-ping opacity-30"></div>
+            <div className="flex items-center gap-2">
+              <div className="relative p-2 bg-gradient-to-br from-amber-500 via-orange-500 to-red-500 rounded-xl shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <DollarSign className="w-3 h-3 text-white animate-pulse" />
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-orange-400 to-red-400 rounded-xl blur-md animate-ping opacity-40"></div>
               </div>
               <div>
-                <h2 className="text-xs font-bold text-cyan-800">Currency</h2>
-                <p className="text-xs text-cyan-600 font-medium">Live rates</p>
+                <h2 className="text-sm font-bold text-amber-900 tracking-tight">Currency Exchange</h2>
+                <p className="text-xs text-orange-700 font-semibold">Live Thai Baht Rates</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {lastUpdated && (
-                <span className="text-xs text-cyan-600 font-medium bg-gradient-to-r from-cyan-100 to-teal-100 px-1.5 py-0.5 rounded-lg border border-cyan-200/50">
+                <span className="text-xs text-amber-800 font-semibold bg-gradient-to-r from-amber-100 to-orange-100 px-2 py-1 rounded-lg border border-amber-300/70 shadow-sm">
                   {lastUpdated.toLocaleTimeString().slice(0, 5)}
                 </span>
               )}
@@ -268,174 +272,160 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                   e.stopPropagation()
                   refreshRates()
                 }}
-                className="p-1 h-5 w-5 hover:bg-gradient-to-r hover:from-cyan-100 hover:to-teal-100 rounded-lg transition-all duration-300 hover:scale-110 hover:rotate-180"
+                className="p-1.5 h-6 w-6 hover:bg-gradient-to-r hover:from-amber-100 hover:to-orange-100 rounded-lg transition-all duration-300 hover:scale-110 hover:rotate-180 shadow-sm"
               >
-                <RefreshCw className="w-2.5 h-2.5 text-cyan-600" />
+                <RefreshCw className="w-3 h-3 text-amber-700" />
               </Button>
             </div>
           </div>
         </div>
         
-        {/* Compact Content with Tabs */}
-        <div className="flex-1 overflow-hidden p-1.5 relative z-10 h-full">
+        {/* Top Tabs control entire widget content */}
+        <div className="flex-1 overflow-hidden p-2 relative z-10 h-full">
           <div className="h-full" onClick={(e) => e.stopPropagation()}>
-            {/* Compact Tabs */}
             <div className="relative h-full">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-50/80 via-teal-50/60 to-emerald-50/80 backdrop-blur-sm rounded-lg border border-cyan-200/50 shadow-lg"></div>
-              <div className="relative p-1.5 h-full">
+              <div className="absolute inset-0 bg-white/70 backdrop-blur-md rounded-lg border border-amber-300/50 shadow-sm"></div>
+              <div className="relative p-2 h-full flex flex-col">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-                  <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-cyan-100/50 via-teal-100/50 to-emerald-100/50 border border-cyan-200/50 rounded-lg p-0.5 mb-1.5 shadow-lg backdrop-blur-sm flex-shrink-0">
-                    <TabsTrigger value="convert" className="flex items-center justify-center gap-0.5 text-cyan-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
-                      <Calculator className="h-2.5 w-2.5 group-hover:animate-bounce" />
-                    </TabsTrigger>
-                    <TabsTrigger value="trending" className="flex items-center justify-center gap-0.5 text-teal-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
-                      <TrendingUp className="h-2.5 w-2.5 group-hover:animate-bounce" />
-                    </TabsTrigger>
-                    <TabsTrigger value="favorites" className="flex items-center justify-center gap-0.5 text-emerald-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-md transition-all duration-300 text-xs py-1.5 hover:scale-105 group">
-                      <Heart className="h-2.5 w-2.5 group-hover:animate-bounce" />
-                    </TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-amber-100/80 via-orange-100/80 to-red-100/70 border border-amber-300/60 rounded-lg p-1 mb-3 shadow-sm ccw-tabs backdrop-blur-sm">
+                    <TabsTrigger value="convert" className="text-amber-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-600 data-[state=active]:to-orange-600 data-[state=active]:text-white text-xs py-1.5 rounded-md ccw-tab font-semibold transition-all duration-300 shadow-sm">Convert</TabsTrigger>
+                    <TabsTrigger value="trending" className="text-orange-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-red-600 data-[state=active]:text-white text-xs py-1.5 rounded-md ccw-tab font-semibold transition-all duration-300 shadow-sm">Trending</TabsTrigger>
+                    <TabsTrigger value="favorites" className="text-red-800 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-600 data-[state=active]:to-rose-600 data-[state=active]:text-white text-xs py-1.5 rounded-md ccw-tab font-semibold transition-all duration-300 shadow-sm">Favorites</TabsTrigger>
                   </TabsList>
 
-                  {/* Convert Tab Content */}
+                  {/* Convert View */}
                   <TabsContent value="convert" className="flex-1 overflow-y-auto">
-                    <div className="space-y-1.5 h-full">
-                      {/* Main Converter */}
-                      <div className="bg-gradient-to-br from-cyan-50/80 via-teal-50/60 to-emerald-50/80 rounded-lg border border-cyan-200/50 p-1.5 shadow-lg backdrop-blur-sm">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <h3 className="text-xs font-bold text-cyan-800">Convert</h3>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              swapCurrencies()
-                            }}
-                            className="p-0.5 h-4 w-4 hover:bg-gradient-to-r hover:from-cyan-100 hover:to-teal-100 rounded transition-all duration-300 hover:scale-110 hover:rotate-180"
+                    <div className="bg-white/90 backdrop-blur-md rounded-xl border border-amber-300/50 p-3 shadow-lg ccw-row ccw-surface">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-sm font-bold text-amber-900 flex items-center gap-1">
+                          <Calculator className="w-4 h-4 text-amber-600" />
+                          Quick Convert
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); swapCurrencies(); }}
+                          className="p-1 h-6 w-6 rounded-lg hover:bg-amber-100/80 transition-all duration-300 hover:rotate-180 hover:scale-110"
+                          aria-label="Swap currencies"
+                        >
+                          <ArrowRightLeft className="w-3.5 h-3.5 text-amber-700" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-amber-800 flex items-center gap-1">
+                            From Currency
+                          </label>
+                          <select
+                            value={selectedFromCurrency}
+                            onChange={(e) => setSelectedFromCurrency(e.target.value)}
+                            className="w-full p-2 bg-white/80 border border-amber-300/60 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 text-xs font-medium shadow-sm ccw-field backdrop-blur-sm"
                           >
-                            <ArrowRightLeft className="w-2 h-2 text-cyan-600" />
-                          </Button>
+                            {currencies.slice(0, 5).map(currency => (
+                              <option key={currency.code} value={currency.code}>
+                                {currency.flag} {currency.code}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                        
-                        {/* Amount Input */}
-                        <div className="mb-1.5">
-                          <input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
-                            className="w-full p-1 text-xs font-medium bg-white/80 border border-cyan-200/50 rounded text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 shadow-sm backdrop-blur-sm"
-                            placeholder="Amount"
-                            onClick={(e) => e.stopPropagation()}
-                          />
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold text-orange-800 flex items-center gap-1">
+                            To Currency
+                          </label>
+                          <select
+                            value={selectedToCurrency}
+                            onChange={(e) => setSelectedToCurrency(e.target.value)}
+                            className="w-full p-2 bg-white/80 border border-orange-300/60 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-xs font-medium shadow-sm ccw-field backdrop-blur-sm"
+                          >
+                            {currencies.slice(0, 5).map(currency => (
+                              <option key={currency.code} value={currency.code}>
+                                {currency.flag} {currency.code}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                        
-                        {/* Currency Selection */}
-                        <div className="grid grid-cols-2 gap-1 mb-1.5">
-                          <div>
-                            <label className="text-xs font-semibold text-cyan-700 mb-0.5 block">From</label>
-                            <select
-                              value={selectedFromCurrency}
-                              onChange={(e) => setSelectedFromCurrency(e.target.value)}
-                              className="w-full p-0.5 bg-white/80 border border-cyan-200/50 rounded text-gray-900 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 text-xs shadow-sm backdrop-blur-sm"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {currencies.slice(0, 5).map(currency => (
-                                <option key={currency.code} value={currency.code}>
-                                  {currency.flag} {currency.code}
-                                </option>
-                              ))}
-                            </select>
+                      </div>
+                      <div className="grid grid-cols-[1fr,auto] gap-3 mt-3 items-center">
+                        <input
+                          type="number"
+                          value={amount}
+                          onChange={(e) => setAmount(Number(e.target.value))}
+                          className="w-full p-2.5 text-sm font-semibold bg-white/80 border border-amber-300/60 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 shadow-sm ccw-field backdrop-blur-sm"
+                          placeholder="Enter amount"
+                        />
+                        <div className="text-xs px-2 py-1 rounded-lg bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300/60 font-semibold shadow-sm">
+                          {lastUpdated ? lastUpdated.toLocaleTimeString().slice(0, 5) : ""}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div className="rounded-lg border border-amber-300/60 p-3 text-center bg-gradient-to-br from-amber-50/80 to-orange-50/60 backdrop-blur-sm shadow-sm">
+                          <div className="text-xs text-amber-800 font-semibold mb-1 flex items-center justify-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            Exchange Rate
                           </div>
-                          <div>
-                            <label className="text-xs font-semibold text-teal-700 mb-0.5 block">To</label>
-                            <select
-                              value={selectedToCurrency}
-                              onChange={(e) => setSelectedToCurrency(e.target.value)}
-                              className="w-full p-0.5 bg-white/80 border border-teal-200/50 rounded text-gray-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-xs shadow-sm backdrop-blur-sm"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {currencies.slice(0, 5).map(currency => (
-                                <option key={currency.code} value={currency.code}>
-                                  {currency.flag} {currency.code}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        
-                        {/* Exchange Rate Display */}
-                        <div className="bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-emerald-500/10 border border-cyan-300/50 rounded p-1.5 text-center shadow-lg backdrop-blur-sm">
-                          <div className="text-xs text-cyan-700 font-semibold mb-0.5">Rate</div>
-                          <div className="text-xs font-bold text-cyan-800">
+                          <div className="text-sm font-bold text-amber-900">
                             {isLoading ? (
-                              <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto text-cyan-600" />
+                              <Loader2 className="w-4 h-4 animate-spin mx-auto text-amber-700" />
                             ) : exchangeRate ? (
-                              <span className="animate-fade-in">
+                              <span className="ccw-fade">
                                 1 {selectedFromCurrency} = {exchangeRate.toFixed(4)} {selectedToCurrency}
                               </span>
                             ) : (
-                              <span className="text-gray-500">Loading...</span>
+                              <span className="text-gray-500">—</span>
                             )}
                           </div>
                         </div>
-
-                        {/* Conversion Result Display */}
-                        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 border border-emerald-300/50 rounded p-1.5 text-center shadow-lg backdrop-blur-sm">
-                          <div className="text-xs text-emerald-700 font-semibold mb-0.5">Result</div>
-                          <div className="text-xs font-bold text-emerald-800">
+                        <div className="rounded-lg border border-red-300/60 p-3 text-center bg-gradient-to-br from-red-50/80 to-rose-50/60 backdrop-blur-sm shadow-sm">
+                          <div className="text-xs text-red-800 font-semibold mb-1 flex items-center justify-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            Converted
+                          </div>
+                          <div className="text-sm font-bold text-red-900">
                             {isConverting ? (
-                              <Loader2 className="w-2.5 h-2.5 animate-spin mx-auto text-emerald-600" />
+                              <Loader2 className="w-4 h-4 animate-spin mx-auto text-red-700" />
                             ) : convertedAmount !== null ? (
-                              <span className="animate-fade-in">
-                                {amount.toLocaleString()} {selectedFromCurrency} = {convertedAmount.toLocaleString()} {selectedToCurrency}
+                              <span className="ccw-fade">
+                                {convertedAmount.toLocaleString()} {selectedToCurrency}
                               </span>
                             ) : (
-                              <span className="text-gray-500">Enter amount to convert</span>
+                              <span className="text-gray-500">Enter amount</span>
                             )}
                           </div>
                         </div>
                       </div>
-
                     </div>
                   </TabsContent>
 
-                  {/* Trending Tab Content */}
+                  {/* Trending View */}
                   <TabsContent value="trending" className="flex-1 overflow-y-auto">
-                    <div className="bg-gradient-to-br from-teal-50/80 via-emerald-50/60 to-green-50/80 rounded-lg border border-teal-200/50 p-1.5 shadow-lg backdrop-blur-sm h-full">
-                        <h3 className="text-xs font-bold text-teal-800 mb-1.5">📈 Trending vs THB</h3>
-                      <div className="space-y-1 max-h-full overflow-y-auto">
+                    <div className="bg-white/90 backdrop-blur-md rounded-xl border border-orange-300/50 p-3 shadow-lg ccw-surface">
+                      <h3 className="text-sm font-bold text-orange-900 mb-2 flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4 text-orange-600" />
+                        Trending vs Thai Baht
+                      </h3>
+                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                         {trendingLoading ? (
-                          <div className="flex items-center justify-center h-16">
-                            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
+                          <div className="flex items-center justify-center h-20">
+                            <Loader2 className="w-5 h-5 animate-spin text-orange-600" />
                           </div>
                         ) : trendingCurrencies.length > 0 ? (
-                          trendingCurrencies.slice(0, 6).map((currency, index) => {
-                            const changePercent = currency.attributes.changePercent24h;
-                            const trend = currency.attributes.trend;
+                          trendingCurrencies.slice(0, 10).map((currency, index) => {
                             const isFav = isFavorite(currency.attributes.currencyCode);
-                            
                             return (
                               <div
                                 key={currency.attributes.currencyCode}
-                                className="w-full h-7 bg-white/80 hover:bg-gradient-to-r hover:from-teal-100/80 hover:to-emerald-100/80 border border-teal-200/50 rounded p-1 hover:border-teal-300/50 transition-all duration-300 group hover:scale-105 shadow-sm backdrop-blur-sm flex items-center justify-between"
-                                style={{ animationDelay: `${index * 0.1}s` }}
+                                className={`w-full h-8 bg-white/90 border border-orange-300/50 rounded-lg p-2 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md flex items-center justify-between ccw-row ccw-list-item backdrop-blur-sm`}
+                                style={{ animationDelay: `${index * 80}ms` }}
                               >
-                                <div className="flex items-center gap-1 flex-1">
-                                  <div className="w-3.5 h-3.5 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg">
-                                    {currency.attributes.rank}
-                                  </div>
-                                  <div className="flex items-center gap-1 flex-1">
-                                    <span className="text-xs">{currency.attributes.currencyFlag}</span>
-                                    <div className="font-mono text-xs font-bold text-gray-900 group-hover:text-teal-600 transition-colors duration-300">
-                                      {currency.attributes.currencyCode}
-                                    </div>
-                                    <div className="text-xs text-gray-600">
-                                      {currency.attributes.rateToTHB.toFixed(4)}
-                                    </div>
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <span className="text-sm">{currency.attributes.currencyFlag}</span>
+                                  <div className="font-mono text-sm font-bold text-gray-900 truncate">
+                                    {currency.attributes.currencyCode}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <div className="text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 bg-gradient-to-r from-teal-500 to-emerald-500 text-white border border-teal-400">
-                                    {currency.attributes.rateToTHB.toFixed(4)}
+                                <div className="flex items-center gap-2">
+                                  <div className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold shadow-sm">
+                                    ฿{currency.attributes.rateToTHB.toFixed(4)}
                                   </div>
                                   <Button
                                     variant="ghost"
@@ -449,17 +439,14 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                         currency.attributes.currencyFlag
                                       );
                                     }}
-                                    className="p-0.5 h-4 w-4 hover:bg-teal-100 rounded transition-all duration-300"
+                                    className="p-1 h-5 w-5 hover:bg-orange-100/80 rounded transition-all duration-200 hover:scale-110"
                                     disabled={favoriteLoading === currency.attributes.currencyCode}
+                                    aria-label="Toggle favorite"
                                   >
                                     {favoriteLoading === currency.attributes.currencyCode ? (
-                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-teal-600" />
+                                      <Loader2 className="w-3 h-3 animate-spin text-orange-600" />
                                     ) : (
-                                      <Heart 
-                                        className={`w-2.5 h-2.5 ${
-                                          isFav ? 'text-red-500 fill-red-500' : 'text-gray-400'
-                                        }`} 
-                                      />
+                                      <Heart className={`w-3 h-3 transition-colors duration-200 ${isFav ? 'text-red-500 fill-red-500' : 'text-gray-400'}`} />
                                     )}
                                   </Button>
                                 </div>
@@ -467,49 +454,47 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                             );
                           })
                         ) : (
-                          <div className="text-center text-xs text-gray-500 py-4">
-                            No trending data available
+                          <div className="text-center text-sm text-gray-500 py-6">
+                            <TrendingUp className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                            <div>No trending data</div>
                           </div>
                         )}
                       </div>
                     </div>
                   </TabsContent>
 
-                  {/* Favorites Tab Content */}
+                  {/* Favorites View */}
                   <TabsContent value="favorites" className="flex-1 overflow-y-auto">
-                    <div className="bg-gradient-to-br from-emerald-50/80 via-green-50/60 to-teal-50/80 rounded-lg border border-emerald-200/50 p-1.5 shadow-lg backdrop-blur-sm h-full">
-                      <h3 className="text-xs font-bold text-emerald-800 mb-1.5">❤️ Favorites</h3>
-                      <div className="space-y-1 max-h-full overflow-y-auto">
+                    <div className="bg-white/90 backdrop-blur-md rounded-xl border border-red-300/50 p-3 shadow-lg ccw-surface">
+                      <h3 className="text-sm font-bold text-red-900 mb-2 flex items-center gap-1">
+                        <Heart className="w-4 h-4 text-red-600" />
+                        Your Favorites
+                      </h3>
+                      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                         {favoritesLoading ? (
-                          <div className="flex items-center justify-center h-16">
-                            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                          <div className="flex items-center justify-center h-20">
+                            <Loader2 className="w-5 h-5 animate-spin text-red-600" />
                           </div>
                         ) : favorites.length > 0 ? (
                           favorites.map((favorite, index) => {
                             const currency = favorite.attributes;
                             const trendingData = trendingCurrencies.find(t => t.attributes.currencyCode === currency.currencyCode);
-                            
                             return (
                               <div
                                 key={favorite.id}
-                                className="w-full h-7 bg-white/80 hover:bg-gradient-to-r hover:from-emerald-100/80 hover:to-green-100/80 border border-emerald-200/50 rounded p-1 hover:border-emerald-300/50 transition-all duration-300 group hover:scale-105 shadow-sm backdrop-blur-sm flex items-center justify-between"
-                                style={{ animationDelay: `${index * 0.1}s` }}
+                                className={`w-full h-8 bg-white/90 border border-red-300/50 rounded-lg p-2 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md flex items-center justify-between ccw-row ccw-list-item backdrop-blur-sm`}
+                                style={{ animationDelay: `${index * 80}ms` }}
                               >
-                                <div className="flex items-center gap-1 flex-1">
-                                  <span className="text-xs">{currency.currencyFlag}</span>
-                                  <div className="font-mono text-xs font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <span className="text-sm">{currency.currencyFlag}</span>
+                                  <div className="font-mono text-sm font-bold text-gray-900 truncate">
                                     {currency.currencyCode}
                                   </div>
-                                  {trendingData && (
-                                    <div className="text-xs text-gray-600">
-                                      {trendingData.attributes.rateToTHB.toFixed(4)}
-                                    </div>
-                                  )}
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                   {trendingData && (
-                                    <div className="text-xs px-1 py-0.5 rounded-full font-bold shadow-lg transition-all duration-300 group-hover:scale-110 bg-gradient-to-r from-emerald-500 to-green-500 text-white border border-emerald-400">
-                                      {trendingData.attributes.rateToTHB.toFixed(4)}
+                                    <div className="text-xs px-2 py-1 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold shadow-sm">
+                                      ฿{trendingData.attributes.rateToTHB.toFixed(4)}
                                     </div>
                                   )}
                                   <Button
@@ -524,13 +509,14 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                                         currency.currencyFlag
                                       );
                                     }}
-                                    className="p-0.5 h-4 w-4 hover:bg-emerald-100 rounded transition-all duration-300"
+                                    className="p-1 h-5 w-5 hover:bg-red-100/80 rounded transition-all duration-200 hover:scale-110"
                                     disabled={favoriteLoading === currency.currencyCode}
+                                    aria-label="Remove favorite"
                                   >
                                     {favoriteLoading === currency.currencyCode ? (
-                                      <Loader2 className="w-2.5 h-2.5 animate-spin text-emerald-600" />
+                                      <Loader2 className="w-3 h-3 animate-spin text-red-600" />
                                     ) : (
-                                      <Heart className="w-2.5 h-2.5 text-red-500 fill-red-500" />
+                                      <Heart className="w-3 h-3 text-red-500 fill-red-500" />
                                     )}
                                   </Button>
                                 </div>
@@ -538,16 +524,15 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
                             );
                           })
                         ) : (
-                          <div className="text-center text-xs text-gray-500 py-4">
-                            <div className="text-lg mb-1.5">❤️</div>
-                            <div className="mb-1.5">No favorites yet</div>
-                            <div className="text-xs">Add currencies from trending tab</div>
+                          <div className="text-center text-sm text-gray-500 py-6">
+                            <div className="text-2xl mb-2">💖</div>
+                            <div className="mb-2 font-medium">No favorites yet</div>
+                            <div className="text-xs">Add currencies from trending</div>
                           </div>
                         )}
                       </div>
                     </div>
                   </TabsContent>
-
                 </Tabs>
               </div>
             </div>
@@ -749,31 +734,230 @@ export function CompactCurrencyConverterWidget({ onCurrencySelect, className }: 
       )}
 
       <style jsx>{`
+        /* Enhanced Thai-themed animations */
         @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-10px) rotate(180deg); }
+          0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+          33% { transform: translateY(-6px) rotate(120deg); opacity: 1; }
+          66% { transform: translateY(-3px) rotate(240deg); opacity: 0.8; }
         }
         
         @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-8px) rotate(-180deg); }
+          0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.6; }
+          50% { transform: translateY(-8px) rotate(-180deg) scale(1.1); opacity: 1; }
+        }
+        
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        @keyframes thai-gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
         
         @keyframes fade-in {
-          0% { opacity: 0; transform: translateY(10px); }
-          100% { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         
+        @keyframes pulse-glow {
+          0%, 100% { 
+            box-shadow: 0 0 5px rgba(245, 158, 11, 0.3), 0 0 10px rgba(245, 158, 11, 0.2); 
+            transform: scale(1); 
+          }
+          50% { 
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5), 0 0 25px rgba(245, 158, 11, 0.3); 
+            transform: scale(1.02); 
+          }
+        }
+        
+        /* Animation classes */
         .animate-float {
-          animation: float 4s ease-in-out infinite;
+          animation: float 5s ease-in-out infinite;
         }
         
         .animate-float-delayed {
-          animation: float-delayed 6s ease-in-out infinite;
+          animation: float-delayed 7s ease-in-out infinite;
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
+        }
+        
+        .animate-thai-gradient {
+          background-size: 200% 200%;
+          animation: thai-gradient 4s ease infinite;
         }
         
         .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
+          animation: fade-in 0.5s ease-out forwards;
+        }
+        
+        .animate-pulse-glow {
+          animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        /* Enhanced widget entrance with Thai flair */
+        .ccw-enter { 
+          opacity: 0; 
+          transform: translateY(10px) scale(0.98); 
+          animation: ccw-enter 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+        }
+        @keyframes ccw-enter {
+          0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+          70% { opacity: 0.8; transform: translateY(-2px) scale(1.01); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Elegant stagger animation for content rows */
+        .ccw-row { 
+          opacity: 0; 
+          transform: translateY(6px) scale(0.99); 
+          animation: ccw-row-in 450ms ease forwards; 
+        }
+        @keyframes ccw-row-in {
+          0% { opacity: 0; transform: translateY(6px) scale(0.99); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Smooth fade utility with Thai warmth */
+        .ccw-fade { 
+          animation: fade-in 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+        }
+
+        /* Enhanced micro-interactions */
+        .ccw-tabs { 
+          position: sticky; 
+          top: 0; 
+          z-index: 10; 
+          backdrop-filter: blur(8px);
+          transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .ccw-tab { 
+          transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1); 
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .ccw-tab::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+          transition: left 500ms ease;
+        }
+        
+        .ccw-tab:hover::before {
+          left: 100%;
+        }
+        
+        .ccw-tab:hover { 
+          transform: translateY(-2px) scale(1.02); 
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+        
+        .ccw-surface { 
+          transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .ccw-surface::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+          opacity: 0;
+          transition: opacity 300ms ease;
+        }
+        
+        .ccw-surface:hover::before {
+          opacity: 1;
+        }
+        
+        .ccw-surface:hover { 
+          box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+          transform: translateY(-2px) scale(1.01);
+        }
+        
+        /* Enhanced form fields with Thai styling */
+        .ccw-field { 
+          transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+        }
+        
+        .ccw-field:focus { 
+          box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2), 0 4px 12px rgba(245, 158, 11, 0.1);
+          transform: translateY(-1px);
+        }
+        
+        /* Enhanced list items with Thai-inspired hover */
+        .ccw-list-item { 
+          transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .ccw-list-item::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            rgba(252, 211, 77, 0.1) 0%, 
+            rgba(251, 146, 60, 0.15) 50%, 
+            rgba(239, 68, 68, 0.1) 100%
+          );
+          transition: left 350ms ease;
+        }
+        
+        .ccw-list-item:hover::after {
+          left: 0;
+        }
+        
+        .ccw-list-item:hover { 
+          background-color: rgba(254, 243, 199, 0.7);
+          transform: translateY(-1px) scale(1.01);
+          box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+        }
+        
+        /* Enhanced scrollbar with Thai colors */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: linear-gradient(180deg, rgba(254, 243, 199, 0.6) 0%, rgba(253, 230, 138, 0.4) 100%);
+          border-radius: 10px;
+          border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, rgba(245, 158, 11, 0.8) 0%, rgba(251, 146, 60, 0.8) 100%);
+          border-radius: 10px;
+          border: 1px solid rgba(245, 158, 11, 0.3);
+          transition: all 0.3s ease;
+        }
+        
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, rgba(245, 158, 11, 1) 0%, rgba(251, 146, 60, 1) 100%);
+          transform: scale(1.1);
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Thai-themed button enhancements */
+        .group:hover .animate-pulse {
+          animation-duration: 1s;
         }
       `}</style>
     </>

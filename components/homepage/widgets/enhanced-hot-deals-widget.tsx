@@ -367,28 +367,56 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
 
   if (isLoading) {
     return (
-      <Card className={`top-row-widget bg-gradient-to-tr from-orange-400 via-red-300 to-pink-400 rounded-[28px] shadow-xl border-0 backdrop-blur-xl transition-all duration-300 ${className || ""}`}>
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-2xl rounded-[28px]"></div>
-          <div className="absolute top-6 left-8 animate-bounce-slow">
-            <Flame className="w-10 h-10 text-orange-300 opacity-60" />
+      <Card className={`top-row-widget bg-gradient-to-br from-orange-400/90 via-red-400/85 to-pink-500/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 transition-all duration-300 ${className || ""}`}>
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-3xl rounded-3xl"></div>
+          <div className="absolute top-8 left-12 animate-bounce-gentle">
+            <Flame className="w-8 h-8 text-orange-200/60" />
           </div>
-          <div className="absolute top-8 right-8 animate-spin-slow">
-            <Percent className="w-8 h-8 text-red-300 opacity-60" />
+          <div className="absolute top-12 right-16 animate-spin-gentle">
+            <Percent className="w-7 h-7 text-red-200/60" />
           </div>
-          <div className="absolute bottom-10 left-10 animate-pulse">
-            <ShoppingBag className="w-8 h-8 text-pink-300 opacity-60" />
+          <div className="absolute bottom-16 left-16 animate-pulse-gentle">
+            <ShoppingBag className="w-6 h-6 text-pink-200/60" />
           </div>
         </div>
         <CardHeader className="pb-4 sm:pb-6 relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-              <span className="text-[15px] font-medium text-gray-900">Hot Deals</span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl blur-md opacity-60 animate-pulse"></div>
+                <div className="relative p-2.5 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg">
+                  <Flame className="w-5 h-5 text-white animate-pulse" />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold bg-gradient-to-r from-white via-orange-50 to-pink-50 bg-clip-text text-transparent drop-shadow-sm">
+                  Hot Deals
+                </h2>
+                <p className="text-sm text-white/80">Loading amazing deals...</p>
+              </div>
             </div>
-            <RefreshCw className="w-4 h-4 text-gray-400 animate-spin" />
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-white/30 border-t-white"></div>
+            </div>
           </div>
         </CardHeader>
+        <CardContent className="px-4 pb-4 relative z-10">
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white/20 backdrop-blur-md rounded-2xl p-4 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 bg-white/30 rounded-xl"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-white/30 rounded-lg"></div>
+                    <div className="h-3 bg-white/20 rounded-lg w-3/4"></div>
+                    <div className="h-3 bg-white/20 rounded-lg w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
       </Card>
     )
   }
@@ -429,30 +457,37 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
   return (
     <>
       <Card
-        className={`
-          top-row-widget overflow-y-auto
-          bg-gradient-to-tr from-orange-400 via-red-300 to-pink-400
-          rounded-[28px] shadow-xl border-0 backdrop-blur-xl
-          transition-all duration-300
-          ${className || ""}
-          relative cursor-pointer
-        `}
+        className={`top-row-widget overflow-hidden bg-gradient-to-br from-orange-400/90 via-red-400/85 to-pink-500/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 transition-all duration-700 ease-out hover:shadow-3xl hover:scale-[1.02] hover:border-white/30 relative cursor-pointer group ${className || ""}`}
         onClick={handleWidgetClick}
         data-hot-deals-widget="true"
       >
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-white/10 backdrop-blur-2xl rounded-[28px]"></div>
-          <div className="absolute top-6 left-8 animate-bounce-slow">
-            <Flame className="w-10 h-10 text-orange-300 opacity-60" />
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Glass morphism base */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/15 via-white/10 to-white/5 backdrop-blur-3xl rounded-3xl"></div>
+          
+          {/* Floating gradient orbs with enhanced animations */}
+          <div className="absolute -top-8 -left-8 w-24 h-24 bg-gradient-to-r from-yellow-300/20 to-orange-400/20 rounded-full blur-2xl animate-float" style={{animationDelay: '0s'}} />
+          <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-gradient-to-r from-pink-400/20 to-red-400/20 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}} />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-r from-orange-300/15 to-yellow-300/15 rounded-full blur-xl animate-pulse-soft" />
+          
+          {/* Enhanced floating icons with micro-animations */}
+          <div className="absolute top-8 left-12 group-hover:scale-110 transition-all duration-500">
+            <Flame className="w-8 h-8 text-orange-200/60 animate-bounce-gentle" style={{animationDelay: '0s'}} />
           </div>
-          <div className="absolute top-8 right-8 animate-spin-slow">
-            <Percent className="w-8 h-8 text-red-300 opacity-60" />
+          <div className="absolute top-12 right-16 group-hover:rotate-12 transition-all duration-500">
+            <Percent className="w-7 h-7 text-red-200/60 animate-spin-gentle" style={{animationDelay: '1s'}} />
           </div>
-          <div className="absolute bottom-10 left-10 animate-pulse">
-            <ShoppingBag className="w-8 h-8 text-pink-300 opacity-60" />
+          <div className="absolute bottom-16 left-16 group-hover:scale-105 transition-all duration-500">
+            <ShoppingBag className="w-6 h-6 text-pink-200/60 animate-pulse-gentle" style={{animationDelay: '2s'}} />
           </div>
-          <div className="absolute bottom-8 right-8 animate-bounce delay-300">
-            <Sparkles className="w-6 h-6 text-yellow-300 opacity-60" />
+          <div className="absolute bottom-12 right-12 group-hover:animate-bounce transition-all duration-500">
+            <Sparkles className="w-5 h-5 text-yellow-200/60 animate-twinkle" style={{animationDelay: '1.5s'}} />
+          </div>
+          <div className="absolute top-1/3 right-8 group-hover:scale-110 transition-all duration-500">
+            <Zap className="w-4 h-4 text-yellow-300/50 animate-flash" style={{animationDelay: '0.8s'}} />
+          </div>
+          <div className="absolute bottom-1/3 left-8 group-hover:rotate-6 transition-all duration-500">
+            <Gift className="w-5 h-5 text-pink-300/50 animate-wiggle" style={{animationDelay: '2.2s'}} />
           </div>
         </div>
 
@@ -489,14 +524,31 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
 
         <CardHeader className="pb-4 sm:pb-6 relative z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-              <span className="text-[15px] font-medium text-gray-900">Hot Deals</span>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                {/* Main icon with glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl blur-md opacity-60"></div>
+                <div className="relative p-2.5 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-500">
+                  <Flame className="w-5 h-5 text-white group-hover:scale-110 group-hover:animate-pulse transition-all duration-300" />
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-gray-600 font-medium">
-                {deals.length} deals
-              </span>
+                {/* Status indicator */}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse shadow-md" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold bg-gradient-to-r from-white via-orange-50 to-pink-50 bg-clip-text text-transparent drop-shadow-sm">
+                  Hot Deals
+                </h2>
+                <p className="text-sm text-white/80 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 animate-twinkle" />
+                  Limited time offers
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-white/20 backdrop-blur-md text-white px-3 py-1 text-sm font-medium border border-white/30 rounded-full animate-pulse-soft">
+                <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-ping" />
+                {deals.length} Live
+              </Badge>
             </div>
           </div>
       </CardHeader>
@@ -507,100 +559,137 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
           {deals.map((deal, index) => (
             <div
               key={deal.id}
-              className="bg-white/80 backdrop-blur-md rounded-xl p-3 border border-white/20 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+              className="bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] hover:bg-white/95 group/card relative overflow-hidden"
             >
-              <div className="flex items-start gap-2">
-                <div className="relative flex-shrink-0">
+              {/* Card shine effect on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 translate-x-[-100%] group-hover/card:translate-x-[200%] transition-transform duration-1000 ease-out" />
+              </div>
+              <div className="flex items-start gap-3 relative z-10">
+                <div className="relative flex-shrink-0 group/image">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-200/20 to-pink-200/20 rounded-xl blur-sm opacity-0 group-hover/image:opacity-100 transition-opacity duration-300" />
                   <img
                     src={deal.image}
                     alt={deal.title}
-                    className="w-12 h-12 rounded-lg object-cover shadow-sm"
+                    className="w-16 h-16 rounded-xl object-cover shadow-md relative z-10 group-hover/image:scale-105 transition-transform duration-300"
                     onLoad={() => setLogoLoadingStates(prev => ({ ...prev, [deal.id]: false }))}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement
-                      target.src = "/placeholder.svg?height=48&width=48&text=Deal"
+                      target.src = "/placeholder.svg?height=64&width=64&text=Deal"
                     }}
                   />
                   {deal.urgent && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-ping shadow-lg"></div>
+                  )}
+                  {deal.featured && (
+                    <div className="absolute -top-1 -left-1">
+                      <div className="p-1 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full shadow-md">
+                        <Star className="w-3 h-3 text-white fill-current" />
+                      </div>
+                    </div>
                   )}
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 mb-1">
-                    <h3 className="font-semibold text-gray-900 truncate text-xs">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-bold text-gray-900 truncate text-sm group-hover/card:text-orange-600 transition-colors duration-300">
                       {deal.title}
                     </h3>
                     {deal.featured && (
-                      <Star className="w-2.5 h-2.5 text-yellow-500 fill-current flex-shrink-0" />
+                      <div className="animate-bounce">
+                        <Sparkles className="w-4 h-4 text-yellow-500" />
+                      </div>
                     )}
                   </div>
                   
-                  <p className="text-[10px] text-gray-600 truncate mb-1">
+                  <p className="text-xs text-gray-600 truncate mb-2 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-gray-400" />
                     {deal.business} • {deal.location}
                   </p>
                   
-                  <div className="flex items-center gap-1 mb-1">
-                    <Badge className={`text-[10px] px-1.5 py-0.5 ${getCategoryColor(deal.category)} border-none rounded-md`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge className={`text-xs px-2 py-1 ${getCategoryColor(deal.category)} border-none rounded-full font-medium`}>
                       {deal.category}
                     </Badge>
-                    <Badge className="text-[10px] px-1.5 py-0.5 bg-gradient-to-r from-red-500/80 to-orange-500/80 text-white border-none rounded-md">
+                    <Badge className="text-xs px-2 py-1 bg-gradient-to-r from-red-500 via-orange-500 to-pink-500 text-white border-none rounded-full animate-pulse-soft font-bold shadow-md">
+                      <Percent className="w-3 h-3 mr-1" />
                       {deal.discount} OFF
                     </Badge>
+                    {deal.urgent && (
+                      <Badge className="text-xs px-2 py-1 bg-gradient-to-r from-red-600 to-pink-600 text-white border-none rounded-full animate-bounce font-bold">
+                        🔥 HOT
+                      </Badge>
+                    )}
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm font-bold text-red-600">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
                         ฿{deal.salePrice.toLocaleString()}
                       </span>
-                      <span className="text-[10px] text-gray-500 line-through">
+                      <span className="text-sm text-gray-500 line-through relative">
                         ฿{deal.originalPrice.toLocaleString()}
+                        <div className="absolute inset-0 bg-red-500/20 rounded-sm"></div>
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                      <Clock className="w-2.5 h-2.5" />
-                      <span>{deal.timeLeft}</span>
+                    <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100/80 px-2 py-1 rounded-full">
+                      <Timer className="w-3 h-3 animate-pulse text-red-500" />
+                      <span className="font-medium">{deal.timeLeft}</span>
                     </div>
                   </div>
                   
-                  {/* Compact Action Buttons */}
-                  <div className="flex gap-1 mt-2">
+                  {/* Enhanced Action Buttons */}
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 h-6 text-[10px] bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                      className="flex-1 h-8 text-xs bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 border-gray-200/50 text-gray-700 hover:text-orange-600 transition-all duration-200 shadow-sm hover:shadow-md rounded-xl"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleViewDeal(deal)
                       }}
                     >
-                      <Eye className="w-2.5 h-2.5 mr-1" />
+                      <Eye className="w-3 h-3 mr-1" />
                       View
                     </Button>
                     <Button
                       size="sm"
-                      className="flex-1 h-6 text-[10px] bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-none shadow-sm hover:shadow-md transition-all duration-200"
+                      className="flex-1 h-8 text-xs bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white border-none shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 rounded-xl font-bold"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleBuyNow(deal)
                       }}
                     >
-                      <ShoppingBag className="w-2.5 h-2.5 mr-1" />
-                      Buy
+                      <ShoppingBag className="w-3 h-3 mr-1" />
+                      Buy Now
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="h-6 w-6 p-0 bg-white/80 hover:bg-white border-white/40 text-gray-700 hover:text-gray-900 transition-all duration-200"
+                      className="h-8 w-8 p-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-110 border-gray-200/50 text-gray-700 hover:text-pink-600 transition-all duration-200 shadow-sm hover:shadow-md rounded-xl"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleShareDeal(deal)
                       }}
                     >
-                      <Share2 className="w-2.5 h-2.5" />
+                      <Share2 className="w-3 h-3" />
                     </Button>
                   </div>
+                  
+                  {/* Rating and social proof */}
+                  {deal.rating && (
+                    <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                        <span>{deal.rating}</span>
+                        <span>({deal.reviews} reviews)</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        <span>{deal.views} views</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -609,38 +698,74 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
       </CardContent>
     </Card>
 
-      {/* Expanded Modal */}
+      {/* Enhanced Expanded Modal */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden rounded-2xl bg-gradient-to-br from-orange-100 via-red-100 to-pink-100 border-0 shadow-2xl [&>button]:hidden">
-          <DialogHeader className="relative pb-4">
-            <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-orange-800">
-              <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
-                <Flame className="h-6 w-6 text-white" />
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden rounded-3xl bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 border-0 shadow-3xl backdrop-blur-xl [&>button]:hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/40 to-white/60 backdrop-blur-2xl"></div>
+          
+          <DialogHeader className="relative pb-6 z-10">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-4 text-3xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl blur-md opacity-60"></div>
+                  <div className="relative p-3 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-2xl shadow-xl">
+                    <Flame className="h-8 w-8 text-white animate-bounce-gentle" />
               </div>
-              Hot Deals
+                </div>
+                Premium Hot Deals Collection
             </DialogTitle>
             <Button 
               variant="ghost" 
-              size="sm" 
+                size="lg" 
               onClick={() => setIsExpanded(false)} 
-              className="absolute top-0 right-0 h-10 w-10 p-0 rounded-full hover:bg-red-100 hover:text-red-600 transition-all duration-200"
+                className="h-12 w-12 p-0 rounded-full hover:bg-red-100/80 hover:text-red-600 transition-all duration-300 hover:scale-110 backdrop-blur-md bg-white/20"
             >
-              <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
             </Button>
+            </div>
+            <p className="text-gray-600 mt-2 text-lg">Discover exclusive limited-time offers in Pattaya</p>
           </DialogHeader>
           
+          <div className="relative z-10 space-y-8">
+            {/* Enhanced stats bar */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 text-center border border-white/40 shadow-lg">
+                <div className="text-2xl font-bold text-orange-600">{deals.length}</div>
+                <div className="text-sm text-gray-600">Active Deals</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 text-center border border-white/40 shadow-lg">
+                <div className="text-2xl font-bold text-red-600">{deals.filter(d => d.urgent).length}</div>
+                <div className="text-sm text-gray-600">Hot Offers</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 text-center border border-white/40 shadow-lg">
+                <div className="text-2xl font-bold text-pink-600">{deals.filter(d => d.featured).length}</div>
+                <div className="text-sm text-gray-600">Featured</div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 text-center border border-white/40 shadow-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {Math.round(deals.reduce((acc, deal) => acc + (deal.originalPrice - deal.salePrice), 0) / deals.length)}
+                </div>
+                <div className="text-sm text-gray-600">Avg. Savings ฿</div>
+              </div>
+            </div>
+
+            {/* Enhanced deals grid */}
           <div className="space-y-6">
-            {/* All Deals Section */}
-            <div>
-              <h4 className="text-lg font-semibold text-orange-600 mb-4 flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                All Hot Deals
+              <h4 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                All Premium Deals
               </h4>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {deals.map((deal) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+                {deals.map((deal, index) => (
                   <div
                     key={deal.id}
-                    className="bg-white rounded-xl border border-gray-200 hover:border-orange-300 transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
+                    className="bg-white/90 backdrop-blur-md rounded-3xl border border-white/40 hover:border-orange-300/50 transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] group overflow-hidden relative"
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                      animation: 'fadeInUp 0.6s ease-out forwards'
+                    }}
                   >
                     <div className="flex items-start gap-4 p-4">
                       <div className="relative flex-shrink-0">
@@ -742,7 +867,117 @@ export function EnhancedHotDealsWidget({ className }: { className?: string }) {
       </Dialog>
 
       <style jsx>{`
-        /* Animations */
+        /* Enhanced Animations */
+        @keyframes bounce-gentle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-gentle {
+          animation: bounce-gentle 2s ease-in-out infinite;
+        }
+
+        @keyframes spin-gentle {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .animate-spin-gentle {
+          animation: spin-gentle 4s linear infinite;
+        }
+
+        @keyframes pulse-soft {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .animate-pulse-soft {
+          animation: pulse-soft 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-gentle {
+          0%, 100% { opacity: 0.8; }
+          50% { opacity: 1; }
+        }
+        .animate-pulse-gentle {
+          animation: pulse-gentle 2.5s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
+        }
+        .animate-twinkle {
+          animation: twinkle 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flash {
+          0%, 50%, 100% { opacity: 0.4; }
+          25%, 75% { opacity: 1; }
+        }
+        .animate-flash {
+          animation: flash 2s ease-in-out infinite;
+        }
+
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(5deg); }
+          75% { transform: rotate(-5deg); }
+        }
+        .animate-wiggle {
+          animation: wiggle 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(1deg); }
+          66% { transform: translateY(-5px) rotate(-1deg); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Enhanced shadows */
+        .shadow-3xl {
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #f97316, #ef4444, #ec4899);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #ea580c, #dc2626, #db2777);
+        }
+
+        /* Glow effects */
+        .glow-orange {
+          box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+        }
+        .glow-red {
+          box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        .glow-pink {
+          box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+
+        /* Legacy animations for compatibility */
         @keyframes bounce-slow {
           0%, 100% {
             transform: translateY(0);

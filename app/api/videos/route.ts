@@ -12,11 +12,11 @@ export async function GET(request: NextRequest) {
     let strapiUrl;
     let filterParams = [];
 
-    // Add status filters
+    // Add status filters - include pending videos when requesting active
     if (status === 'active') {
-      // For active status, get videos where videostatus is null or doesn't exist (default state)
-      filterParams.push('filters[$or][0][videostatus][$null]=true');
-      filterParams.push('filters[$or][1][videostatus][$eq]=active');
+      // Include both active and pending videos
+      filterParams.push('filters[$or][0][videostatus][$eq]=active');
+      filterParams.push('filters[$or][1][videostatus][$eq]=pending');
     } else {
       filterParams.push(`filters[videostatus][$eq]=${status}`);
     }
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     filterParams.push(`pagination[pageSize]=${pageSize}`);
     filterParams.push('populate=*');
 
-    strapiUrl = ` https://api.pattaya1.com/api/videos?${filterParams.join('&')}`;
+    strapiUrl = `https://api.pattaya1.com/api/videos?${filterParams.join('&')}`;
 
     console.log('Fetching from Strapi:', strapiUrl);
 

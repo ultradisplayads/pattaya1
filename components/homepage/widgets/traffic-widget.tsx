@@ -784,7 +784,7 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
     const [incidents, setIncidents] = useState<TrafficIncident[]>([])
     const [loading, setLoading] = useState(true)
     const [currentTime, setCurrentTime] = useState(new Date())
-    const [activeTab, setActiveTab] = useState<"summary" | "map" | "parking" | "transport">("summary")
+    const [activeTab, setActiveTab] = useState<"summary" | "map">("summary")
 
     const [mapImageUrl, setMapImageUrl] = useState<string>("")
     const [isInteractiveMapOpen, setIsInteractiveMapOpen] = useState(false)
@@ -952,15 +952,15 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
     const getStatusColor = (status: string) => {
         switch (status) {
             case "clear":
-                return "bg-emerald-400/20 text-emerald-700 border-emerald-400/30 backdrop-blur-sm"
+                return "bg-gradient-to-r from-emerald-400/30 to-green-400/30 text-emerald-700 border-emerald-400/50 shadow-emerald-500/20"
             case "moderate":
-                return "bg-amber-400/20 text-amber-700 border-amber-400/30 backdrop-blur-sm"
+                return "bg-gradient-to-r from-amber-400/30 to-orange-400/30 text-amber-700 border-amber-400/50 shadow-amber-500/20"
             case "heavy":
-                return "bg-orange-400/20 text-orange-700 border-orange-400/30 backdrop-blur-sm"
+                return "bg-gradient-to-r from-orange-400/30 to-red-400/30 text-orange-700 border-orange-400/50 shadow-orange-500/20"
             case "blocked":
-                return "bg-rose-400/20 text-rose-700 border-rose-400/30 backdrop-blur-sm"
+                return "bg-gradient-to-r from-red-400/30 to-rose-400/30 text-red-700 border-red-400/50 shadow-red-500/20"
             default:
-                return "bg-indigo-400/20 text-indigo-700 border-indigo-400/30 backdrop-blur-sm"
+                return "bg-gradient-to-r from-indigo-400/30 to-blue-400/30 text-indigo-700 border-indigo-400/50 shadow-indigo-500/20"
         }
     }
 
@@ -1131,13 +1131,35 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
     if (loading) {
         return (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                <Card className="h-full bg-gradient-to-br from-purple-50/70 to-blue-50/70 backdrop-blur-xl border border-white/50 shadow-lg rounded-2xl overflow-hidden">
-                    <CardContent className="p-6">
-                        <div className="animate-pulse space-y-4">
-                            <div className="h-5 bg-white/40 rounded-lg w-32 backdrop-blur-sm"></div>
+            <motion.div 
+                initial={{ opacity: 0, y: 10 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.4 }}
+                className="h-full"
+            >
+                <Card className="h-full bg-gradient-to-br from-white/90 via-blue-50/80 to-indigo-50/70 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl overflow-hidden relative">
+                    <div className="absolute inset-0 opacity-5">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-purple-600/20" />
+                        <div className="absolute inset-0" style={{
+                            backgroundImage: `radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                                              radial-gradient(circle at 75% 75%, rgba(147, 51, 234, 0.1) 0%, transparent 50%)`
+                        }} />
+                    </div>
+                    <CardContent className="p-6 relative z-10">
+                        <div className="space-y-4">
+                            <motion.div 
+                                animate={{ opacity: [0.4, 0.8, 0.4] }}
+                                transition={{ duration: 1.5, repeat: Infinity }}
+                                className="h-6 bg-gradient-to-r from-blue-200/60 to-indigo-200/60 rounded-2xl backdrop-blur-sm w-40"
+                            />
                             {[...Array(3)].map((_, i) => (
-                                <div key={i} className="h-16 bg-white/30 rounded-xl backdrop-blur-sm"></div>
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1, duration: 0.5 }}
+                                    className="h-20 bg-gradient-to-r from-white/50 to-white/30 rounded-2xl backdrop-blur-sm border border-white/40"
+                                />
                             ))}
                         </div>
                     </CardContent>
@@ -1152,39 +1174,93 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
     return (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="h-full">
-            <Card className="h-full bg-gradient-to-br from-purple-50/70 to-blue-50/70 backdrop-blur-xl border border-white/50 shadow-lg rounded-2xl overflow-hidden">
-                <CardHeader className="pb-2 px-6 pt-6">
-                    <CardTitle className="text-[15px] font-semibold text-slate-800 flex items-center justify-between">
+            <Card className="h-full bg-gradient-to-br from-white/90 via-blue-50/80 to-indigo-50/70 backdrop-blur-xl border border-white/60 shadow-xl rounded-3xl overflow-hidden relative">
+                <div className="absolute inset-0 opacity-5">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-transparent to-purple-600/20" />
+                    <div className="absolute inset-0" style={{
+                        backgroundImage: `radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                                          radial-gradient(circle at 75% 75%, rgba(147, 51, 234, 0.1) 0%, transparent 50%)`
+                    }} />
+                </div>
+                <CardHeader className="pb-3 px-6 pt-6 relative z-10">
+                    <CardTitle className="text-[16px] font-bold text-slate-800 flex items-center justify-between">
                         <div className="flex items-center">
-                            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full mr-3" />
-                            Traffic & Transport
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <div className="flex items-center text-[11px] text-slate-600 font-medium">
-                                <motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-1.5 h-1.5 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full mr-1.5" />
-                                Live
+                            <div className="relative mr-3">
+                                <motion.div 
+                                    animate={{ 
+                                        scale: [1, 1.3, 1],
+                                        rotate: [0, 360]
+                                    }} 
+                                    transition={{ 
+                                        duration: 3, 
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }} 
+                                    className="w-3 h-3 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 rounded-full"
+                                />
+                                <div className="absolute inset-0 w-3 h-3 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500 rounded-full animate-ping opacity-20" />
                             </div>
+                            <span className="bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                Traffic & Transport
+                            </span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <motion.div 
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="flex items-center text-[11px] text-slate-600 font-semibold bg-white/50 backdrop-blur-sm px-2 py-1 rounded-full border border-white/60"
+                            >
+                                <motion.div 
+                                    animate={{ 
+                                        scale: [1, 1.2, 1],
+                                        opacity: [0.7, 1, 0.7]
+                                    }} 
+                                    transition={{ 
+                                        duration: 2, 
+                                        repeat: Infinity 
+                                    }} 
+                                    className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1.5"
+                                />
+                                LIVE
+                            </motion.div>
                             {onToggleExpand && (
-                                <Button variant="ghost" size="sm" onClick={onToggleExpand} className="h-6 w-6 p-0 hover:bg-white/50 rounded-lg transition-colors backdrop-blur-sm">
-                                    {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                                </Button>
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={onToggleExpand}
+                                        className="h-7 w-7 p-0 hover:bg-white/70 rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/40 hover:border-white/60"
+                                    >
+                                        <motion.div
+                                            animate={{ rotate: isExpanded ? 180 : 0 }}
+                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        >
+                                            <ChevronDown className="h-3.5 w-3.5 text-slate-600" />
+                                        </motion.div>
+                                    </Button>
+                                </motion.div>
                             )}
                         </div>
                     </CardTitle>
-                    <div className="mt-3">
+                    <div className="mt-4 relative z-10">
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-                            <TabsList className="bg-white/50 backdrop-blur-sm p-1 rounded-lg border border-white/30">
-                                <TabsTrigger value="summary" className="text-xs px-2 py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-400/20 data-[state=active]:to-blue-400/20 data-[state=active]:text-slate-800 data-[state=active]:border data-[state=active]:border-white/30 data-[state=active]:backdrop-blur-sm">
-                                    Summary
+                            <TabsList className="bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/50 shadow-lg">
+                                <TabsTrigger 
+                                    value="summary" 
+                                    className="text-xs px-4 py-2 font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/90 data-[state=active]:to-indigo-500/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 hover:bg-white/80"
+                                >
+                                    <motion.span whileHover={{ scale: 1.05 }}>
+                                        Summary
+                                    </motion.span>
                                 </TabsTrigger>
-                                <TabsTrigger value="map" className="text-xs px-2 py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-400/20 data-[state=active]:to-blue-400/20 data-[state=active]:text-slate-800 data-[state=active]:border data-[state=active]:border-white/30 data-[state=active]:backdrop-blur-sm">
-                                    Map View
-                                </TabsTrigger>
-                                <TabsTrigger value="parking" className="text-xs px-2 py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-400/20 data-[state=active]:to-blue-400/20 data-[state=active]:text-slate-800 data-[state=active]:border data-[state=active]:border-white/30 data-[state=active]:backdrop-blur-sm">
-                                    Parking
-                                </TabsTrigger>
-                                <TabsTrigger value="transport" className="text-xs px-2 py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-400/20 data-[state=active]:to-blue-400/20 data-[state=active]:text-slate-800 data-[state=active]:border data-[state=active]:border-white/30 data-[state=active]:backdrop-blur-sm">
-                                    Transport
+                                <TabsTrigger 
+                                    value="map" 
+                                    className="text-xs px-4 py-2 font-semibold rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/90 data-[state=active]:to-indigo-500/90 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 hover:bg-white/80"
+                                >
+                                    <motion.span whileHover={{ scale: 1.05 }}>
+                                        Map View
+                                    </motion.span>
                                 </TabsTrigger>
                             </TabsList>
                         </Tabs>
@@ -1197,51 +1273,116 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
                                 <TabsContent value="summary" key="summary">
                                     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-3 mb-5">
                                         <h5 className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Major Routes</h5>
-                                        {displayRoutes.map((route) => (
+                                        {displayRoutes.map((route, index) => (
                                             <motion.div
                                                 key={route.id}
                                                 variants={itemVariants}
-                                                className="p-4 rounded-xl bg-white/40 backdrop-blur-sm border border-white/50 hover:bg-white/60 transition-all duration-200 cursor-pointer group"
-                                                whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                                                whileHover={{ 
+                                                    y: -3, 
+                                                    scale: 1.02,
+                                                    transition: { duration: 0.2, ease: "easeOut" }
+                                                }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className="group relative p-5 rounded-2xl bg-white/70 backdrop-blur-md border border-white/70 hover:bg-white/80 hover:border-white/90 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
+                                                style={{
+                                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%)',
+                                                    backdropFilter: 'blur(20px)',
+                                                }}
                                             >
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center space-x-2">
-                                                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getStatusColor(route.status)}`}>
-                                                            {getStatusIcon(route.status)}
-                                                            <span className="ml-1 capitalize">{route.status}</span>
-                                                        </Badge>
-                                                        {route.incidents > 0 && (
-                                                            <Badge variant="outline" className="text-[10px] font-medium px-2 py-1 rounded-full bg-rose-400/20 text-rose-700 border-rose-400/30 backdrop-blur-sm">
-                                                                {route.incidents} incident{route.incidents > 1 ? "s" : ""}
-                                                            </Badge>
+                                                {/* Hover glow effect */}
+                                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                
+                                                <div className="relative z-10">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="flex items-center space-x-2">
+                                                            <motion.div whileHover={{ scale: 1.1, rotate: 5 }}>
+                                                                <Badge 
+                                                                    variant="outline" 
+                                                                    className={`text-[10px] font-bold px-3 py-1.5 rounded-full border-2 ${getStatusColor(route.status)} shadow-sm hover:shadow-md transition-all duration-200`}
+                                                                >
+                                                                    <motion.div
+                                                                        animate={{ 
+                                                                            scale: route.status === 'heavy' ? [1, 1.2, 1] : 1 
+                                                                        }}
+                                                                        transition={{ 
+                                                                            duration: 1, 
+                                                                            repeat: route.status === 'heavy' ? Infinity : 0 
+                                                                        }}
+                                                                    >
+                                                                        {getStatusIcon(route.status)}
+                                                                    </motion.div>
+                                                                    <span className="ml-1.5 capitalize font-semibold">{route.status}</span>
+                                                                </Badge>
+                                                            </motion.div>
+                                                            {route.incidents > 0 && (
+                                                                <motion.div
+                                                                    initial={{ scale: 0 }}
+                                                                    animate={{ scale: 1 }}
+                                                                    whileHover={{ scale: 1.1 }}
+                                                                >
+                                                                    <Badge 
+                                                                        variant="outline" 
+                                                                        className="text-[10px] font-bold px-3 py-1.5 rounded-full bg-gradient-to-r from-rose-400/20 to-red-400/20 text-rose-700 border-2 border-rose-400/40 shadow-sm"
+                                                                    >
+                                                                        <AlertTriangle className="w-2.5 h-2.5 mr-1" />
+                                                                        {route.incidents} alert{route.incidents > 1 ? "s" : ""}
+                                                                    </Badge>
+                                                                </motion.div>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-[12px] text-slate-600 font-bold bg-slate-100/70 backdrop-blur-sm px-2 py-1 rounded-lg">
+                                                            {route.distance}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center space-x-2 text-[13px]">
+                                                            <MapPin className="w-3.5 h-3.5 text-blue-500" />
+                                                            <span className="font-bold text-slate-800 truncate max-w-[85px]">{route.from}</span>
+                                                            <motion.span 
+                                                                animate={{ x: [0, 3, 0] }}
+                                                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                                                className="text-blue-500 font-bold text-lg"
+                                                            >
+                                                                →
+                                                            </motion.span>
+                                                            <span className="font-bold text-slate-800 truncate max-w-[85px]">{route.to}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center space-x-2">
+                                                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                                                            <span
+                                                                className={`text-[13px] font-bold ${
+                                                                    route.delay > 0
+                                                                        ? "text-rose-600"
+                                                                        : route.delay < 0
+                                                                            ? "text-emerald-600"
+                                                                            : "text-slate-800"
+                                                                }`}
+                                                            >
+                                                                {route.currentTime}
+                                                            </span>
+                                                            <span className="text-[11px] text-slate-500 font-medium">
+                                                                (normally {route.normalTime})
+                                                            </span>
+                                                        </div>
+                                                        {route.delay !== 0 && (
+                                                            <motion.span 
+                                                                initial={{ scale: 0 }}
+                                                                animate={{ scale: 1 }}
+                                                                className={`text-[11px] font-bold px-2 py-1 rounded-lg ${
+                                                                    route.delay > 0 
+                                                                        ? "text-rose-600 bg-rose-100/70" 
+                                                                        : "text-emerald-600 bg-emerald-100/70"
+                                                                }`}
+                                                            >
+                                                                {route.delay > 0 ? "+" : ""}
+                                                                {route.delay}min
+                                                            </motion.span>
                                                         )}
                                                     </div>
-                                                    <span className="text-[11px] text-slate-600 font-medium">{route.distance}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center space-x-1.5 text-[12px]">
-                                                        <MapPin className="w-3 h-3 text-slate-500" />
-                                                        <span className="font-medium text-slate-800 truncate max-w-[80px]">{route.from}</span>
-                                                        <span className="text-slate-400">→</span>
-                                                        <span className="font-medium text-slate-800 truncate max-w-[80px]">{route.to}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center space-x-2">
-                                                        <Clock className="w-3 h-3 text-slate-500" />
-                                                        <span
-                                                            className={`text-[12px] font-medium ${route.delay > 0 ? "text-rose-600" : route.delay < 0 ? "text-emerald-600" : "text-slate-800"}`}
-                                                        >
-                                                            {route.currentTime}
-                                                        </span>
-                                                        <span className="text-[11px] text-slate-500">({route.normalTime})</span>
-                                                    </div>
-                                                    {route.delay !== 0 && (
-                                                        <span className={`text-[11px] font-semibold ${route.delay > 0 ? "text-rose-600" : "text-emerald-600"}`}>
-                                                            {route.delay > 0 ? "+" : ""}
-                                                            {route.delay}m
-                                                        </span>
-                                                    )}
                                                 </div>
                                             </motion.div>
                                         ))}
@@ -1435,15 +1576,22 @@ export function TrafficWidget({ isExpanded = false, onToggleExpand }: TrafficWid
 
                     <div className="mt-5 pt-4 border-t border-white/30 flex items-center justify-between text-[10px] text-slate-600">
                         <span className="font-medium">Updated: {currentTime.toLocaleTimeString("en-US", { hour12: false })}</span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-[10px] font-medium hover:bg-white/50 rounded-lg transition-colors backdrop-blur-sm"
-                            onClick={loadTrafficData}
-                        >
-                            <Navigation className="h-3 w-3 mr-1.5" />
-                            Refresh
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-[11px] font-semibold hover:bg-white/70 rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/50 hover:border-white/70 px-3"
+                                onClick={loadTrafficData}
+                            >
+                                <motion.div
+                                    whileHover={{ rotate: 360 }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <Navigation className="h-3 w-3 mr-1.5" />
+                                </motion.div>
+                                Refresh
+                            </Button>
+                        </motion.div>
                     </div>
                 </CardContent>
 

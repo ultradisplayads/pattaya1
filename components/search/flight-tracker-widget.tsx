@@ -1436,7 +1436,7 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
   return (
     <>
       <div 
-        className={`${className} h-full flex flex-col bg-slate-900 bg-gradient-to-br from-indigo-900/40 via-slate-900 to-sky-900/40 rounded-2xl overflow-hidden relative shadow-2xl shadow-slate-900/50 border border-white/10 cursor-pointer group transition-all duration-500 ease-in-out`}
+        className={`${className} h-full w-full max-w-sm flex flex-col bg-slate-900 bg-gradient-to-br from-indigo-900/40 via-slate-900 to-sky-900/40 rounded-2xl overflow-hidden relative shadow-2xl shadow-slate-900/50 border border-white/10 cursor-pointer group transition-all duration-500 ease-in-out flight-tracker-widget`}
         onClick={() => setShowExpandedModal(true)}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40 group-hover:opacity-60 transition-opacity duration-500">
@@ -1449,49 +1449,49 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
         <div className="relative p-2 border-b border-white/10 bg-black/20 backdrop-blur-sm">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-lg shadow-lg shadow-sky-500/20">
-                        <Plane className="w-4 h-4 text-white" />
+                    <div className="p-1.5 bg-gradient-to-br from-sky-500 to-indigo-600 rounded-lg shadow-lg shadow-sky-500/20">
+                        <Plane className="w-3.5 h-3.5 text-white flight-icon" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-white tracking-wider">Flight Tracker</h2>
-                        <p className="text-xs text-sky-300/70">Real-time status</p>
+                        <h2 className="text-xs font-bold text-white tracking-wider">Flight Tracker</h2>
+                        <p className="text-[10px] text-sky-300/70">Real-time status</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                     {connectionStatus === 'connected' ? (
-                        <Wifi className="w-4 h-4 text-green-400 animate-pulse" />
+                        <Wifi className="w-3 h-3 text-green-400 animate-pulse" />
                     ) : (
-                        <WifiOff className="w-4 h-4 text-red-500" />
+                        <WifiOff className="w-3 h-3 text-red-500" />
                     )}
                     <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={(e) => { e.stopPropagation(); refreshData(); }}
                         disabled={loading}
-                        className="h-7 w-7 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-full"
+                        className="h-6 w-6 text-white/70 hover:bg-white/10 hover:text-white transition-all rounded-full"
                     >
-                        <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-2.5 h-2.5 ${loading ? 'animate-spin' : ''}`} />
                     </Button>
                 </div>
             </div>
         </div>
             
-        <div className="flex-1 overflow-y-auto p-1.5 space-y-3">
-            <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg" onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" onClick={() => setViewMode('search')} className={`flex-1 transition-all duration-300 text-xs ${viewMode === 'search' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20' : 'text-slate-300 hover:text-white'}`}>
-                    <Search className="h-3 w-3 mr-1" /> Search
+        <div className="flex-1 overflow-y-auto p-1.5 space-y-2">
+            <div className="flex gap-1 p-0.5 bg-slate-800/50 rounded-lg" onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="sm" onClick={() => setViewMode('search')} className={`flex-1 transition-all duration-300 text-[10px] h-6 ${viewMode === 'search' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20' : 'text-slate-300 hover:text-white'}`}>
+                    <Search className="h-2.5 w-2.5 mr-1" /> Search
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setViewMode('live'); loadLiveFlights(); }} className={`flex-1 transition-all duration-300 text-xs ${viewMode === 'live' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20' : 'text-slate-300 hover:text-white'}`}>
-                    <List className="h-3 w-3 mr-1" /> Live
+                <Button variant="ghost" size="sm" onClick={() => { setViewMode('live'); loadLiveFlights(); }} className={`flex-1 transition-all duration-300 text-[10px] h-6 ${viewMode === 'live' ? 'bg-sky-500 text-white shadow-md shadow-sky-500/20' : 'text-slate-300 hover:text-white'}`}>
+                    <List className="h-2.5 w-2.5 mr-1" /> Live
                 </Button>
             </div>
 
             {viewMode === 'search' && (
-                <div className="bg-black/20 backdrop-blur-md p-3 rounded-lg border border-white/10 animate-fade-in-up">
-                    <form onSubmit={handleSearch} className="space-y-3" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-wrap items-center gap-2">
+                <div className="bg-black/20 backdrop-blur-md p-2 rounded-lg border border-white/10 flight-search-form">
+                    <form onSubmit={handleSearch} className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-wrap items-center gap-1.5">
                             <Select value={searchType} onValueChange={(value: 'flight' | 'route') => setSearchType(value)}>
-                                <SelectTrigger className="w-28 bg-slate-800/70 border-white/20 text-white text-xs">
+                                <SelectTrigger className="w-24 bg-slate-800/70 border-white/20 text-white text-[10px] h-6">
                                     <SelectValue placeholder="Search by" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-slate-800 border-white/20 text-white">
@@ -1501,22 +1501,22 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
                             </Select>
                         
                             {searchType === 'flight' ? (
-                                <Input placeholder="e.g., TG123" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} className="flex-1 bg-slate-800/70 border-white/20 text-white placeholder:text-slate-400 focus:ring-sky-500 focus:border-sky-500 text-xs h-8" />
+                                <Input placeholder="e.g., TG123" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} className="flex-1 bg-slate-800/70 border-white/20 text-white placeholder:text-slate-400 focus:ring-sky-500 focus:border-sky-500 text-[10px] h-6" />
                             ) : (
-                                <div className="flex-1 grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                                <div className="flex-1 grid grid-cols-[1fr_auto_1fr] gap-1 items-center">
                                     <Select value={origin} onValueChange={setOrigin}>
-                                        <SelectTrigger className="bg-slate-800/70 border-white/20 text-white text-xs h-8"><SelectValue placeholder="From" /></SelectTrigger>
+                                        <SelectTrigger className="bg-slate-800/70 border-white/20 text-white text-[10px] h-6"><SelectValue placeholder="From" /></SelectTrigger>
                                         <SelectContent className="bg-slate-800 border-white/20 text-white">{airports.map((a) => <SelectItem key={a.value} value={a.value}>{a.name}</SelectItem>)}</SelectContent>
                                     </Select>
-                                    <Plane className="w-4 h-4 text-sky-400 justify-self-center" />
+                                    <Plane className="w-3 h-3 text-sky-400 justify-self-center flight-route-icon" />
                                     <Select value={destination} onValueChange={setDestination}>
-                                        <SelectTrigger className="bg-slate-800/70 border-white/20 text-white text-xs h-8"><SelectValue placeholder="To" /></SelectTrigger>
+                                        <SelectTrigger className="bg-slate-800/70 border-white/20 text-white text-[10px] h-6"><SelectValue placeholder="To" /></SelectTrigger>
                                         <SelectContent className="bg-slate-800 border-white/20 text-white">{airports.map((a) => <SelectItem key={a.value} value={a.value}>{a.name}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                             )}
-                            <Button type="submit" disabled={loading} size="icon" className="shrink-0 bg-gradient-to-br from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-lg hover:shadow-sky-500/30 transition-all w-8 h-8">
-                                <Search className="h-3 w-3" />
+                            <Button type="submit" disabled={loading} size="icon" className="shrink-0 bg-gradient-to-br from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-lg hover:shadow-sky-500/30 transition-all w-6 h-6 flight-search-btn">
+                                <Search className="h-2.5 w-2.5" />
                             </Button>
                         </div>
                     </form>
@@ -1524,10 +1524,10 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
             )}
 
             {viewMode === 'live' && (
-                <div className="flex items-center gap-2 animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
-                    <Filter className="h-4 w-4 text-sky-400" />
+                <div className="flex items-center gap-1.5 animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+                    <Filter className="h-3 w-3 text-sky-400" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-48 bg-slate-800/70 border-white/20 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-32 bg-slate-800/70 border-white/20 text-white text-[10px] h-6"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-slate-800 border-white/20 text-white">
                             <SelectItem value="all">All Flights</SelectItem>
                             <SelectItem value="scheduled">Scheduled</SelectItem>
@@ -1540,28 +1540,28 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
                 </div>
             )}
             
-            {error && <div className="bg-red-900/50 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm animate-fade-in-up">{error}</div>}
+            {error && <div className="bg-red-900/50 border border-red-500/50 text-red-300 px-3 py-2 rounded-lg text-[10px] animate-fade-in-up">{error}</div>}
             
             {loading && (
-                <div className="flex justify-center p-8"><div className="flex flex-col items-center gap-2 text-sky-300">
-                    <RefreshCw className="h-8 w-8 animate-spin" /><span className="text-sm">Loading flight data...</span>
+                <div className="flex justify-center p-4"><div className="flex flex-col items-center gap-1.5 text-sky-300">
+                    <RefreshCw className="h-6 w-6 animate-spin" /><span className="text-[10px]">Loading flight data...</span>
                 </div></div>
             )}
         
             {!loading && viewMode === 'search' && flightData && (
-                <div className="space-y-4 animate-fade-in-up">
-                    <div className="bg-black/20 backdrop-blur-md p-4 rounded-lg border border-white/10">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-white">Flight {flightData.flight?.iata || 'N/A'}</h3>
-                            <Badge variant="outline" className={`border text-xs shadow-sm ${getStatusClasses(flightData.status)}`}>{formatStatus(flightData.status)}</Badge>
+                <div className="space-y-2 animate-fade-in-up">
+                    <div className="bg-black/20 backdrop-blur-md p-2 rounded-lg border border-white/10">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-sm font-bold text-white">Flight {flightData.flight?.iata || 'N/A'}</h3>
+                            <Badge variant="outline" className={`border text-[10px] shadow-sm ${getStatusClasses(flightData.status)}`}>{formatStatus(flightData.status)}</Badge>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-center">
-                            <div className="text-center md:text-left"><p className="text-sm text-slate-400">Departure</p><p className="text-xl font-bold text-white truncate">{flightData.departure.airport}</p><p className="text-lg text-sky-400">{flightData.departure.iata}</p></div>
-                            <div className="flex justify-center items-center"><div className="w-full md:w-px h-px md:h-16 bg-gradient-to-b from-transparent via-sky-500 to-transparent"></div></div>
-                            <div className="text-center md:text-right"><p className="text-sm text-slate-400">Arrival</p><p className="text-xl font-bold text-white truncate">{flightData.arrival.airport}</p><p className="text-lg text-sky-400">{flightData.arrival.iata}</p></div>
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-2 items-center">
+                            <div className="text-center md:text-left"><p className="text-[10px] text-slate-400">Departure</p><p className="text-sm font-bold text-white truncate">{flightData.departure.airport}</p><p className="text-xs text-sky-400">{flightData.departure.iata}</p></div>
+                            <div className="flex justify-center items-center"><div className="w-full md:w-px h-px md:h-12 bg-gradient-to-b from-transparent via-sky-500 to-transparent"></div></div>
+                            <div className="text-center md:text-right"><p className="text-[10px] text-slate-400">Arrival</p><p className="text-sm font-bold text-white truncate">{flightData.arrival.airport}</p><p className="text-xs text-sky-400">{flightData.arrival.iata}</p></div>
                         </div>
-                        <div className="w-1/2 mx-auto my-2 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
-                        <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+                        <div className="w-1/2 mx-auto my-1.5 h-px bg-gradient-to-r from-transparent via-sky-500/50 to-transparent"></div>
+                        <div className="grid grid-cols-2 gap-2 text-[10px] mt-2">
                             <div>
                                 <div className="flex justify-between"><span className="text-slate-400">Scheduled:</span><span className="font-medium text-white">{formatTime(flightData.departure.scheduled)}</span></div>
                                 {flightData.departure.estimated && <div className="flex justify-between"><span className="text-slate-400">Est:</span><span className={flightData.departure.delay ? 'text-yellow-400 font-medium' : 'font-medium text-white'}>{formatTime(flightData.departure.estimated)}</span></div>}
@@ -1579,18 +1579,18 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
 
             {!loading && viewMode === 'live' && (
                 <div className="bg-black/20 backdrop-blur-md rounded-lg border border-white/10 animate-fade-in-up">
-                    <div className="p-3 flex justify-between items-center"><h3 className="text-sm font-semibold text-white">Live Flights</h3><span className="text-xs text-slate-400">{filteredLiveFlights.length} flights</span></div>
+                    <div className="p-2 flex justify-between items-center"><h3 className="text-[10px] font-semibold text-white">Live Flights</h3><span className="text-[9px] text-slate-400">{filteredLiveFlights.length} flights</span></div>
                     {filteredLiveFlights.length === 0 ? (
-                        <div className="text-center py-6 text-slate-500"><Plane className="w-6 h-6 mx-auto mb-2" /><p className="text-sm">No flights found</p></div>
+                        <div className="text-center py-4 text-slate-500"><Plane className="w-4 h-4 mx-auto mb-1" /><p className="text-[10px]">No flights found</p></div>
                     ) : (
-                        <div className="space-y-1 p-2 max-h-60 overflow-y-auto">
-                            {filteredLiveFlights.slice(0, 12).map((flight, index) => (
-                                <div key={index} className="bg-slate-800/50 p-2 rounded-lg border border-transparent hover:border-sky-500/50 hover:bg-slate-800/80 transition-all duration-300" style={{ animation: `fade-in-up 0.5s ${index * 0.05}s ease-out both`}}>
-                                    <div className="flex justify-between items-center text-xs">
-                                        <div className="flex-1 min-w-0"><p className="font-bold text-white truncate">{flight.flight.iata}</p><p className="text-xs text-slate-400 truncate">{flight.departure.airport} → {flight.arrival.airport}</p></div>
+                        <div className="space-y-1 p-1.5 max-h-48 overflow-y-auto">
+                            {filteredLiveFlights.slice(0, 8).map((flight, index) => (
+                                <div key={index} className="bg-slate-800/50 p-1.5 rounded-lg border border-transparent hover:border-sky-500/50 hover:bg-slate-800/80 transition-all duration-300" style={{ animation: `fade-in-up 0.5s ${index * 0.05}s ease-out both`}}>
+                                    <div className="flex justify-between items-center text-[9px]">
+                                        <div className="flex-1 min-w-0"><p className="font-bold text-white truncate">{flight.flight.iata}</p><p className="text-[9px] text-slate-400 truncate">{flight.departure.airport} → {flight.arrival.airport}</p></div>
                                         <div className="flex items-center gap-1 shrink-0 ml-2">
-                                            <span className="font-mono text-slate-300 w-10 text-right">{formatTime(flight.departure.scheduled)}</span>
-                                            <Badge variant="outline" className={`border text-xs shadow-sm w-20 justify-center ${getStatusClasses(flight.status)}`}>{formatStatus(flight.status)}</Badge>
+                                            <span className="font-mono text-slate-300 w-8 text-right">{formatTime(flight.departure.scheduled)}</span>
+                                            <Badge variant="outline" className={`border text-[9px] shadow-sm w-16 justify-center ${getStatusClasses(flight.status)}`}>{formatStatus(flight.status)}</Badge>
                                         </div>
                                     </div>
                                 </div>
@@ -1691,3 +1691,88 @@ const FlightTrackerWidget: React.FC<FlightTrackerWidgetProps> = ({ className }) 
 }
 
 export default FlightTrackerWidget
+
+// Add CSS styles for professional animations
+const styles = `
+  .flight-tracker-widget {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .flight-tracker-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+  }
+  
+  .flight-icon {
+    animation: planeFloat 3s ease-in-out infinite;
+  }
+  
+  .flight-route-icon {
+    animation: planeFly 2s ease-in-out infinite;
+  }
+  
+  .flight-search-btn {
+    transition: all 0.2s ease;
+  }
+  
+  .flight-search-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+  
+  .flight-search-form {
+    transition: all 0.3s ease;
+  }
+  
+  @keyframes planeFloat {
+    0%, 100% { 
+      transform: translateY(0) rotate(0deg);
+    }
+    25% { 
+      transform: translateY(-2px) rotate(-2deg);
+    }
+    50% { 
+      transform: translateY(-4px) rotate(0deg);
+    }
+    75% { 
+      transform: translateY(-2px) rotate(2deg);
+    }
+  }
+  
+  @keyframes planeFly {
+    0%, 100% { 
+      transform: translateX(0) translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    25% { 
+      transform: translateX(1px) translateY(-1px) rotate(5deg);
+      opacity: 0.9;
+    }
+    50% { 
+      transform: translateX(0) translateY(-2px) rotate(0deg);
+      opacity: 1;
+    }
+    75% { 
+      transform: translateX(-1px) translateY(-1px) rotate(-5deg);
+      opacity: 0.9;
+    }
+  }
+  
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = styles
+  document.head.appendChild(styleSheet)
+}
