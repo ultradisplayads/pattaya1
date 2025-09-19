@@ -111,29 +111,37 @@ export function ForumActivityWidget() {
 
   if (loading) {
     return (
-      <Card className="w-full bg-white border-0 shadow-sm rounded-2xl overflow-hidden">
-        <CardHeader className="bg-white border-b border-gray-100/60 p-6">
-          <CardTitle className="flex items-center gap-3 text-gray-900">
-            <div className="p-3 bg-blue-500/10 rounded-2xl">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+      <Card className="w-full bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/40 border-0 shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-blue-600/95 via-cyan-500/95 to-teal-500/95 border-0 p-4 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-transparent to-teal-500/20 animate-pulse"></div>
+          <CardTitle className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30">
+                <MessageSquare className="h-5 w-5 text-white drop-shadow-sm" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white drop-shadow-sm">🏖️ Pattaya Community</h3>
+                <p className="text-sm text-blue-100 font-medium">Loading discussions...</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-gray-900">Community Forum</h3>
-              <p className="text-sm text-gray-500 font-medium">Loading discussions...</p>
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-500/90 backdrop-blur-sm rounded-xl shadow-lg border border-green-400/30">
+              <div className="w-2 h-2 bg-green-300 rounded-full animate-ping"></div>
+              <div className="w-2 h-2 bg-green-200 rounded-full absolute animate-pulse"></div>
+              <span className="text-sm font-bold text-white drop-shadow-sm">LIVE</span>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="h-80 overflow-hidden">
-            <div className="space-y-4 p-6">
+          <div className="h-64 overflow-hidden">
+            <div className="space-y-2 p-3">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 bg-gray-100 rounded-2xl"></div>
-                    <div className="flex-1 space-y-3">
-                      <div className="h-4 bg-gray-100 rounded-xl w-3/4"></div>
-                      <div className="h-3 bg-gray-100 rounded-lg w-1/2"></div>
-                      <div className="h-3 bg-gray-100 rounded-lg w-2/3"></div>
+                  <div className="flex items-start gap-3">
+                    <div className="h-8 w-8 bg-gray-100 rounded-xl"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-gray-100 rounded-lg w-3/4"></div>
+                      <div className="h-2 bg-gray-100 rounded w-1/2"></div>
+                      <div className="h-2 bg-gray-100 rounded w-2/3"></div>
                     </div>
                   </div>
                 </div>
@@ -146,116 +154,151 @@ export function ForumActivityWidget() {
   }
 
   return (
-    <Card className="w-full bg-white border-0 shadow-sm rounded-2xl overflow-hidden">
-      {/* Apple-style Header */}
-      <CardHeader className="bg-white border-b border-gray-100/60 p-6">
-        <CardTitle className="flex items-center justify-between">
+    <Card className="w-full bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/40 border-0 shadow-xl rounded-3xl overflow-hidden backdrop-blur-sm">
+      <CardHeader className="bg-gradient-to-r from-blue-600/95 via-cyan-500/95 to-teal-500/95 border-0 p-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-transparent to-teal-500/20 animate-pulse"></div>
+        <CardTitle className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-500/10 rounded-2xl">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl shadow-lg border border-white/30">
+              <MessageSquare className="h-5 w-5 text-white drop-shadow-sm" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">Community Forum</h3>
-              <p className="text-sm text-gray-500 font-medium">Live discussions & insights</p>
+              <h3 className="text-base font-bold text-white drop-shadow-sm">🏖️ Pattaya Community</h3>
+              <p className="text-sm text-blue-100 font-medium">Live discussions & local insights</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 rounded-xl">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-green-600">Live</span>
+          <div className="flex items-center gap-2 px-3 py-2 bg-green-500/90 backdrop-blur-sm rounded-xl shadow-lg border border-green-400/30">
+            <div className="w-2 h-2 bg-green-300 rounded-full animate-ping"></div>
+            <div className="w-2 h-2 bg-green-200 rounded-full absolute animate-pulse"></div>
+            <span className="text-sm font-bold text-white drop-shadow-sm">LIVE</span>
           </div>
         </CardTitle>
       </CardHeader>
 
       <CardContent className="p-0">
-        {/* Apple-style Stats Grid */}
-        <div className="bg-gray-50/50 border-b border-gray-100/60 p-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100/60 hover:shadow-md transition-all duration-200">
+        <div className="bg-gradient-to-br from-gray-50/80 via-white/60 to-blue-50/40 border-b border-gray-200/30 p-4 backdrop-blur-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="text-center p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/40 hover:shadow-xl hover:scale-105 transform transition-all duration-300 hover:bg-orange-50/80 group">
               <div className="flex items-center justify-center mb-2">
-                <div className="p-2 bg-orange-500/10 rounded-xl">
-                  <Zap className="h-5 w-5 text-orange-500" />
+                <div className="p-2.5 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl shadow-md group-hover:shadow-lg transform group-hover:scale-110 transition-all duration-200">
+                  <Zap className="h-4 w-4 text-white drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{stats.hotTopics}</div>
-              <div className="text-xs font-medium text-gray-500">Hot Topics</div>
+              <div className="text-xl font-black text-gray-800 mb-1 group-hover:text-orange-600 transition-colors duration-200">{stats.hotTopics}</div>
+              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">🔥 Hot Topics</div>
             </div>
-            <div className="text-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100/60 hover:shadow-md transition-all duration-200">
+            <div className="text-center p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/40 hover:shadow-xl hover:scale-105 transform transition-all duration-300 hover:bg-green-50/80 group">
               <div className="flex items-center justify-center mb-2">
-                <div className="p-2 bg-green-500/10 rounded-xl">
-                  <Activity className="h-5 w-5 text-green-500" />
+                <div className="p-2.5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl shadow-md group-hover:shadow-lg transform group-hover:scale-110 transition-all duration-200">
+                  <Activity className="h-4 w-4 text-white drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{stats.newPostsToday}</div>
-              <div className="text-xs font-medium text-gray-500">New Today</div>
+              <div className="text-xl font-black text-gray-800 mb-1 group-hover:text-green-600 transition-colors duration-200">{stats.newPostsToday}</div>
+              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">⚡ New Today</div>
             </div>
-            <div className="text-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100/60 hover:shadow-md transition-all duration-200">
+            <div className="text-center p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/40 hover:shadow-xl hover:scale-105 transform transition-all duration-300 hover:bg-blue-50/80 group">
               <div className="flex items-center justify-center mb-2">
-                <div className="p-2 bg-blue-500/10 rounded-xl">
-                  <Users2 className="h-5 w-5 text-blue-500" />
+                <div className="p-2.5 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl shadow-md group-hover:shadow-lg transform group-hover:scale-110 transition-all duration-200">
+                  <Users2 className="h-4 w-4 text-white drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{stats.activeUsers}</div>
-              <div className="text-xs font-medium text-gray-500">Active Users</div>
+              <div className="text-xl font-black text-gray-800 mb-1 group-hover:text-blue-600 transition-colors duration-200">{stats.activeUsers}</div>
+              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">👥 Active Users</div>
             </div>
-            <div className="text-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100/60 hover:shadow-md transition-all duration-200">
+            <div className="text-center p-3 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/40 hover:shadow-xl hover:scale-105 transform transition-all duration-300 hover:bg-purple-50/80 group">
               <div className="flex items-center justify-center mb-2">
-                <div className="p-2 bg-purple-500/10 rounded-xl">
-                  <Star className="h-5 w-5 text-purple-500" />
+                <div className="p-2.5 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl shadow-md group-hover:shadow-lg transform group-hover:scale-110 transition-all duration-200">
+                  <Star className="h-4 w-4 text-white drop-shadow-sm" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{stats.totalPosts}</div>
-              <div className="text-xs font-medium text-gray-500">Total Posts</div>
+              <div className="text-xl font-black text-gray-800 mb-1 group-hover:text-purple-600 transition-colors duration-200">{stats.totalPosts}</div>
+              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">⭐ Total Posts</div>
             </div>
           </div>
         </div>
 
-        {/* Apple-style Scrollable Content */}
-        <div className="min-h-64 max-h-80 md:max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-          <div className="space-y-1 p-6">
+        <div className="min-h-48 max-h-64 md:max-h-80 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-50 hover:scrollbar-thumb-blue-400 transition-colors duration-200">
+          <div className="space-y-2 p-4">
             {topics.length > 0 ? (
               topics.map((topic, index) => (
-                <div key={topic.id} className="group">
-                  <div className="bg-white rounded-2xl border border-gray-100/60 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200">
+                <div 
+                  key={topic.id} 
+                  className="group animate-fadeInUp"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/50 shadow-md hover:shadow-xl hover:border-blue-300/60 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1">
                     <ForumThreadItem topic={topic} />
                   </div>
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                <div className="p-6 bg-gray-50 rounded-2xl mb-6">
-                  <MessageCircle className="h-16 w-16 text-gray-300" />
+              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl mb-4 shadow-inner border border-gray-100 animate-bounce">
+                  <MessageCircle className="h-12 w-12 text-blue-300" />
                 </div>
-                <p className="text-lg font-semibold text-gray-600 mb-2">No forum activity available</p>
-                <p className="text-sm text-gray-500 text-center">Check back later for new discussions</p>
-                <div className="mt-6 flex gap-1.5">
+                <p className="text-base font-bold text-gray-700 mb-2">🏝️ No discussions yet</p>
+                <p className="text-sm text-gray-500 text-center max-w-xs">Be the first to start a conversation about Pattaya!</p>
+                <div className="mt-6 flex gap-2">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Apple-style Footer */}
         {topics.length > 0 && (
-          <div className="bg-white border-t border-gray-100/60 p-6">
+          <div className="bg-gradient-to-r from-gray-50/80 via-white/60 to-blue-50/40 backdrop-blur-sm border-t border-gray-200/50 p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">Live updates every 2 minutes</span>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                <div className="w-2 h-2 bg-green-400 rounded-full absolute animate-pulse"></div>
+                <span className="font-semibold ml-2">🔄 Live updates every 2 minutes</span>
               </div>
               <a
                 href="/forum"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-all duration-200 shadow-sm hover:shadow-md"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-bold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 hover:-translate-y-0.5 border border-blue-400/50"
               >
                 <TrendingUp className="h-4 w-4" />
-                View All Discussions
+                Explore Pattaya Forum
               </a>
             </div>
           </div>
         )}
       </CardContent>
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+          border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          border-radius: 10px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: rgb(59 130 246 / 0.6);
+        }
+      `}</style>
     </Card>
   )
 }

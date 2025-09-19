@@ -352,51 +352,42 @@ export function DynamicModularHomepage() {
       // Check if there's a saved layout for this widget
       const savedItem = savedLayout?.find(item => item.i === widget.id);
       
-      // Beautifully organized layout with logical content groupings and optimal visual flow
-      const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
-        
-        
-        // 📰 NEWS & INFORMATION (Below search bar)
-        "weather": { x: 0, y: 5, w: 3, h: 6 },
-        "breaking-news": { x: 3, y: 5, w: 6, h: 6 },
-        "radio": { x: 9, y: 5, w: 3, h: 6 },
-        // Hot deals between radio and currency (same size as Google Reviews)
-        "hot-deals": { x: 9, y: 11, w: 3, h: 8 },
-        // Currency converter below hot deals
-        "currency-converter": { x: 9, y: 19, w: 3, h: 6 },
-        
-        // 🎬 CINEMA (Below weather widget with same height)
-        "cinema": { x: 0, y: 11, w: 3, h: 6 },
-        
-        // 🍽️ FOOD (Below breaking news, spans wider)
-        "food": { x: 3, y: 11, w: 6, h: 6 },
-        
-        // ✈️ FLIGHT & SEARCH (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-        // Swap positions: move Google Reviews where Traffic was
-        "google-reviews": { x: 9, y: 33, w: 3, h: 8 },
-        "search-widgets": { x: 3, y: 17, w: 6, h: 6 },
-        "youtube": { x: 3, y: 23, w: 6, h: 6 },
-        "flight-tracker": { x: 0, y: 25, w: 3, h: 6 },
-        
-        // 💬 SOCIAL & COMMUNITY
-        // Social feed placed directly below currency converter (same size as Google Reviews)
-        "social-feed": { x: 9, y: 25, w: 3, h: 8 },
-        // Trending same size as weather (w:3,h:6)
-        "trending": { x: 0, y: 33, w: 3, h: 6 },
-        
-        // Photo gallery just below featured videos (youtube) and forum below photo gallery
-        "photo-gallery": { x: 3, y: 29, w: 6, h: 6 },
-        "forum-activity": { x: 3, y: 35, w: 6, h: 6 },
-        
-        // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-        // Swap positions: move Traffic to where Google Reviews was, keep weather-sized height
-        "traffic": { x: 0, y: 17, w: 3, h: 6 },
-        "sports-fixtures": { x: 0, y: 50, w: 6, h: 8 },
-        
-        // Quick access (quick-links) below trending, same size as weather
-        "quick-links": { x: 0, y: 39, w: 3, h: 6 },
-        
-      };
+       // Beautifully organized layout with logical content groupings and optimal visual flow
+       const defaultPositions: { [key: string]: { x: number, y: number, w: number, h: number } } = {
+         // 📰 NEWS & INFORMATION (Top row)
+         "weather": { x: 0, y: 0, w: 3, h: 6 },
+         "breaking-news": { x: 3, y: 0, w: 9, h: 8 },
+         "radio": { x: 9, y: 8, w: 3, h: 6 },
+         
+         // 🎬 CINEMA & HOT DEALS (Second row)
+         "cinema": { x: 3, y: 8, w: 3, h: 6 },
+         "hot-deals": { x: 0, y: 11, w: 3, h: 8 },
+         "quick-links": { x: 6, y: 8, w: 3, h: 6 },
+         
+         // 💬 SOCIAL & TRENDING (Third row)
+         "trending": { x: 3, y: 14, w: 3, h: 6 },
+         "currency-converter": { x: 6, y: 14, w: 3, h: 6 },
+         "traffic": { x: 9, y: 14, w: 3, h: 6 },
+         
+         // ✈️ FLIGHT & SOCIAL FEED (Fourth row)
+         "flight-tracker": { x: 0, y: 6, w: 3, h: 5 },
+         "social-feed": { x: 0, y: 19, w: 3, h: 8 },
+         "search-widgets": { x: 9, y: 20, w: 3, h: 7 },
+         
+         // 🍽️ FOOD & ENTERTAINMENT (Fifth row)
+         "food": { x: 3, y: 20, w: 6, h: 7 },
+         
+         // 📸 MEDIA & REVIEWS (Sixth row)
+         "google-reviews": { x: 0, y: 27, w: 3, h: 8 },
+         "youtube": { x: 3, y: 27, w: 9, h: 8 },
+         
+         // 📷 PHOTO GALLERY & FORUM (Seventh row)
+         "photo-gallery": { x: 0, y: 35, w: 6, h: 8 },
+         "forum-activity": { x: 6, y: 35, w: 6, h: 8 },
+         
+         // 🏃 SPORTS (Eighth row)
+         "sports-fixtures": { x: 0, y: 50, w: 6, h: 8 },
+       };
       
       const defaultPos = defaultPositions[widget.id] || { x: (index % 4) * 3, y: Math.floor(index / 4) * 4, w: 3, h: 3 };
       
@@ -682,7 +673,7 @@ export function DynamicModularHomepage() {
           name: "Flight Tracker",
           type: "travel",
           description: "Live flight tracking and airport information",
-          size: "large",
+          size: "medium",
           category: "Travel",
           isVisible: true,
           isResizable: true,
@@ -757,45 +748,39 @@ export function DynamicModularHomepage() {
   const handleResetLayout = () => {
     // Reset to beautifully organized layout with logical content groupings
     const resetLayout: LayoutItem[] = [
+      // 📰 NEWS & INFORMATION (Top row)
+      { i: "weather", x: 0, y: 0, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "breaking-news", x: 3, y: 0, w: 9, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "radio", x: 9, y: 8, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
+      // 🎬 CINEMA & HOT DEALS (Second row)
+      { i: "cinema", x: 3, y: 8, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "hot-deals", x: 0, y: 11, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "quick-links", x: 6, y: 8, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // 📰 NEWS & INFORMATION (Below search bar)
-      { i: "weather", x: 0, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "breaking-news", x: 3, y: 5, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "radio", x: 9, y: 5, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "hot-deals", x: 9, y: 11, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "currency-converter", x: 9, y: 19, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 💬 SOCIAL & TRENDING (Third row)
+      { i: "trending", x: 3, y: 14, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "currency-converter", x: 6, y: 14, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      { i: "traffic", x: 9, y: 14, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
       
-      // 🎬 CINEMA (Below weather widget with same height)
-      { i: "cinema", x: 0, y: 11, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      // ✈️ FLIGHT & SOCIAL FEED (Fourth row)
+      { i: "flight-tracker", x: 0, y: 6, w: 3, h: 5, isDraggable: true, isResizable: true, static: false },
+      { i: "social-feed", x: 0, y: 19, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "search-widgets", x: 9, y: 20, w: 3, h: 7, isDraggable: true, isResizable: true, static: false },
       
-      // 🍽️ FOOD (Below breaking news, spans wider but leaves space for currency converter)
-      { i: "food", x: 3, y: 11, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 🍽️ FOOD & ENTERTAINMENT (Fifth row)
+      { i: "food", x: 3, y: 20, w: 6, h: 7, isDraggable: true, isResizable: true, static: false },
       
-      // ✈️ FLIGHT & SEARCH (Below cinema/food with 3:6:3 ratio like weather/radio/news)
-      // Swap positions: move Google Reviews where Traffic was
-      { i: "google-reviews", x: 9, y: 33, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      { i: "search-widgets", x: 3, y: 17, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "youtube", x: 3, y: 23, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "flight-tracker", x: 0, y: 25, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 📸 MEDIA & REVIEWS (Sixth row)
+      { i: "google-reviews", x: 0, y: 27, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "youtube", x: 3, y: 27, w: 9, h: 8, isDraggable: true, isResizable: true, static: false },
       
-      // 💬 SOCIAL & COMMUNITY
-      { i: "social-feed", x: 9, y: 25, w: 3, h: 8, isDraggable: true, isResizable: true, static: false },
-      // Trending same size as weather (w:3,h:6)
-      { i: "trending", x: 0, y: 33, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 📷 PHOTO GALLERY & FORUM (Seventh row)
+      { i: "photo-gallery", x: 0, y: 35, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
+      { i: "forum-activity", x: 6, y: 35, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
       
-      // Photo gallery just below featured videos (youtube) and forum below photo gallery
-      { i: "photo-gallery", x: 3, y: 29, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      { i: "forum-activity", x: 3, y: 35, w: 6, h: 6, isDraggable: true, isResizable: true, static: false },
-      
-      // 📅 EVENTS & ACTIVITIES (Time-sensitive, side by side)
-      // Swap positions: move Traffic to where Google Reviews was, keep weather-sized height
-      { i: "traffic", x: 0, y: 17, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
+      // 🏃 SPORTS (Eighth row)
       { i: "sports-fixtures", x: 0, y: 50, w: 6, h: 8, isDraggable: true, isResizable: true, static: false },
-      
-      // Quick access (quick-links) below trending, same size as weather
-      { i: "quick-links", x: 0, y: 39, w: 3, h: 6, isDraggable: true, isResizable: true, static: false },
-      
     ];
     
     setLayout(resetLayout);
@@ -1097,11 +1082,11 @@ export function DynamicModularHomepage() {
     if (!WidgetComponent) return null;
 
     // Special rendering for search widgets - make them look like real search bars
-    const isSearchWidget = widget.id === 'unified-search';
+    const isSearchWidget = widget.id === 'unified-search' || widget.id === 'search-widgets';
 
     if (isSearchWidget) {
       return (
-        <div key={widget.id} className="widget-container bg-transparent overflow-visible relative">
+        <div key={widget.id} className="widget-container bg-transparent overflow-visible relative h-full min-h-0">
           <InView triggerOnce>
             {({ inView, ref }) => (
               <div ref={ref} className="widget-content h-full min-h-0">
@@ -1153,10 +1138,12 @@ export function DynamicModularHomepage() {
                       </div>
                     )}
                     
-                    {/* Widget Body - No padding for search widgets */}
-                    <div className="widget-body flex-1">
-                      <div className="widget-inner-content h-full">
-                        <WidgetComponent />
+                    {/* Widget Body - Styled container to match travel search widget and fit grid */}
+                    <div className="widget-body flex-1 min-h-0">
+                      <div className="h-full min-h-0 bg-gradient-to-br from-blue-50/80 via-sky-50/60 to-cyan-50/80 backdrop-blur-sm rounded-2xl overflow-hidden relative shadow-xl border border-blue-200/50">
+                        <div className="h-full min-h-0 p-2">
+                          <WidgetComponent />
+                        </div>
                       </div>
                     </div>
                   </div>

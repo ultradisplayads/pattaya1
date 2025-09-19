@@ -118,54 +118,54 @@ function ModernRestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; 
 
   return (
     <Card 
-      className="group overflow-hidden bg-white/80 backdrop-blur-xl border-0 shadow-lg hover:shadow-2xl transition-all duration-700 relative"
+      className="group overflow-hidden bg-white/95 backdrop-blur-xl border border-purple-100/50 shadow-xl hover:shadow-2xl transition-all duration-700 relative rounded-2xl hover:border-purple-200/70 hover:scale-[1.02]"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Animated gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-pink-500/0 to-blue-500/0 group-hover:from-purple-500/5 group-hover:via-pink-500/5 group-hover:to-blue-500/5 transition-all duration-700" />
+      {/* Modern gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-pink-500/0 to-blue-500/0 group-hover:from-purple-500/8 group-hover:via-pink-500/8 group-hover:to-blue-500/8 transition-all duration-700 rounded-2xl" />
       
-      {/* Hero Image Section */}
-      <div className="relative overflow-hidden h-48">
+      {/* Modern Hero Image Section */}
+      <div className="relative overflow-hidden h-32 rounded-t-2xl">
         {!imageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
-            <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 animate-pulse">
+            <Loader2 className="h-6 w-6 text-purple-400 animate-spin" />
           </div>
         )}
         <img 
           src={restaurant.image} 
           alt={restaurant.name} 
-          className={`w-full h-full object-cover transition-transform duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setImageLoaded(true)}
         />
         
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* Modern gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         
         {/* Top badges */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className={cn("text-xs font-medium shadow-lg", getPriceRangeStyle(restaurant.priceRange))}>
+        <div className="absolute top-2 left-2 flex gap-2">
+          <Badge className={cn("text-xs font-semibold shadow-lg px-2 py-1 rounded-full border border-white/20", getPriceRangeStyle(restaurant.priceRange))}>
             {getPriceRangeDisplay(restaurant.priceRange)}
           </Badge>
           {available <= 5 && (
-            <Badge className="bg-red-500/90 text-white text-xs shadow-lg animate-pulse">
-              Only {available} left!
+            <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold shadow-lg animate-pulse px-2 py-1 rounded-full border border-white/20">
+              {available} left
             </Badge>
           )}
         </div>
 
         {/* Rating badge */}
-        <div className="absolute top-3 right-3">
-          <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
+        <div className="absolute top-2 right-2">
+          <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md px-2 py-1 rounded-full shadow-lg border border-white/30">
             <Star className="h-3 w-3 text-yellow-500 fill-current" />
-            <span className="text-xs font-semibold text-gray-800">{restaurant.rating}</span>
+            <span className="text-xs font-bold text-gray-800">{restaurant.rating}</span>
           </div>
         </div>
 
         {/* Discount badge */}
         {restaurant.topDiscount > 0 && (
-          <div className="absolute bottom-3 left-3">
-            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg animate-bounce">
+          <div className="absolute bottom-2 left-2">
+            <Badge className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white text-xs font-bold shadow-lg animate-bounce px-2 py-1 rounded-full border border-white/20">
               <Flame className="w-3 h-3 mr-1" />
               {restaurant.topDiscount}% OFF
             </Badge>
@@ -173,42 +173,42 @@ function ModernRestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; 
         )}
 
         {/* Location */}
-        <div className="absolute bottom-3 right-3">
-          <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs">
+        <div className="absolute bottom-2 right-2">
+          <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md text-white px-2 py-1 rounded-full text-xs border border-white/20">
             <MapPin className="h-3 w-3" />
-            <span className="truncate max-w-24">{restaurant.location.split(',')[0]}</span>
+            <span className="truncate max-w-20 font-medium">{restaurant.location.split(',')[0]}</span>
           </div>
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Modern Content Section */}
       <CardContent className="p-4 relative">
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Title and cuisine */}
           <div>
             <h3 className="font-bold text-lg text-gray-900 group-hover:text-purple-600 transition-colors duration-300 mb-1">
               {restaurant.name}
             </h3>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <ChefHat className="w-3 h-3" />
+            <p className="text-sm text-gray-600 flex items-center gap-1.5">
+              <ChefHat className="w-4 h-4 text-purple-500" />
               {restaurant.cuisine}
             </p>
           </div>
 
           {/* Features */}
-          <div className="flex flex-wrap gap-1">
-            {restaurant.features.slice(0, 3).map((feature, i) => (
+          <div className="flex flex-wrap gap-1.5">
+            {restaurant.features.slice(0, 2).map((feature, i) => (
               <Badge 
                 key={i} 
                 variant="outline" 
-                className="text-xs px-2 py-0.5 bg-gray-50/80 border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors duration-300"
+                className="text-xs px-2 py-1 bg-purple-50/80 border-purple-200/50 hover:bg-purple-100 hover:border-purple-300 transition-colors duration-300 rounded-full"
               >
                 {feature}
               </Badge>
             ))}
-            {restaurant.features.length > 3 && (
-              <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50/80">
-                +{restaurant.features.length - 3} more
+            {restaurant.features.length > 2 && (
+              <Badge variant="outline" className="text-xs px-2 py-1 bg-gray-50/80 border-gray-200/50 rounded-full">
+                +{restaurant.features.length - 2} more
               </Badge>
             )}
           </div>
@@ -220,13 +220,13 @@ function ModernRestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; 
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="flex-1 group/btn border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300"
+                  className="flex-1 h-9 text-sm group/btn border-purple-200/50 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 rounded-xl"
                 >
-                  <Eye className="w-3 h-3 mr-2 group-hover/btn:scale-110 transition-transform duration-300" />
+                  <Eye className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform duration-300" />
                   Details
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-purple-500" />
@@ -264,15 +264,15 @@ function ModernRestaurantCard({ restaurant, onBook }: { restaurant: Restaurant; 
             
             <Button 
               size="sm" 
-              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-600 hover:via-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group/btn"
+              className="flex-1 h-9 text-sm bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-600 hover:via-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group/btn rounded-xl"
               onClick={(e) => {
                 e.stopPropagation()
                 onBook(restaurant)
               }}
             >
-              <Heart className="w-3 h-3 mr-2 group-hover/btn:animate-pulse" />
+              <Heart className="w-4 h-4 mr-2 group-hover/btn:animate-pulse" />
               Book Now
-              <ArrowRight className="w-3 h-3 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
             </Button>
           </div>
         </div>
@@ -529,10 +529,24 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
 
   if (loading) {
     return (
-      <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-lg h-full min-h-[500px] flex items-center justify-center">
+      <Card className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 backdrop-blur-xl border-0 shadow-2xl h-full flex items-center justify-center rounded-3xl">
         <CardContent className="p-8 text-center flex flex-col justify-center items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading delicious options...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-12 w-12 border-4 border-purple-300 border-t-transparent opacity-20"></div>
+          </div>
+          <p className="text-gray-600 font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Loading delicious options...
+          </p>
+          <div className="mt-2 flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <div 
+                key={i}
+                className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce"
+                style={{ animationDelay: `${i * 0.2}s` }}
+              />
+            ))}
+          </div>
         </CardContent>
       </Card>
     )
@@ -540,17 +554,22 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
 
   if (error) {
     return (
-      <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-lg h-full min-h-[500px] flex items-center justify-center">
+      <Card className="bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30 backdrop-blur-xl border-0 shadow-2xl h-full flex items-center justify-center rounded-3xl">
         <CardContent className="p-8 text-center flex flex-col justify-center items-center">
-          <div className="text-red-500 mb-4">
-            <Utensils className="w-12 h-12 mx-auto mb-2" />
+          <div className="relative mb-4">
+            <div className="p-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-full shadow-lg">
+              <Utensils className="w-8 h-8 text-white animate-pulse" />
+            </div>
+            <div className="absolute -inset-2 bg-gradient-to-r from-red-400 to-pink-400 rounded-full blur-md opacity-30 animate-pulse"></div>
           </div>
-          <p className="text-red-600 font-medium mb-2">Failed to load restaurants</p>
-          <p className="text-sm text-gray-500">{error.toString()}</p>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Oops! Something went wrong</h3>
+          <p className="text-gray-600 font-medium mb-4">Unable to load restaurant data</p>
+          <p className="text-sm text-gray-500 mb-4">{error.toString()}</p>
           <Button 
             onClick={() => window.location.reload()} 
-            className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+            className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-600 hover:via-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-xl px-6 py-2"
           >
+            <ArrowRight className="w-4 h-4 mr-2" />
             Try Again
           </Button>
         </CardContent>
@@ -563,74 +582,97 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
       {/* Main Widget */}
       <div 
         className={`
-          h-full min-h-[500px] flex flex-col
-          bg-gradient-to-br from-pink-400/70 via-purple-400/70 to-indigo-400/70
-          backdrop-blur-xl rounded-2xl overflow-hidden
-          shadow-xl border border-white/20 cursor-pointer group
-          transition-all duration-500
-          hover:shadow-2xl
+          h-full flex flex-col
+          bg-gradient-to-br from-white via-purple-50/30 to-pink-50/30
+          backdrop-blur-xl rounded-3xl overflow-hidden
+          shadow-2xl border border-white/40 cursor-pointer group
+          transition-all duration-700 ease-out
+          hover:shadow-3xl hover:scale-[1.02] hover:border-purple-200/60
+          relative
         `}
         onClick={() => setShowExpandedModal(true)}
       >
-        {/* Floating Background Elements */}
+        {/* Enhanced Floating Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse" />
-          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse" style={{animationDelay: '1s'}} />
+          {/* Animated gradient orbs */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200/10 via-pink-200/10 to-transparent rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-blue-200/10 via-purple-200/10 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}} />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-gradient-to-r from-pink-200/5 to-purple-200/5 rounded-full blur-2xl animate-pulse" style={{animationDelay: '4s'}} />
+          
+          {/* Floating icons with enhanced animations */}
+          <div className="absolute top-4 left-8 w-6 h-6 text-purple-200/30 animate-float" style={{animationDelay: '0s'}}>
+            <Sparkles className="w-full h-full animate-pulse" />
+          </div>
+          <div className="absolute bottom-8 right-12 w-5 h-5 text-pink-200/30 animate-float" style={{animationDelay: '1s'}}>
+            <Heart className="w-full h-full animate-pulse" />
+          </div>
+          <div className="absolute top-1/3 right-8 w-4 h-4 text-purple-300/30 animate-float" style={{animationDelay: '2s'}}>
+            <Star className="w-full h-full animate-pulse" />
+          </div>
         </div>
 
         {/* Enhanced Header */}
-        <div className="relative p-6 border-b border-white/20 bg-white/30 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300">
-                  <Utensils className="w-6 h-6 text-white" />
+        <div className="relative p-4 border-b border-white/20 bg-gradient-to-r from-white/60 via-purple-50/40 to-pink-50/40 backdrop-blur-md overflow-hidden">
+          {/* Floating gradient orbs */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute -top-4 -left-4 w-20 h-20 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse" />
+            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-xl animate-pulse" style={{animationDelay: '1s'}} />
+          </div>
+          
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 rounded-xl blur-md opacity-75 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-105">
+                  <Utensils className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-500" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
+                {/* Status indicator */}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full animate-pulse shadow-md" />
               </div>
               <div>
-                <h2 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-pink-800 bg-clip-text text-transparent">
                   Pattaya Dining
                 </h2>
                 <p className="text-sm text-gray-600 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  Discover amazing restaurants
+                  <Sparkles className="w-3 h-3 text-purple-500 animate-pulse" />
+                  Discover culinary experiences
                 </p>
               </div>
             </div>
-            <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-3 py-1 shadow-lg animate-pulse">
+            <Badge className="bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 text-white px-3 py-1 text-sm font-medium shadow-lg animate-pulse border border-white/30 rounded-full">
+              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-ping" />
               Live
             </Badge>
           </div>
         </div>
 
-        {/* Enhanced Controls */}
-        <div className="p-4 border-b border-white/20 bg-white/30 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-          <div className="flex gap-3 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Combined Controls and Tabs */}
+        <div className="p-3 border-b border-white/20 bg-gradient-to-r from-white/40 to-purple-50/30 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+          <div className="flex gap-2 items-center mb-3">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-purple-400 group-hover:text-purple-600 transition-colors duration-300" />
               <Input 
                 placeholder="Search restaurants..." 
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 bg-white/80 backdrop-blur-sm border-black/40 focus:bg-white focus:border-purple-300 rounded-xl transition-all duration-300"
+                className="pl-7 h-7 text-xs bg-white/80 backdrop-blur-sm border-purple-200/50 focus:bg-white focus:border-purple-400 focus:ring-1 focus:ring-purple-200/50 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
             
             <Select value={price} onValueChange={setPrice}>
               <SelectTrigger 
-                className="w-32 bg-white/80 backdrop-blur-sm border-black/40 focus:border-purple-300 rounded-xl"
+                className="w-20 h-7 text-xs bg-white/80 backdrop-blur-sm border-purple-200/50 focus:border-purple-400 focus:ring-1 focus:ring-purple-200/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
                 onClick={(e) => e.stopPropagation()}
               >
                 <SelectValue placeholder="Price" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Prices</SelectItem>
-                <SelectItem value="budget">$ Budget</SelectItem>
-                <SelectItem value="moderate">$$ Moderate</SelectItem>
-                <SelectItem value="expensive">$$$ Expensive</SelectItem>
-                <SelectItem value="luxury">$$$$ Luxury</SelectItem>
+              <SelectContent className="bg-white/95 backdrop-blur-md border-purple-200/50 rounded-lg shadow-lg">
+                <SelectItem value="all" className="hover:bg-purple-50 text-xs">All</SelectItem>
+                <SelectItem value="budget" className="hover:bg-purple-50 text-xs">$</SelectItem>
+                <SelectItem value="moderate" className="hover:bg-purple-50 text-xs">$$</SelectItem>
+                <SelectItem value="expensive" className="hover:bg-purple-50 text-xs">$$$</SelectItem>
+                <SelectItem value="luxury" className="hover:bg-purple-50 text-xs">$$$$</SelectItem>
               </SelectContent>
             </Select>
             
@@ -642,9 +684,14 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
                   e.stopPropagation()
                   setViewMode("grid")
                 }}
-                className="px-3 rounded-xl"
+                className={cn(
+                  "h-7 w-7 p-0 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md",
+                  viewMode === "grid" 
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md" 
+                    : "hover:bg-purple-50 hover:border-purple-300"
+                )}
               >
-                <Grid3X3 className="w-4 h-4" />
+                <Grid3X3 className={cn("w-3 h-3", viewMode === "grid" && "animate-pulse")} />
               </Button>
               <Button 
                 variant={viewMode === "list" ? "default" : "outline"} 
@@ -653,53 +700,58 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
                   e.stopPropagation()
                   setViewMode("list")
                 }}
-                className="px-3 rounded-xl"
+                className={cn(
+                  "h-7 w-7 p-0 rounded-lg transition-all duration-300 shadow-sm hover:shadow-md",
+                  viewMode === "list" 
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md" 
+                    : "hover:bg-purple-50 hover:border-purple-300"
+                )}
               >
-                <List className="w-4 h-4" />
+                <List className={cn("w-3 h-3", viewMode === "list" && "animate-pulse")} />
               </Button>
             </div>
           </div>
+          
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto bg-white/20 backdrop-blur-sm" style={{ maxHeight: '400px' }}>
-          <div className="p-4" onClick={(e) => e.stopPropagation()}>
+        {/* Enhanced Scrollable Content */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-gradient-to-b from-white/30 to-purple-50/20 backdrop-blur-sm min-h-0">
+          <div className="p-3 pb-16" onClick={(e) => e.stopPropagation()}>
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-white/60 backdrop-blur-sm mb-6 rounded-xl border border-white/40">
+              <TabsList className="grid w-full grid-cols-3 bg-white/70 backdrop-blur-md mb-4 rounded-lg border border-purple-200/50 shadow-sm p-0.5">
                 <TabsTrigger 
                   value="all" 
-                  className="text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+                  className="text-xs font-medium rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 data-[state=active]:scale-105 hover:bg-purple-50"
                 >
                   <Utensils className="w-3 h-3 mr-1" />
                   All
                 </TabsTrigger>
                 <TabsTrigger 
                   value="time" 
-                  className="text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+                  className="text-xs font-medium rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 data-[state=active]:scale-105 hover:bg-purple-50"
                 >
-                  <Clock className="w-3 h-3 mr-1" />
+                  <Clock className="w-3 h-3 mr-1 animate-pulse" />
                   Deals
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ayce" 
-                  className="text-xs rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+                  className="text-xs font-medium rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:via-pink-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-300 data-[state=active]:scale-105 hover:bg-purple-50"
                 >
-                  <TrendingUp className="w-3 h-3 mr-1" />
+                  <TrendingUp className="w-3 h-3 mr-1 animate-bounce" />
                   Buffet
                 </TabsTrigger>
               </TabsList>
-
-              <TabsContent value="all" className="mt-0 mb-20">
+              <TabsContent value="all" className="mt-0">
                 <div className={cn(
-                  "gap-4", 
+                  "gap-3", 
                   viewMode === "grid" 
-                    ? "grid grid-cols-1 lg:grid-cols-2" 
-                    : "space-y-4"
+                    ? "grid grid-cols-2" 
+                    : "space-y-3"
                 )}> 
-                  {filtered.map((r, index) => (
+                  {filtered.slice(0, 6).map((r, index) => (
                     <div 
                       key={r.id} 
-                      className="opacity-0 animate-fade-in-up"
+                      className="opacity-0 animate-fade-in-up transform hover:scale-105 transition-all duration-300"
                       style={{ 
                         animationDelay: `${index * 100}ms`,
                         animationFillMode: 'forwards'
@@ -711,19 +763,20 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="time" className="mt-0 mb-20">
+              <TabsContent value="time" className="mt-0">
                 <div className={cn(
-                  "gap-4", 
+                  "gap-3", 
                   viewMode === "grid" 
-                    ? "grid grid-cols-1 lg:grid-cols-2" 
-                    : "space-y-4"
+                    ? "grid grid-cols-2" 
+                    : "space-y-3"
                 )}>
                   {filtered
                     .filter((r) => r.discounts.some((d) => d.type === "time-based"))
+                    .slice(0, 6)
                     .map((r, index) => (
                       <div 
                         key={r.id} 
-                        className="opacity-0 animate-fade-in-up"
+                        className="opacity-0 animate-fade-in-up transform hover:scale-105 transition-all duration-300"
                         style={{ 
                           animationDelay: `${index * 100}ms`,
                           animationFillMode: 'forwards'
@@ -735,19 +788,20 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
                 </div>
               </TabsContent>
 
-              <TabsContent value="ayce" className="mt-0 mb-20">
+              <TabsContent value="ayce" className="mt-0">
                 <div className={cn(
-                  "gap-4", 
+                  "gap-3", 
                   viewMode === "grid" 
-                    ? "grid grid-cols-1 lg:grid-cols-2" 
-                    : "space-y-4"
+                    ? "grid grid-cols-2" 
+                    : "space-y-3"
                 )}>
                   {filtered
                     .filter((r) => r.isAllYouCanEat)
+                    .slice(0, 6)
                     .map((r, index) => (
                       <div 
                         key={r.id} 
-                        className="opacity-0 animate-fade-in-up"
+                        className="opacity-0 animate-fade-in-up transform hover:scale-105 transition-all duration-300"
                         style={{ 
                           animationDelay: `${index * 100}ms`,
                           animationFillMode: 'forwards'
@@ -870,9 +924,9 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
                     {filtered.map((r, index) => (
                       <div 
                         key={r.id} 
-                        className="opacity-0 animate-fade-in-up"
+                        className="opacity-0 animate-fade-in-up transform hover:scale-105 transition-all duration-300"
                         style={{ 
-                          animationDelay: `${index * 50}ms`,
+                          animationDelay: `${index * 100}ms`,
                           animationFillMode: 'forwards'
                         }}
                       >
@@ -968,7 +1022,7 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
         </Dialog>
       )}
 
-      {/* Custom CSS for animations */}
+      {/* Enhanced CSS for animations */}
       <style jsx>{`
         @keyframes fade-in-up {
           from {
@@ -981,8 +1035,97 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
           }
         }
         
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+        
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.3); }
+          50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.6); }
+        }
+        
+        @keyframes pulse-soft {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.8; }
+        }
+        
+        @keyframes slide-in {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
         .animate-fade-in-up {
-          animation: fade-in-up 0.6s ease-out;
+          animation: fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .animate-shimmer {
+          background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+          background-size: 200% 100%;
+          animation: shimmer 2s infinite;
+        }
+        
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-glow {
+          animation: glow 2s ease-in-out infinite;
+        }
+        
+        .animate-pulse-soft {
+          animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        .animate-slide-in {
+          animation: slide-in 0.6s ease-out;
+        }
+        
+        .shadow-3xl {
+          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .glass-morphism {
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-border {
+          position: relative;
+          background: linear-gradient(white, white) padding-box,
+                      linear-gradient(45deg, #8b5cf6, #ec4899, #8b5cf6) border-box;
+          border: 2px solid transparent;
+        }
+        
+        /* Smooth scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.05);
+          border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #8b5cf6, #ec4899);
+          border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #7c3aed, #db2777);
         }
       `}</style>
     </>

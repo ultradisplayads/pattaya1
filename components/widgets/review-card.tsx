@@ -36,7 +36,7 @@ const PlatformIcon = ({ platform }: { platform: string }) => {
   }
 
   return (
-    <div className={`w-4 h-4 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold ${getIconColor(platform)}`}>
+    <div className={`w-3 h-3 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold ${getIconColor(platform)}`}>
       {getIconText(platform)}
     </div>
   )
@@ -70,7 +70,7 @@ export function ReviewCard({ review, showBusinessInfo = true }: ReviewCardProps)
     Array.from({ length: 5 }, (_, i) => (
       <Star 
         key={i} 
-        className={`w-3 h-3 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
+        className={`w-2.5 h-2.5 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} 
       />
     ))
 
@@ -100,15 +100,15 @@ export function ReviewCard({ review, showBusinessInfo = true }: ReviewCardProps)
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {/* Author and rating info */}
-      <div className="flex items-center space-x-2">
-        <Avatar className="w-6 h-6">
+      <div className="flex items-center space-x-1.5">
+        <Avatar className="w-5 h-5">
           <AvatarImage 
             src={review.author_profile_photo_url || "/placeholder.svg"} 
             alt={review.author_name} 
           />
-          <AvatarFallback className="text-xs bg-gray-200 text-gray-800">
+          <AvatarFallback className="text-[10px] bg-gray-200 text-gray-800">
             {review.author_name
               .split(" ")
               .map((n) => n[0])
@@ -119,21 +119,21 @@ export function ReviewCard({ review, showBusinessInfo = true }: ReviewCardProps)
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-1">
-            <span className="font-medium text-gray-900 truncate text-sm">
+            <span className="font-medium text-gray-900 truncate text-xs">
               {review.author_name}
             </span>
             {review.verified && (
-              <span className="text-blue-500 text-xs">✓</span>
+              <span className="text-blue-500 text-[10px]">✓</span>
             )}
             <PlatformIcon platform={review.source_platform} />
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {renderStars(review.rating)}
-            <span className="text-xs text-gray-500">
+            <span className="text-[10px] text-gray-500">
               {formatTimeAgo(review.review_timestamp)}
             </span>
-            <span className={`text-xs font-medium ${getPlatformColor(review.source_platform)}`}>
+            <span className={`text-[10px] font-medium ${getPlatformColor(review.source_platform)}`}>
               {review.source_platform}
             </span>
           </div>
@@ -141,16 +141,16 @@ export function ReviewCard({ review, showBusinessInfo = true }: ReviewCardProps)
       </div>
 
       {/* Review text */}
-      <p className="text-gray-800 text-sm leading-relaxed">
+      <p className="text-gray-800 text-xs leading-relaxed line-clamp-2">
         {review.review_text}
       </p>
 
       {/* Business info */}
       {showBusinessInfo && (
-        <div className="flex items-center justify-between text-xs text-gray-600">
-          <span className="font-medium">{review.business_name}</span>
+        <div className="flex items-center justify-between text-[10px] text-gray-600">
+          <span className="font-medium truncate">{review.business_name}</span>
           {review.business_address && (
-            <span className="truncate ml-2">{review.business_address}</span>
+            <span className="truncate ml-1 text-[9px]">{review.business_address}</span>
           )}
         </div>
       )}
@@ -160,10 +160,10 @@ export function ReviewCard({ review, showBusinessInfo = true }: ReviewCardProps)
         <div className="flex items-center justify-end">
           <button
             onClick={() => window.open(`/business/${review.business.slug}`, '_blank')}
-            className="text-xs text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+            className="text-[10px] text-blue-600 hover:text-blue-800 flex items-center space-x-1"
           >
-            <span>View Business</span>
-            <ExternalLink className="w-3 h-3" />
+            <span>View</span>
+            <ExternalLink className="w-2.5 h-2.5" />
           </button>
         </div>
       )}

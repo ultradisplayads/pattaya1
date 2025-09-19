@@ -385,9 +385,9 @@ export default function TravelSearchWidget() {
 
   return (
     <>
-      {/* Main Widget - Clickable to expand */}
+      {/* Main Widget - Compact and Professional */}
       <div 
-        className="h-full pb-2 flex flex-col bg-gradient-to-br from-blue-100 via-sky-100 to-blue-50 rounded-xl overflow-hidden relative shadow-sm border border-blue-200"
+        className="h-full w-full flex flex-col bg-gradient-to-br from-blue-100 via-sky-100 to-blue-50 rounded-xl overflow-hidden relative shadow-sm border border-blue-200 travel-search-widget"
         onClick={() => setShowExpandedModal(true)}
       >
         {/* Clean Header - Compact */}
@@ -450,7 +450,6 @@ export default function TravelSearchWidget() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-gray-900">Travel Search</h2>
-                <p className="text-xs text-gray-600">Find your getaway</p>
               </div>
             </div>
             {/* Popular inline in header */}
@@ -482,10 +481,10 @@ export default function TravelSearchWidget() {
         </div>
         
         {/* Clean Content Area - Compact */}
-        <div className="flex-1 overflow-hidden p-1.5 h-full">
-          <div className="space-y-1 h-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-1 overflow-hidden p-2 min-h-0">
+          <div className="h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* Simplified Tabs */}
-            <div className="flex my-1 gap-1" onClick={(e) => e.stopPropagation()}>
+            <div className="flex mb-1.5 gap-1" onClick={(e) => e.stopPropagation()}>
               <Button 
                 variant={activeTab === 'flights' ? 'default' : 'outline'}
                 size="sm"
@@ -493,7 +492,7 @@ export default function TravelSearchWidget() {
                   e.stopPropagation()
                   setActiveTab('flights')
                 }}
-                className={`text-xs h-8 px-2 ${activeTab === 'flights' ? 'bg-gradient-to-r from-blue-500 to-sky-500 text-white' : ''}`}
+                className={`text-xs h-7 px-3 transition-all duration-200 travel-tab ${activeTab === 'flights' ? 'bg-gradient-to-r from-blue-500 to-sky-500 text-white shadow-sm' : 'hover:bg-blue-50'}`}
               >
                 <Plane className="h-3 w-3 mr-1" />
               Flights
@@ -505,7 +504,7 @@ export default function TravelSearchWidget() {
                   e.stopPropagation()
                   setActiveTab('hotels')
                 }}
-                className={`text-xs h-8 px-2 ${activeTab === 'hotels' ? 'bg-gradient-to-r from-blue-500 to-sky-500 text-white' : ''}`}
+                className={`text-xs h-7 px-3 transition-all duration-200 travel-tab ${activeTab === 'hotels' ? 'bg-gradient-to-r from-blue-500 to-sky-500 text-white shadow-sm' : 'hover:bg-blue-50'}`}
               >
                 <Hotel className="h-3 w-3 mr-1" />
               Hotels
@@ -514,14 +513,14 @@ export default function TravelSearchWidget() {
 
             {/* Professional Flight Search Form - Compact */}
             {activeTab === 'flights' && (
-              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-blue-200/60 shadow-sm flex-1 py-2" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleFlightSearch} className="space-y-1.5">
-                  {/* Form Header */}
-
-                  {/* Origin & Destination - Enhanced */}
+              <div className="bg-gradient-to-br from-white via-blue-50/30 to-sky-50/50 backdrop-blur-sm p-3 rounded-lg border border-blue-200/60 shadow-sm flex-1 travel-form" onClick={(e) => e.stopPropagation()}>
+                <form onSubmit={handleFlightSearch} className="h-full flex flex-col justify-between min-h-0">
+                  {/* Form Content Container */}
+                  <div className="flex-1 flex flex-col space-y-3">
+                    {/* Origin & Destination - Enhanced */}
                   <div className="grid grid-cols-2 gap-1.5">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                         From
                       </label>
@@ -530,7 +529,7 @@ export default function TravelSearchWidget() {
                         onValueChange={(value) => setFlightSearch(prev => ({ ...prev, origin: value }))}
                       >
                         <SelectTrigger 
-                          className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                          className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-xs travel-field"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <SelectValue placeholder="Origin" />
@@ -548,8 +547,8 @@ export default function TravelSearchWidget() {
                       </Select>
                     </div>
                     
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                         To
                       </label>
@@ -558,7 +557,7 @@ export default function TravelSearchWidget() {
                         onValueChange={(value) => setFlightSearch(prev => ({ ...prev, destination: value }))}
                       >
                         <SelectTrigger 
-                          className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                          className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-200 text-xs travel-field"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <SelectValue placeholder="Destination" />
@@ -578,7 +577,7 @@ export default function TravelSearchWidget() {
                   </div>
 
                   {/* Swap Button */}
-                  <div className="flex justify-center -my-0.5">
+                  <div className="flex justify-center -my-1">
                     <Button
                       type="button"
                       variant="outline"
@@ -592,16 +591,16 @@ export default function TravelSearchWidget() {
                           destination: temp 
                         }))
                       }}
-                      className="h-6 w-6 rounded-full border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 shadow-sm"
+                      className="h-5 w-5 rounded-full border border-blue-300 bg-white hover:bg-blue-50 hover:border-blue-400 shadow-sm"
                     >
-                      <ArrowRightLeft className="w-3 h-3 text-blue-600" />
+                      <ArrowRightLeft className="w-2.5 h-2.5 text-blue-600" />
                     </Button>
                   </div>
 
                   {/* Dates - Enhanced */}
                   <div className="grid grid-cols-2 gap-1.5">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-blue-500" />
                         Departure
                       </label>
@@ -610,13 +609,13 @@ export default function TravelSearchWidget() {
                         value={flightSearch.departDate}
                         onChange={(e) => setFlightSearch(prev => ({ ...prev, departDate: e.target.value }))}
                         min={getTomorrowDate()}
-                        className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                     
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-green-500" />
                         Return
                       </label>
@@ -625,7 +624,7 @@ export default function TravelSearchWidget() {
                         value={flightSearch.returnDate}
                         onChange={(e) => setFlightSearch(prev => ({ ...prev, returnDate: e.target.value }))}
                         min={flightSearch.departDate || getTomorrowDate()}
-                        className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
@@ -633,8 +632,8 @@ export default function TravelSearchWidget() {
 
                   {/* Passengers & Class - Enhanced */}
                   <div className="grid grid-cols-2 gap-1.5">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Users className="w-3 h-3 text-blue-500" />
                         Passengers
                       </label>
@@ -643,7 +642,7 @@ export default function TravelSearchWidget() {
                         onValueChange={(value) => setFlightSearch(prev => ({ ...prev, passengers: parseInt(value) }))}
                       >
                         <SelectTrigger 
-                          className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                          className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <SelectValue />
@@ -661,8 +660,8 @@ export default function TravelSearchWidget() {
                       </Select>
                     </div>
                     
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Star className="w-3 h-3 text-yellow-500" />
                         Class
                       </label>
@@ -671,7 +670,7 @@ export default function TravelSearchWidget() {
                         onValueChange={(value) => setFlightSearch(prev => ({ ...prev, cabinClass: value }))}
                       >
                         <SelectTrigger 
-                          className="h-8 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
+                          className="h-7 bg-white border border-blue-200 rounded-lg focus:border-blue-500 transition-all duration-200 text-xs"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <SelectValue />
@@ -705,24 +704,25 @@ export default function TravelSearchWidget() {
                       </Select>
                     </div>
                   </div>
+                  </div>
 
                   {/* Search Button - Enhanced */}
                   <Button 
                     type="submit" 
-                    className="w-full h-8 mt-2 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-700 hover:via-blue-600 hover:to-sky-600 text-white font-semibold text-xs rounded-lg shadow-sm hover:shadow-md transition-all duration-300 "
+                    className="w-full h-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-700 hover:via-blue-600 hover:to-sky-600 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow-md transition-all duration-300 travel-search-btn"
                     disabled={loading || !flightSearch.origin || !flightSearch.destination || !flightSearch.departDate}
                     onClick={(e) => e.stopPropagation()}
                   >
                     {loading ? (
                       <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
-                        <span className="text-xs">Searching...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span className="text-sm">Searching...</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Search className="h-3 w-3" />
-                        <span className="text-xs">Search Flights</span>
-                        <Plane className="h-3 w-3" />
+                        <Search className="h-4 w-4" />
+                        <span className="text-sm">Search Flights</span>
+                        <Plane className="h-4 w-4" />
                       </div>
                     )}
                   </Button>
@@ -734,12 +734,14 @@ export default function TravelSearchWidget() {
 
             {/* Professional Hotel Search Form - Compact */}
             {activeTab === 'hotels' && (
-              <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/50 backdrop-blur-sm p-1.5 rounded-lg border border-green-200/50 shadow-sm flex-1" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleHotelSearch} className="space-y-1.5">
+              <div className="bg-gradient-to-br from-white via-green-50/30 to-emerald-50/50 backdrop-blur-sm p-3 rounded-lg border border-green-200/50 shadow-sm flex-1 travel-form" onClick={(e) => e.stopPropagation()}>
+                <form onSubmit={handleHotelSearch} className="h-full flex flex-col justify-between min-h-0">
+                  {/* Form Content Container */}
+                  <div className="flex-1 flex flex-col space-y-3">
                   
                   {/* Destination */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-green-500" />
                       Destination
                     </label>
@@ -748,7 +750,7 @@ export default function TravelSearchWidget() {
                       onValueChange={(value) => setHotelSearch(prev => ({ ...prev, destination: value }))}
                     >
                       <SelectTrigger 
-                        className="h-8 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <SelectValue placeholder="Where to stay?" />
@@ -768,8 +770,8 @@ export default function TravelSearchWidget() {
 
                   {/* Check-in & Check-out */}
                   <div className="grid grid-cols-2 gap-1.5">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-green-500" />
                         Check-in
                       </label>
@@ -778,13 +780,13 @@ export default function TravelSearchWidget() {
                         value={hotelSearch.checkIn}
                         onChange={(e) => setHotelSearch(prev => ({ ...prev, checkIn: e.target.value }))}
                         min={getTomorrowDate()}
-                        className="h-8 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                     
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <div className="space-y-0.5">
+                      <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-emerald-500" />
                         Check-out
                       </label>
@@ -793,15 +795,15 @@ export default function TravelSearchWidget() {
                         value={hotelSearch.checkOut}
                         onChange={(e) => setHotelSearch(prev => ({ ...prev, checkOut: e.target.value }))}
                         min={hotelSearch.checkIn || getTomorrowDate()}
-                        className="h-8 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                   </div>
 
                   {/* Guests */}
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                  <div className="space-y-0.5">
+                    <label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                       <Users className="w-3 h-3 text-green-500" />
                       Guests
                     </label>
@@ -810,7 +812,7 @@ export default function TravelSearchWidget() {
                       onValueChange={(value) => setHotelSearch(prev => ({ ...prev, guests: parseInt(value) }))}
                     >
                       <SelectTrigger 
-                        className="h-8 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
+                        className="h-7 bg-white border border-green-200 rounded-lg focus:border-green-500 transition-all duration-200 text-xs"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <SelectValue placeholder="Guests?" />
@@ -827,24 +829,25 @@ export default function TravelSearchWidget() {
                       </SelectContent>
                     </Select>
                   </div>
+                  </div>
 
                   {/* Search Button - Enhanced */}
                   <Button 
                     type="submit" 
-                    className="w-full h-8 bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 hover:from-green-700 hover:via-green-600 hover:to-emerald-600 text-white font-semibold text-xs rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                    className="w-full h-10 bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 hover:from-green-700 hover:via-green-600 hover:to-emerald-600 text-white font-medium text-sm rounded-lg shadow-sm hover:shadow-md transition-all duration-300 travel-search-btn"
                     disabled={!hotelSearch.destination || !hotelSearch.checkIn || !hotelSearch.checkOut}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center gap-2">
-                      <Hotel className="h-3 w-3" />
-                      <span className="text-xs">Search Hotels</span>
-                      <Star className="h-3 w-3" />
+                      <Hotel className="h-4 w-4" />
+                      <span className="text-sm">Search Hotels</span>
+                      <Star className="h-4 w-4" />
                     </div>
                   </Button>
                 </form>
 
                 {/* Hotel Search Info - Enhanced */}
-                <div className="mt-2 pt-2 border-t border-green-200/50" onClick={(e) => e.stopPropagation()}>
+                <div className="mt-1 pt-1 border-t border-green-200/50" onClick={(e) => e.stopPropagation()}>
                   
                 </div>
               </div>
@@ -1113,4 +1116,57 @@ export default function TravelSearchWidget() {
       )}
     </>
   )
+}
+
+// Add CSS styles for professional animations
+const styles = `
+  .travel-search-widget {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .travel-search-widget:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+  }
+  
+  .travel-tab {
+    transition: all 0.2s ease;
+  }
+  
+  .travel-tab:hover {
+    transform: translateY(-1px);
+  }
+  
+  .travel-form {
+    transition: all 0.3s ease;
+  }
+  
+  .travel-field {
+    transition: all 0.2s ease;
+  }
+  
+  .travel-field:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+  
+  .travel-search-btn {
+    transition: all 0.2s ease;
+  }
+  
+  .travel-search-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  }
+  
+  .travel-search-btn:active {
+    transform: translateY(0);
+  }
+`
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style')
+  styleSheet.textContent = styles
+  document.head.appendChild(styleSheet)
 }

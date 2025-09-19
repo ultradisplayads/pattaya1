@@ -446,7 +446,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
         {/* Clean, centered search container */}
         <div className={`flex flex-col items-center justify-center h-full ${compact ? 'px-0 py-0' : 'px-6 py-8'} relative z-10`}>
           {/* Simple, clean search bar */}
-          <div className={`w-full ${compact ? 'max-w-xl' : 'max-w-3xl'}`}>
+          <div className={`w-full ${compact ? 'max-w-sm' : 'max-w-xl'}`}>
             <form ref={formRef} onSubmit={handleSearch} className={`flex items-center gap-1 bg-white rounded-xl shadow-lg border-2 ${compact ? 'px-2 py-1 h-8' : 'p-2'} transition-all duration-150 relative ${
               searchMode === 'site' 
                 ? 'border-pink-200 hover:border-pink-300 focus-within:border-pink-400' 
@@ -932,7 +932,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
       {/* Nightlife themed Site Search Filters with glow */}
       {searchMode === 'site' && showSiteFilters && facets && (
         <div className="flex justify-center mt-4">
-          <div className="w-full max-w-3xl p-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg transition-all duration-150" style={{
+          <div className="w-full max-w-xl p-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg transition-all duration-150" style={{
             boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.2), 0 0 0 1px rgba(236, 72, 153, 0.1)'
           }}>
             <div className="flex items-center gap-2 mb-4">
@@ -979,7 +979,7 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
       {/* Nightlife themed Trending Topics with glow */}
       {searchMode === 'site' && showTrending && trending.length > 0 && (
         <div className="flex justify-center mt-4">
-          <div className="w-full max-w-3xl p-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg transition-all duration-150" style={{
+          <div className="w-full max-w-xl p-5 bg-white/90 backdrop-blur-sm border-0 rounded-xl shadow-lg transition-all duration-150" style={{
             boxShadow: '0 10px 25px -5px rgba(236, 72, 153, 0.2), 0 0 0 1px rgba(236, 72, 153, 0.1)'
           }}>
             <div className="flex items-center gap-2 mb-4">
