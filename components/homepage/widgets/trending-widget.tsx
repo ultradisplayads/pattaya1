@@ -3,11 +3,11 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { TrendingUp, Hash, MapPin, Calendar, Building, Users, ArrowUp, ArrowDown, Minus } from "lucide-react"
+import { TrendingUp, Hash, MapPin, Calendar, Building, Users, ArrowUp, ArrowDown, Minus, RefreshCw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { buildApiUrl } from "@/lib/strapi-config"
 import { SponsorshipBanner } from "@/components/widgets/sponsorship-banner"
+import searchTracker from "@/lib/search-tracking"
 
 interface StrapiTrendingTopic {
   id: number
@@ -27,41 +27,33 @@ export function TrendingWidget() {
 
   useEffect(() => {
     loadTrendingData()
-    const interval = setInterval(loadTrendingData, 60000) // Update every minute
+    // Refresh every 30 seconds for more real-time updates
+    const interval = setInterval(loadTrendingData, 30000)
     return () => clearInterval(interval)
   }, [])
 
   const loadTrendingData = async () => {
     try {
       setLoading(true)
-      const response = await fetch(buildApiUrl("trending-topics?populate=*"))
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      // Only load dynamic trending data from search analytics
+      console.log('🔄 Loading dynamic trending data from search analytics...')
+      const dynamicTrending = await searchTracker.getTrendingTopics({
+        limit: 10,
+        timeWindow: '24h'
+      })
       
-      const data = await response.json()
-      console.log('Trending data received:', data)
+      console.log('📊 Dynamic trending response:', dynamicTrending)
       
-      if (data.data && Array.isArray(data.data)) {
-        const mappedData = data.data.map((item: any) => ({
-          id: item.id,
-          title: item.Title,
-          type: item.Type,
-          posts: item.Posts,
-          growth: item.Growth,
-          category: item.Category,
-          icon: item.Icon,
-          description: item.Description,
-          url: item.URL,
-        }))
-        setTrendingItems(mappedData)
+      if (dynamicTrending.success && dynamicTrending.data && dynamicTrending.data.length > 0) {
+        console.log('✅ Using dynamic trending data:', dynamicTrending.data)
+        setTrendingItems(dynamicTrending.data)
       } else {
-        console.warn('No trending data found or invalid format')
+        console.log('📊 No trending data available yet - start searching to see trending topics!')
         setTrendingItems([])
       }
     } catch (error) {
-      console.error("Failed to load trending data from Strapi:", error)
+      console.error("❌ Failed to load dynamic trending data:", error)
       setTrendingItems([])
     } finally {
       setLoading(false)
@@ -83,6 +75,32 @@ export function TrendingWidget() {
     if (growth > 0) return <ArrowUp className="w-3 h-3 text-green-500" />
     if (growth < 0) return <ArrowDown className="w-3 h-3 text-red-500" />
     return <Minus className="w-3 h-3 text-gray-400" />
+  }
+
+  const handleTrendingClick = async (item: StrapiTrendingTopic) => {
+    try {
+      // Track the trending topic click
+      await searchTracker.trackSearchQuery(item.title, {
+        category: item.category,
+        source: 'trending-widget',
+        component: 'trending-click'
+      })
+      
+      // Navigate to search results
+      if (item.url) {
+        window.location.href = item.url
+      } else {
+        window.location.href = `/search?q=${encodeURIComponent(item.title)}`
+      }
+    } catch (error) {
+      console.error('Error tracking trending click:', error)
+      // Still navigate even if tracking fails
+      if (item.url) {
+        window.location.href = item.url
+      } else {
+        window.location.href = `/search?q=${encodeURIComponent(item.title)}`
+      }
+    }
   }
 
   const getGrowthColor = (growth: number) => {
@@ -125,15 +143,21 @@ export function TrendingWidget() {
 
   if (trendingItems.length === 0) {
     return (
-<Card className={`${glassGradientBg} h-full`}>        <CardHeader className="pb-4 px-6 pt-6">
+      <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+        <CardHeader className="pb-4 px-6 pt-6">
           <CardTitle className="text-base font-medium text-gray-900 flex items-center">
             <TrendingUp className="h-4 w-4 mr-2 text-gray-600" />
             Trending Now
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
-          <div className="text-center text-gray-400 py-12">
-            <p className="text-sm font-medium">No trending topics available</p>
+          <div className="text-center text-gray-500 py-12">
+            <TrendingUp className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-sm font-medium mb-2">No trending topics yet</p>
+            <p className="text-xs text-gray-400">
+              Start searching to see what's trending!<br/>
+              Trending topics update every 15 minutes.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -150,10 +174,19 @@ export function TrendingWidget() {
             <TrendingUp className="h-4 w-4 mr-2 text-gray-600" />
             Trending Now
           </div>
-          <Badge className="bg-green-50 text-green-700 text-xs font-medium border-0">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
-            Live
-          </Badge>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={loadTrendingData}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              title="Refresh trending topics"
+            >
+              <RefreshCw className="h-3 w-3 text-gray-500" />
+            </button>
+            <Badge className="bg-green-50 text-green-700 text-xs font-medium border-0">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+              Live
+            </Badge>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
@@ -163,6 +196,7 @@ export function TrendingWidget() {
               key={item.id}
               className="p-4 rounded-2xl bg-gray-50/50 hover:bg-white transition-all duration-200 cursor-pointer group border border-transparent hover:border-gray-100"
               style={{ animationDelay: `${index * 30}ms` }}
+              onClick={() => handleTrendingClick(item)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-2">

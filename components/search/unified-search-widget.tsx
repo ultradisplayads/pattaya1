@@ -17,6 +17,7 @@ import {
 // Import the existing search components to reuse their logic
 import CompactComprehensiveSearchWidget from './compact-comprehensive-search-widget'
 import WebSearchWidget from './web-search-widget'
+import searchTracker from '@/lib/search-tracking'
 
 interface SearchResult {
   title: string
@@ -254,6 +255,13 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
+      // Track the search query
+      await searchTracker.trackSearchQuery(searchQuery, {
+        category: selectedCategory || 'General',
+        source: 'unified-search-widget',
+        component: 'site-search'
+      })
+
       // Build filters string
       const filters = []
       if (selectedCategory) filters.push(`category:${selectedCategory}`)
@@ -284,6 +292,13 @@ export default function UnifiedSearchWidget({ compact = false }: UnifiedSearchPr
 
     setLoading(true)
     try {
+      // Track the search query
+      await searchTracker.trackSearchQuery(searchQuery, {
+        category: 'General',
+        source: 'unified-search-widget',
+        component: 'web-search'
+      })
+
       const response = await fetch(`https://api.pattaya1.com/api/web-search?query=${encodeURIComponent(searchQuery)}&page=${page}&num=8`)
       if (response.ok) {
         const data = await response.json()
