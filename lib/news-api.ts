@@ -15,6 +15,9 @@ export interface NewsArticle {
   Description: string;
   URL: string;
   ImageURL?: string;
+  image?: string; // Add support for the actual API field
+  imageAlt?: string;
+  imageCaption?: string;
   PublishedAt: string;
   apiSource: string;
   upvotes: number;

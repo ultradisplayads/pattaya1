@@ -9,11 +9,13 @@ export interface StrapiRestaurant {
   rating: number
   priceRange: "budget" | "moderate" | "expensive" | "luxury"
   image?: {
-    data?: {
-      attributes: {
-        url: string
-        alternativeText?: string
-      }
+    id: number
+    url: string
+    alternativeText?: string
+    formats?: {
+      small?: { url: string }
+      medium?: { url: string }
+      thumbnail?: { url: string }
     }
   }
   location: string

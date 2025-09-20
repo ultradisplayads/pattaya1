@@ -78,20 +78,20 @@ export function BreakingNewsCard({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {((article as any).image || article.ImageURL) && (
+        {(article.image || article.ImageURL) && (
           <div className="w-full">
             <img
-              src={(article as any).image || article.ImageURL}
-              alt={(article as any).imageAlt || article.Title}
+              src={article.image || article.ImageURL}
+              alt={article.imageAlt || article.Title}
               className="w-full h-32 object-cover rounded-xl shadow-sm"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
               }}
             />
-            {(article as any).imageCaption && (
+            {article.imageCaption && (
               <p className="text-xs text-gray-500 italic mt-1">
-                {(article as any).imageCaption}
+                {article.imageCaption}
               </p>
             )}
           </div>

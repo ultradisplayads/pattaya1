@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 import { useRestaurants, StrapiRestaurant } from "@/hooks/use-restaurants"
 import { useBookings } from "@/hooks/use-bookings"
+import { buildStrapiUrl } from "@/lib/strapi-config"
 import { 
   Utensils, 
   Star, 
@@ -462,8 +463,8 @@ export function FoodWidget({ theme = "primary" }: FoodWidgetProps) {
       cuisine: strapiRestaurant.cuisine,
       rating: strapiRestaurant.rating,
       priceRange: strapiRestaurant.priceRange,
-      // Using Unsplash for better aesthetics, fallback to Strapi URL
-      image:  strapiRestaurant.image?.data?.attributes?.url || "/placeholder.svg",
+      // Fix: Use correct API response structure for image URL
+      image: (strapiRestaurant.image as any)?.url ? buildStrapiUrl((strapiRestaurant.image as any).url) : "/placeholder.svg",
       location: strapiRestaurant.location,
       coordinates: {
         lat: strapiRestaurant.latitude,
