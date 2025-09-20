@@ -549,9 +549,9 @@ export function PhotoGalleryWidget() {
         tabIndex={0}
         autoFocus
       >
-        <div className={`relative max-w-6xl max-h-[95vh] w-full rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border-2 border-white/30 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-teal-400/20 flex flex-col`}>
+        <div className={`relative w-full max-w-6xl aspect-video rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border-2 border-white/30 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-teal-400/20`}>
           {/* Enhanced floating background elements for modal */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute inset-0 opacity-20 pointer-events-none z-10">
             <div className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-br from-cyan-300 to-blue-400 rounded-full animate-pulse"></div>
             <div className="absolute top-24 right-12 w-12 h-12 bg-gradient-to-br from-teal-300 to-cyan-400 rounded-full animate-bounce delay-300"></div>
             <div className="absolute bottom-16 left-16 w-10 h-10 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full animate-ping delay-500"></div>
@@ -559,9 +559,44 @@ export function PhotoGalleryWidget() {
             <div className="absolute top-1/2 left-4 w-8 h-8 bg-gradient-to-br from-purple-300 to-pink-400 rounded-full animate-bounce delay-1000"></div>
             <div className="absolute top-1/3 right-8 w-6 h-6 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full animate-ping delay-1200"></div>
           </div>
+
+          {/* Full background image */}
+          {(() => {
+            const lbUrl = lightboxPhoto?.image?.url ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"
+            return (
+              <img
+                src={lbUrl}
+                alt={lightboxPhoto.caption || "Pattaya photo"}
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-300 z-0"
+                draggable={false}
+                loading="lazy"
+                style={{
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+                }}
+                onLoad={(e) => {
+                  const target = e.currentTarget as HTMLImageElement
+                  target.style.opacity = '1'
+                }}
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement
+                  if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
+                    // eslint-disable-next-line no-console
+                    console.error("PhotoGalleryWidget: lightbox image failed to load, fallback to placeholder:", target.src)
+                    target.src = "/placeholder.svg"
+                  }
+                }}
+              />
+            )
+          })()}
+
+          {/* Enhanced gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/10 z-15"></div>
+
+          {/* Close button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-6 right-6 z-30 bg-red-500/60 hover:bg-red-500/80 text-white p-3 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30"
+            className="absolute top-6 right-6 z-50 bg-red-500/60 hover:bg-red-500/80 text-white p-3 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30"
             aria-label="Close lightbox"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -569,183 +604,158 @@ export function PhotoGalleryWidget() {
             </svg>
           </button>
 
-          <div className="flex-1 flex justify-center items-center p-6 overflow-auto">
-            {(() => {
-              const lbUrl = lightboxPhoto?.image?.url ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"
-              return (
-                <div className="relative rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] border-2 border-white/20 bg-gradient-to-br from-gray-100/50 to-gray-200/30 max-w-full max-h-full">
-                  <img
-                    src={lbUrl}
-                    alt={lightboxPhoto.caption || "Pattaya photo"}
-                    className="max-h-[70vh] max-w-full object-contain transition-all duration-300"
-                    draggable={false}
-                    loading="lazy"
-                    style={{
-                      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
-                    }}
-                    onLoad={(e) => {
-                      const target = e.currentTarget as HTMLImageElement
-                      target.style.opacity = '1'
-                    }}
-                    onError={(e) => {
-                      const target = e.currentTarget as HTMLImageElement
-                      if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
-                        // eslint-disable-next-line no-console
-                        console.error("PhotoGalleryWidget: lightbox image failed to load, fallback to placeholder:", target.src)
-                        target.src = "/placeholder.svg"
-                      }
-                    }}
-                  />
-                  
-                  {/* Photo counter overlay */}
-                  <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg select-none border border-white/20">
-                    <span className="text-cyan-300">{photos.findIndex(p => p.id === lightboxPhoto.id) + 1}</span>
-                    <span className="mx-1 opacity-60">/</span>
-                    <span>{photos.length}</span>
-                  </div>
-                  
-                  {/* Featured/Sponsored badges */}
-                  {lightboxPhoto.featured && (
-                    <Badge className="absolute top-4 left-4 text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl animate-pulse">
-                      ⭐ Featured
-                    </Badge>
-                  )}
-                  {lightboxPhoto.sponsor_url && (
-                    <Badge className="absolute top-4 right-4 text-sm bg-gradient-to-r from-emerald-400 to-green-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl">
-                      💎 Sponsored
-                    </Badge>
-                  )}
-                </div>
-              )
-            })()}
-
-            {photos.length > 1 && (
-              <>
-                <button
-                  onClick={() => {
-                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
-                    setLightboxPhoto(photos[prevIndex])
-                  }}
-                  className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30"
-                  aria-label="Previous photo"
-                >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => {
-                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                    const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
-                    setLightboxPhoto(photos[nextIndex])
-                  }}
-                  className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30"
-                  aria-label="Next photo"
-                >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
+          {/* Photo counter overlay */}
+          <div className="absolute top-6 left-6 bg-black/80 backdrop-blur-md text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg select-none border border-white/30 z-50">
+            <span className="text-cyan-300">{photos.findIndex(p => p.id === lightboxPhoto.id) + 1}</span>
+            <span className="mx-1 opacity-60">/</span>
+            <span>{photos.length}</span>
           </div>
+          
+          {/* Featured/Sponsored badges */}
+          {lightboxPhoto.featured && (
+            <Badge className="absolute top-16 left-6 text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl animate-pulse z-50">
+              ⭐ Featured
+            </Badge>
+          )}
+          {lightboxPhoto.sponsor_url && (
+            <Badge className="absolute top-16 right-6 text-sm bg-gradient-to-r from-emerald-400 to-green-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl z-50">
+              💎 Sponsored
+            </Badge>
+          )}
 
-          <div className="bg-gradient-to-r from-white/80 to-white/60 backdrop-blur-xl rounded-b-3xl p-8 text-gray-800 select-text border-t border-white/20 relative z-10 overflow-y-auto max-h-[40vh]">
-            {/* Header with camera icon and live indicator */}
-            <div className="flex items-center justify-between mb-6">
+          {/* Navigation buttons */}
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={() => {
+                  const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                  const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
+                  setLightboxPhoto(photos[prevIndex])
+                }}
+                className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 z-50"
+                aria-label="Previous photo"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => {
+                  const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                  const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
+                  setLightboxPhoto(photos[nextIndex])
+                }}
+                className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 z-50"
+                aria-label="Next photo"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Header overlay */}
+          <div className="absolute top-0 left-0 right-0 z-40 p-6">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-cyan-500/40 to-blue-500/40 rounded-xl backdrop-blur-md shadow-lg border border-white/30">
-                  <Camera className="w-5 h-5 text-cyan-600" />
+                  <Camera className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg font-bold text-gray-800">Photo Gallery</span>
-                  <span className="text-sm text-cyan-600 font-medium">📸 {photos.length} photos</span>
+                  <span className="text-lg font-bold text-white drop-shadow-lg">Photo Gallery</span>
+                  <span className="text-sm text-cyan-300 font-medium">📸 {photos.length} photos</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-green-600 font-medium">Live</span>
+                <span className="text-sm text-green-300 font-medium">Live</span>
               </div>
             </div>
+          </div>
 
-            {lightboxPhoto.caption && (
-              <h3 className="text-2xl font-bold mb-6 text-gray-800 leading-tight">
-                {lightboxPhoto.caption}
-              </h3>
-            )}
-            
-            <div className="flex items-center justify-between text-base mb-6 bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/30 transition-all duration-300">
-              <div className="flex items-center space-x-3">
-                <User className="w-5 h-5 text-cyan-600" />
-                <span className="font-bold text-lg text-gray-800">{lightboxPhoto.author?.username || 'Anonymous'}</span>
+          {/* Bottom content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 z-40 p-6">
+            <div className="space-y-4">
+              {lightboxPhoto.caption && (
+                <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg">
+                  {lightboxPhoto.caption}
+                </h3>
+              )}
+              
+              <div className="flex items-center justify-between text-base bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <User className="w-5 h-5 text-cyan-300" />
+                  <span className="font-bold text-lg text-white">{lightboxPhoto.author?.username || 'Anonymous'}</span>
+                </div>
+                <span className="font-bold text-cyan-300">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
               </div>
-              <span className="font-bold text-cyan-600">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
-            </div>
 
-            {lightboxPhoto.location?.address && (
-              <div className="flex items-center text-sm bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 mb-6 border border-white/30 hover:bg-white/30 transition-all duration-300">
-                <MapPin className="w-5 h-5 mr-2 text-teal-600" />
-                <span className="font-medium text-gray-700">📍 {lightboxPhoto.location.address}</span>
-              </div>
-            )}
+              {lightboxPhoto.location?.address && (
+                <div className="flex items-center text-sm bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                  <MapPin className="w-5 h-5 mr-2 text-teal-300" />
+                  <span className="font-medium text-white">📍 {lightboxPhoto.location.address}</span>
+                </div>
+              )}
 
-            {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-3 mb-6">
-                {lightboxPhoto.hashtags.map((h) => (
-                  <Badge
-                    key={h.id}
-                    className="text-sm font-semibold px-4 py-2 bg-gradient-to-r from-pink-400/30 to-purple-400/30 backdrop-blur-md border border-pink-300/40 rounded-xl text-gray-800 shadow-sm transition-transform duration-200 cursor-pointer"
-                  >
-                    #{h?.name}
+              {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {lightboxPhoto.hashtags.map((h) => (
+                    <Badge
+                      key={h.id}
+                      className="text-sm font-semibold px-4 py-2 bg-gradient-to-r from-pink-400/30 to-purple-400/30 backdrop-blur-md border border-pink-300/40 rounded-xl text-white shadow-sm transition-transform duration-200 cursor-pointer"
+                    >
+                      #{h?.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-base text-white font-bold bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center space-x-8">
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <Heart className="w-5 h-5 text-red-400" />
+                    <span className="font-bold text-lg text-white">{lightboxPhoto.likes || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Eye className="w-5 h-5 text-blue-400" />
+                    <span className="font-bold text-lg text-white">{lightboxPhoto.views || 0}</span>
+                  </div>
+                </div>
+                {lightboxPhoto.featured && (
+                  <Badge className="text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg px-4 py-2 rounded-xl">
+                    ⭐ Featured
                   </Badge>
+                )}
+              </div>
+
+              {/* Navigation dots */}
+              <div className="flex justify-center items-center space-x-2">
+                {photos.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setLightboxPhoto(photos[i])}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 shadow-sm border ${
+                      i === photos.findIndex(p => p.id === lightboxPhoto.id)
+                        ? "bg-gradient-to-r from-cyan-400 to-blue-500 border-cyan-400/60 scale-125 shadow-cyan-400/50 animate-pulse" 
+                        : "bg-white/50 border-white/40 hover:bg-gradient-to-r hover:from-cyan-300/50 hover:to-blue-400/50 hover:border-cyan-400/60"
+                    }`}
+                    aria-label={`Go to photo ${i + 1}`}
+                  />
                 ))}
               </div>
-            )}
 
-            <div className="flex items-center justify-between text-base text-gray-700 mb-8 font-bold bg-white/20 backdrop-blur-md rounded-xl px-4 py-3 border border-white/30 hover:bg-white/30 transition-all duration-300">
-              <div className="flex items-center space-x-8">
-                <div className="flex items-center space-x-2 cursor-pointer">
-                  <Heart className="w-5 h-5 text-red-500" />
-                  <span className="font-bold text-lg text-gray-800">{lightboxPhoto.likes || 0}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Eye className="w-5 h-5 text-blue-500" />
-                  <span className="font-bold text-lg text-gray-800">{lightboxPhoto.views || 0}</span>
-                </div>
-              </div>
-              {lightboxPhoto.featured && (
-                <Badge className="text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg px-4 py-2 rounded-xl">
-                  ⭐ Featured
-                </Badge>
-              )}
-            </div>
-
-            {/* Navigation dots for modal */}
-            <div className="flex justify-center items-center space-x-2 mb-8">
-              {photos.map((_, i) => (
+              {/* Submit button */}
+              <div className="text-center">
                 <button
-                  key={i}
-                  onClick={() => setLightboxPhoto(photos[i])}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 shadow-sm border ${
-                    i === photos.findIndex(p => p.id === lightboxPhoto.id)
-                      ? "bg-gradient-to-r from-cyan-400 to-blue-500 border-cyan-400/60 scale-125 shadow-cyan-400/50 animate-pulse" 
-                      : "bg-gray-300/50 border-gray-400/40 hover:bg-gradient-to-r hover:from-cyan-300/50 hover:to-blue-400/50 hover:border-cyan-400/60"
-                  }`}
-                  aria-label={`Go to photo ${i + 1}`}
-                />
-              ))}
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => (window.location.href = '/photos/upload')}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-cyan-500/70 to-blue-500/70 hover:from-cyan-500/90 hover:to-blue-500/90 backdrop-blur-md text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl border border-white/30 group"
-                aria-label="Submit your photo"
-              >
-                <Camera className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
-                📸 Share Your Pattaya Moment
-              </button>
+                  onClick={() => (window.location.href = '/photos/upload')}
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-cyan-500/80 to-blue-500/80 hover:from-cyan-500/90 hover:to-blue-500/90 backdrop-blur-md text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl border border-white/30 group"
+                  aria-label="Submit your photo"
+                >
+                  <Camera className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+                  📸 Share Your Pattaya Moment
+                </button>
+              </div>
             </div>
           </div>
         </div>
