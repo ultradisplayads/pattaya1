@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import searchTracker from '@/lib/search-tracking'
 
 interface SearchResult {
   title: string
@@ -143,6 +144,13 @@ export default function CompactComprehensiveSearchWidget() {
 
     setLoading(true)
     try {
+      // Track the search query
+      await searchTracker.trackSearchQuery(searchQuery, {
+        category: selectedCategory || 'General',
+        source: 'compact-search-widget',
+        component: 'unified-search'
+      })
+
       // Build filters string
       const filters = []
       if (selectedCategory) filters.push(`category:${selectedCategory}`)

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Trending System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .search-box {
+            margin: 20px 0;
+        }
+        .search-box input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        .search-box select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Trending System Test</h1>
+        <p>This page helps you test the dynamic trending system by generating sample search data and viewing trending topics.</p>
+        
+        <div class="search-box">
+            <h3>Test Individual Search</h3>
+            <input type="text" id="searchQuery" placeholder="Enter search query" value="pattaya beach">
+            <select id="searchCategory">
+                <option value="General">General</option>
+                <option value="Tourism">Tourism</option>
+                <option value="Food">Food</option>
+                <option value="Nightlife">Nightlife</option>
+                <option value="Events">Events</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Business">Business</option>
+                <option value="Entertainment">Entertainment</option>
+            </select>
+            <button onclick="testSingleSearch()">Track Search</button>
+        </div>
+
+        <div>
+            <h3>Bulk Operations</h3>
+            <button onclick="generateSampleData()">Generate Sample Data</button>
+            <button onclick="calculateTrending()">Calculate Trending</button>
+            <button onclick="getTrendingTopics()">Get Trending Topics</button>
+            <button onclick="getAnalyticsStats()">Get Analytics Stats</button>
+        </div>
+
+        <div id="status"></div>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'https://api.pattaya1.com'; // Update this to your API URL
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function trackSearch(query, category = 'General', source = 'test-page') {
+            try {
+                showStatus(`Tracking search: "${query}" (${category})...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/api/search-analytics/track`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query,
+                        category,
+                        source,
+                        userAgent: navigator.userAgent,
+                        sessionId: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                showStatus(`✅ Successfully tracked: "${query}"`, 'success');
+                showResults(result);
+                return result;
+            } catch (error) {
+                showStatus(`❌ Failed to track "${query}": ${error.message}`, 'error');
+                showResults({ error: error.message });
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testSingleSearch() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const category = document.getElementById('searchCategory').value;
+            
+            if (!query) {
+                showStatus('Please enter a search query', 'error');
+                return;
+            }
+            
+            await trackSearch(query, category);
+        }
+
+        async function generateSampleData() {
+            showStatus('🚀 Generating sample search data...', 'info');
+            
+            const sampleSearches = [
+                { query: 'pattaya beach', category: 'Tourism', count: 25 },
+                { query: 'thai street food', category: 'Food', count: 20 },
+                { query: 'bangkok nightlife', category: 'Nightlife', count: 18 },
+                { query: 'pattaya hotels', category: 'Tourism', count: 15 },
+                { query: 'thai massage', category: 'Tourism', count: 12 },
+                { query: 'pattaya shopping', category: 'Shopping', count: 8 },
+                { query: 'thai festivals', category: 'Events', count: 7 },
+                { query: 'bangkok temples', category: 'Tourism', count: 6 },
+                { query: 'pattaya restaurants', category: 'Food', count: 5 },
+                { query: 'thai language', category: 'General', count: 4 }
+            ];
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const search of sampleSearches) {
+                for (let i = 0; i < search.count; i++) {
+                    const result = await trackSearch(search.query, search.category, 'sample-data');
+                    
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                    
+                    // Small delay to simulate real user behavior
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+
+            showStatus(`✅ Sample data generation complete! Success: ${successCount}, Failed: ${failCount}`, 'success');
+            
+            // Auto-trigger trending calculation
+            setTimeout(() => {
+                calculateTrending();
+            }, 1000);
+        }
+
+        async function calculateTrending() {
+            try {
+                showStatus('🔄 Calculating trending scores...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/search-analytics/calculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                showStatus(`✅ Trending calculation completed!`, 'success');
+                showResults(result);
+                
+                // Auto-fetch trending topics
+                setTimeout(() => {
+                    getTrendingTopics();
+                }, 1000);
+            } catch (error) {
+                showStatus(`❌ Failed to calculate trending: ${error.message}`, 'error');
+                showResults({ error: error.message });
+            }
+        }
+
+        async function getTrendingTopics() {
+            try {
+                showStatus('🔥 Fetching trending topics...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/search-analytics/trending?limit=10`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                showStatus(`✅ Trending topics loaded!`, 'success');
+                showResults(result);
+                return result;
+            } catch (error) {
+                showStatus(`❌ Failed to get trending topics: ${error.message}`, 'error');
+                showResults({ error: error.message });
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function getAnalyticsStats() {
+            try {
+                showStatus('📊 Fetching analytics stats...', 'info');
+                
+                const response = await fetch(`${API_BASE}/api/search-analytics/stats`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                showStatus(`✅ Analytics stats loaded!`, 'success');
+                showResults(result);
+                return result;
+            } catch (error) {
+                showStatus(`❌ Failed to get analytics stats: ${error.message}`, 'error');
+                showResults({ error: error.message });
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Initialize
+        showStatus('🎯 Trending system test page loaded! Click "Generate Sample Data" to start.', 'info');
+    </script>
+</body>
+</html>
