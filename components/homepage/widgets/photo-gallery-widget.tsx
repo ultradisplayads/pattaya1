@@ -531,11 +531,72 @@ export function PhotoGalleryWidget() {
     if (!lightboxOpen || !lightboxPhoto || !mounted) return null
 
     return createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xl transition-all duration-700">
-        <div className={`relative max-w-6xl max-h-[95vh] w-full mx-4 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border-2 border-white/20 bg-gradient-to-br from-cyan-400/10 via-blue-400/10 to-purple-400/10`}>
+      <div 
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xl transition-all duration-700 p-4"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') closeLightbox()
+          if (e.key === 'ArrowLeft' && photos.length > 1) {
+            const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+            const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
+            setLightboxPhoto(photos[prevIndex])
+          }
+          if (e.key === 'ArrowRight' && photos.length > 1) {
+            const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+            const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
+            setLightboxPhoto(photos[nextIndex])
+          }
+        }}
+        tabIndex={0}
+        autoFocus
+      >
+        <div className={`relative w-full max-w-6xl aspect-video rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl border-2 border-white/30 bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-teal-400/20`}>
+          {/* Enhanced floating background elements for modal */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none z-10">
+            <div className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-br from-cyan-300 to-blue-400 rounded-full animate-pulse"></div>
+            <div className="absolute top-24 right-12 w-12 h-12 bg-gradient-to-br from-teal-300 to-cyan-400 rounded-full animate-bounce delay-300"></div>
+            <div className="absolute bottom-16 left-16 w-10 h-10 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full animate-ping delay-500"></div>
+            <div className="absolute bottom-32 right-20 w-14 h-14 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full animate-pulse delay-700"></div>
+            <div className="absolute top-1/2 left-4 w-8 h-8 bg-gradient-to-br from-purple-300 to-pink-400 rounded-full animate-bounce delay-1000"></div>
+            <div className="absolute top-1/3 right-8 w-6 h-6 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full animate-ping delay-1200"></div>
+          </div>
+
+          {/* Full background image */}
+          {(() => {
+            const lbUrl = lightboxPhoto?.image?.url ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"
+            return (
+              <img
+                src={lbUrl}
+                alt={lightboxPhoto.caption || "Pattaya photo"}
+                className="absolute inset-0 w-full h-full object-cover transition-all duration-300 z-0"
+                draggable={false}
+                loading="lazy"
+                style={{
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+                }}
+                onLoad={(e) => {
+                  const target = e.currentTarget as HTMLImageElement
+                  target.style.opacity = '1'
+                }}
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement
+                  if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
+                    // eslint-disable-next-line no-console
+                    console.error("PhotoGalleryWidget: lightbox image failed to load, fallback to placeholder:", target.src)
+                    target.src = "/placeholder.svg"
+                  }
+                }}
+              />
+            )
+          })()}
+
+          {/* Enhanced gradient overlay for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/10 z-15"></div>
+
+          {/* Close button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-6 right-6 z-30 bg-red-500/60 hover:bg-red-500/80 text-white p-3 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 hover:scale-110"
+            className="absolute top-6 right-6 z-50 bg-red-500/60 hover:bg-red-500/80 text-white p-3 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30"
             aria-label="Close lightbox"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -543,128 +604,158 @@ export function PhotoGalleryWidget() {
             </svg>
           </button>
 
-          <div className="relative flex justify-center items-center p-6">
-            {(() => {
-              const lbUrl = lightboxPhoto?.image?.url ? buildStrapiUrl(lightboxPhoto.image.url) : "/placeholder.svg"
-              return (
-                <img
-                  src={lbUrl}
-                  alt={lightboxPhoto.caption || "Pattaya photo"}
-                  className="max-h-[80vh] max-w-full object-contain rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] transition-transform duration-300"
-                  draggable={false}
-                  loading="lazy"
-                  onError={(e) => {
-                    const target = e.currentTarget as HTMLImageElement
-                    if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
-                      // eslint-disable-next-line no-console
-                      console.error("PhotoGalleryWidget: lightbox image failed to load, fallback to placeholder:", target.src)
-                      target.src = "/placeholder.svg"
-                    }
-                  }}
-                />
-              )
-            })()}
+          {/* Photo counter overlay */}
+          <div className="absolute top-6 left-6 bg-black/80 backdrop-blur-md text-white text-sm px-4 py-2 rounded-full font-bold shadow-lg select-none border border-white/30 z-50">
+            <span className="text-cyan-300">{photos.findIndex(p => p.id === lightboxPhoto.id) + 1}</span>
+            <span className="mx-1 opacity-60">/</span>
+            <span>{photos.length}</span>
+          </div>
+          
+          {/* Featured/Sponsored badges */}
+          {lightboxPhoto.featured && (
+            <Badge className="absolute top-16 left-6 text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl animate-pulse z-50">
+              ⭐ Featured
+            </Badge>
+          )}
+          {lightboxPhoto.sponsor_url && (
+            <Badge className="absolute top-16 right-6 text-sm bg-gradient-to-r from-emerald-400 to-green-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl z-50">
+              💎 Sponsored
+            </Badge>
+          )}
 
-            {photos.length > 1 && (
-              <>
-                <button
-                  onClick={() => {
-                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
-                    setLightboxPhoto(photos[prevIndex])
-                  }}
-                  className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 hover:scale-110"
-                  aria-label="Previous photo"
-                >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => {
-                    const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
-                    const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
-                    setLightboxPhoto(photos[nextIndex])
-                  }}
-                  className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 hover:scale-110"
-                  aria-label="Next photo"
-                >
-                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </>
-            )}
+          {/* Navigation buttons */}
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={() => {
+                  const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                  const prevIndex = currentIndex > 0 ? currentIndex - 1 : photos.length - 1
+                  setLightboxPhoto(photos[prevIndex])
+                }}
+                className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 z-50"
+                aria-label="Previous photo"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => {
+                  const currentIndex = photos.findIndex(p => p.id === lightboxPhoto.id)
+                  const nextIndex = currentIndex < photos.length - 1 ? currentIndex + 1 : 0
+                  setLightboxPhoto(photos[nextIndex])
+                }}
+                className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-cyan-500/60 hover:bg-cyan-500/80 text-white p-4 rounded-2xl transition-all duration-300 shadow-2xl backdrop-blur-md border border-white/30 z-50"
+                aria-label="Next photo"
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Header overlay */}
+          <div className="absolute top-0 left-0 right-0 z-40 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-cyan-500/40 to-blue-500/40 rounded-xl backdrop-blur-md shadow-lg border border-white/30">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-white drop-shadow-lg">Photo Gallery</span>
+                  <span className="text-sm text-cyan-300 font-medium">📸 {photos.length} photos</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm text-green-300 font-medium">Live</span>
+              </div>
+            </div>
           </div>
 
-          <div className="mt-6 bg-gradient-to-r from-white/80 to-white/60 backdrop-blur-xl rounded-b-3xl p-8 text-gray-800 select-text border-t border-white/20">
-            {lightboxPhoto.caption && (
-              <h3 className="text-3xl font-bold mb-4 text-gray-800">
-                {lightboxPhoto.caption}
-              </h3>
-            )}
-            
-            <div className="flex items-center justify-between text-base mb-6 bg-white/30 backdrop-blur-md rounded-xl px-4 py-3 border border-white/40">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-cyan-500/40 rounded-xl">
-                  <User className="w-5 h-5 text-cyan-600" />
+          {/* Bottom content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 z-40 p-6">
+            <div className="space-y-4">
+              {lightboxPhoto.caption && (
+                <h3 className="text-2xl font-bold text-white leading-tight drop-shadow-lg">
+                  {lightboxPhoto.caption}
+                </h3>
+              )}
+              
+              <div className="flex items-center justify-between text-base bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <User className="w-5 h-5 text-cyan-300" />
+                  <span className="font-bold text-lg text-white">{lightboxPhoto.author?.username || 'Anonymous'}</span>
                 </div>
-                <span className="font-bold text-lg text-gray-800">{lightboxPhoto.author?.username || 'Anonymous'}</span>
+                <span className="font-bold text-cyan-300">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
               </div>
-              <span className="font-bold text-cyan-600">{formatTimeAgo(lightboxPhoto.uploaded_at || lightboxPhoto.createdAt || '')}</span>
-            </div>
 
-            {lightboxPhoto.location?.address && (
-              <div className="flex items-center text-sm bg-teal-500/20 backdrop-blur-md rounded-xl px-4 py-3 mb-6 border border-teal-400/30">
-                <MapPin className="w-5 h-5 mr-2 text-teal-600" />
-                <span className="font-medium text-gray-700">📍 {lightboxPhoto.location.address}</span>
-              </div>
-            )}
+              {lightboxPhoto.location?.address && (
+                <div className="flex items-center text-sm bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                  <MapPin className="w-5 h-5 mr-2 text-teal-300" />
+                  <span className="font-medium text-white">📍 {lightboxPhoto.location.address}</span>
+                </div>
+              )}
 
-            {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-3 mb-6">
-                {lightboxPhoto.hashtags.map((h) => (
-                  <Badge
-                    key={h.id}
-                    className="text-sm font-semibold px-4 py-2 bg-gradient-to-r from-pink-400/30 to-purple-400/30 backdrop-blur-md border border-pink-300/40 rounded-xl text-gray-800 shadow-sm hover:scale-105 transition-transform duration-200 cursor-pointer"
-                  >
-                    #{h?.name}
+              {lightboxPhoto.hashtags && lightboxPhoto.hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {lightboxPhoto.hashtags.map((h) => (
+                    <Badge
+                      key={h.id}
+                      className="text-sm font-semibold px-4 py-2 bg-gradient-to-r from-pink-400/30 to-purple-400/30 backdrop-blur-md border border-pink-300/40 rounded-xl text-white shadow-sm transition-transform duration-200 cursor-pointer"
+                    >
+                      #{h?.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-base text-white font-bold bg-black/40 backdrop-blur-md rounded-xl px-4 py-3 border border-white/20">
+                <div className="flex items-center space-x-8">
+                  <div className="flex items-center space-x-2 cursor-pointer">
+                    <Heart className="w-5 h-5 text-red-400" />
+                    <span className="font-bold text-lg text-white">{lightboxPhoto.likes || 0}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Eye className="w-5 h-5 text-blue-400" />
+                    <span className="font-bold text-lg text-white">{lightboxPhoto.views || 0}</span>
+                  </div>
+                </div>
+                {lightboxPhoto.featured && (
+                  <Badge className="text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg px-4 py-2 rounded-xl">
+                    ⭐ Featured
                   </Badge>
+                )}
+              </div>
+
+              {/* Navigation dots */}
+              <div className="flex justify-center items-center space-x-2">
+                {photos.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setLightboxPhoto(photos[i])}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 shadow-sm border ${
+                      i === photos.findIndex(p => p.id === lightboxPhoto.id)
+                        ? "bg-gradient-to-r from-cyan-400 to-blue-500 border-cyan-400/60 scale-125 shadow-cyan-400/50 animate-pulse" 
+                        : "bg-white/50 border-white/40 hover:bg-gradient-to-r hover:from-cyan-300/50 hover:to-blue-400/50 hover:border-cyan-400/60"
+                    }`}
+                    aria-label={`Go to photo ${i + 1}`}
+                  />
                 ))}
               </div>
-            )}
 
-            <div className="flex items-center justify-between text-base text-gray-700 mb-8 font-bold bg-white/30 backdrop-blur-md rounded-xl px-4 py-3 border border-white/40">
-              <div className="flex items-center space-x-8">
-                <div className="flex items-center space-x-2 group cursor-pointer">
-                  <div className="p-2 bg-red-500/40 rounded-xl group-hover:bg-red-500/60 transition-colors duration-200">
-                    <Heart className="w-5 h-5 text-red-500 group-hover:text-red-600" />
-                  </div>
-                  <span className="font-bold text-lg text-gray-800">{lightboxPhoto.likes || 0}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="p-2 bg-blue-500/40 rounded-xl">
-                    <Eye className="w-5 h-5 text-blue-500" />
-                  </div>
-                  <span className="font-bold text-lg text-gray-800">{lightboxPhoto.views || 0}</span>
-                </div>
+              {/* Submit button */}
+              <div className="text-center">
+                <button
+                  onClick={() => (window.location.href = '/photos/upload')}
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-cyan-500/80 to-blue-500/80 hover:from-cyan-500/90 hover:to-blue-500/90 backdrop-blur-md text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl border border-white/30 group"
+                  aria-label="Submit your photo"
+                >
+                  <Camera className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+                  📸 Share Your Pattaya Moment
+                </button>
               </div>
-              {lightboxPhoto.featured && (
-                <Badge className="text-sm bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg px-4 py-2 rounded-xl">
-                  ⭐ Featured
-                </Badge>
-              )}
-            </div>
-
-            <div className="text-center mt-8">
-              <button
-                onClick={() => (window.location.href = '/photos/upload')}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-cyan-500/70 to-blue-500/70 hover:from-cyan-500/90 hover:to-blue-500/90 backdrop-blur-md text-white text-lg font-bold rounded-2xl transition-all duration-300 shadow-2xl border border-white/30 hover:scale-105 group"
-                aria-label="Submit your photo"
-              >
-                <Camera className="w-6 h-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
-                📸 Share Your Pattaya Moment
-              </button>
             </div>
           </div>
         </div>
@@ -721,129 +812,163 @@ export function PhotoGalleryWidget() {
 
   return (
     <Card className={`bg-gradient-to-br from-cyan-400/20 via-blue-400/20 to-teal-400/20 backdrop-blur-xl border-2 border-white/30 rounded-3xl shadow-2xl shadow-cyan-500/20 hover:shadow-cyan-400/40 transition-all duration-700 overflow-hidden h-full flex flex-col relative group`}>
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
+      {/* Enhanced floating background elements */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none z-10">
         <div className="absolute top-8 left-8 w-16 h-16 bg-gradient-to-br from-cyan-300 to-blue-400 rounded-full animate-pulse"></div>
         <div className="absolute top-24 right-12 w-12 h-12 bg-gradient-to-br from-teal-300 to-cyan-400 rounded-full animate-bounce delay-300"></div>
         <div className="absolute bottom-16 left-16 w-10 h-10 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full animate-ping delay-500"></div>
         <div className="absolute bottom-32 right-20 w-14 h-14 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full animate-pulse delay-700"></div>
+        {/* Additional floating elements for more visual interest */}
+        <div className="absolute top-1/2 left-4 w-8 h-8 bg-gradient-to-br from-purple-300 to-pink-400 rounded-full animate-bounce delay-1000"></div>
+        <div className="absolute top-1/3 right-8 w-6 h-6 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full animate-ping delay-1200"></div>
+        <div className="absolute bottom-1/3 left-1/2 w-4 h-4 bg-gradient-to-br from-green-300 to-emerald-400 rounded-full animate-pulse delay-800"></div>
       </div>
+      
+      {/* Subtle shimmer effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-1000 z-20"></div>
       <SponsorshipBanner widgetType="photos" />
-      <CardHeader className="pb-3 px-4 pt-4 relative z-10">
-        <CardTitle className="text-sm font-bold text-gray-800 flex items-center justify-between select-none drop-shadow-lg">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-gradient-to-br from-cyan-500/40 to-blue-500/40 rounded-xl backdrop-blur-md shadow-lg border border-white/30">
-              <Camera className="w-4 h-4 text-cyan-600" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-gray-800">Gallery</span>
-              <span className="text-xs text-cyan-600 font-normal">📸 {photos.length} photos</span>
-            </div>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-4 flex-1 flex flex-col min-h-0">
-        <div
-          className="relative cursor-pointer rounded-2xl overflow-hidden shadow-lg transform transition-all duration-500 hover:scale-[1.02] hover:shadow-cyan-500/20 h-48 group border border-white/20 bg-gradient-to-br from-gray-100/50 to-gray-200/30"
-          onClick={() => handlePhotoClick(photo)}
-          role="button"
-          tabIndex={0}
-          aria-label="View photo details"
-          onKeyDown={(e) => { if (e.key === 'Enter') handlePhotoClick(photo) }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10 opacity-60 group-hover:opacity-80 transition-opacity duration-500"></div>
-          {(() => {
-            const imageUrl = photo?.image?.url ? buildStrapiUrl(photo.image.url) : "/placeholder.svg"
-            return (
-              <img
-                src={imageUrl}
-                alt={photo.caption || "Pattaya photo"}
-                className="absolute inset-0 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105 z-0"
-                draggable={false}
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.currentTarget as HTMLImageElement
-                  if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
-                    // eslint-disable-next-line no-console
-                    console.error("PhotoGalleryWidget: image failed to load, falling back to placeholder:", target.src)
-                    target.src = "/placeholder.svg"
-                  }
-                }}
-              />
-            )
-          })()}
-          
-          {/* Enhanced overlay with tropical elements */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 flex items-center justify-center">
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-2xl border border-white/50">
-              <div className="flex items-center gap-2 text-cyan-600">
-                <Eye className="w-5 h-5" />
-                <span className="font-semibold text-sm">View Photo</span>
+      
+      {/* Full widget image background */}
+      <div
+        className="absolute inset-0 cursor-pointer transition-all duration-500 hover:shadow-cyan-500/20 group border border-white/20 bg-gradient-to-br from-gray-100/50 to-gray-200/30 hover:border-cyan-300/40"
+        onClick={() => handlePhotoClick(photo)}
+        role="button"
+        tabIndex={0}
+        aria-label="View photo details"
+        onKeyDown={(e) => { if (e.key === 'Enter') handlePhotoClick(photo) }}
+      >
+        {/* Enhanced gradient overlay with better transitions */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-30 opacity-70 group-hover:opacity-80 transition-all duration-500"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-blue-500/10 z-25 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+        {(() => {
+          const imageUrl = photo?.image?.url ? buildStrapiUrl(photo.image.url) : "/placeholder.svg"
+          return (
+            <img
+              src={imageUrl}
+              alt={photo.caption || "Pattaya photo"}
+              className="absolute inset-0 w-full h-full object-cover transition-all duration-700 group-hover:brightness-110 z-0"
+              draggable={false}
+              loading="lazy"
+              style={{
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))',
+              }}
+              onLoad={(e) => {
+                const target = e.currentTarget as HTMLImageElement
+                target.style.opacity = '1'
+              }}
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement
+                if (target.src !== window.location.origin + "/placeholder.svg" && !target.src.endsWith("/placeholder.svg")) {
+                  // eslint-disable-next-line no-console
+                  console.error("PhotoGalleryWidget: image failed to load, falling back to placeholder:", target.src)
+                  target.src = "/placeholder.svg"
+                }
+              }}
+            />
+          )
+        })()}
+        
+        {/* Header overlay */}
+        <div className="absolute top-0 left-0 right-0 z-40 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-gradient-to-br from-cyan-500/40 to-blue-500/40 rounded-xl backdrop-blur-md shadow-lg border border-white/30">
+                <Camera className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white drop-shadow-lg">Gallery</span>
+                <span className="text-xs text-cyan-200 font-normal">
+                  📸 {photos.length} photos
+                </span>
               </div>
             </div>
-          </div>
-
-          {photo.featured && (
-            <Badge className="absolute top-4 left-4 text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl animate-pulse">
-              ⭐ Featured
-            </Badge>
-          )}
-          {photo.sponsor_url && (
-            <Badge className="absolute top-4 right-4 text-xs bg-gradient-to-r from-emerald-400 to-green-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl">
-              💎 Sponsored
-            </Badge>
-          )}
-          <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full font-bold shadow-lg select-none border border-white/20">
-            <span className="text-cyan-300">{currentPhoto + 1}</span>
-            <span className="mx-1 opacity-60">/</span>
-            <span>{photos.length}</span>
+            {/* Live indicator */}
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-xs text-green-200 font-medium">Live</span>
+            </div>
           </div>
         </div>
+          
+        {/* Enhanced overlay with tropical elements */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 z-35 flex items-center justify-center">
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 transform transition-all duration-300 shadow-2xl border border-white/50">
+            <div className="flex items-center gap-2 text-cyan-600">
+              <Eye className="w-5 h-5 transition-transform duration-300" />
+              <span className="font-semibold text-sm">View Photo</span>
+            </div>
+          </div>
+        </div>
+          
+        {/* Subtle border glow effect */}
+        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-25">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/20 via-blue-400/20 to-teal-400/20 blur-sm"></div>
+        </div>
 
-        <div className="space-y-3 select-none text-gray-800 drop-shadow-md relative z-10">
+        {photo.featured && (
+          <Badge className="absolute top-16 left-4 text-xs bg-gradient-to-r from-amber-400 to-yellow-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl animate-pulse z-40">
+            ⭐ Featured
+          </Badge>
+        )}
+        {photo.sponsor_url && (
+          <Badge className="absolute top-16 right-4 text-xs bg-gradient-to-r from-emerald-400 to-green-400 text-white border-0 font-bold shadow-lg backdrop-blur-sm px-3 py-1.5 rounded-xl z-40">
+            💎 Sponsored
+          </Badge>
+        )}
+        <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full font-bold shadow-lg select-none border border-white/20 z-40">
+          <span className="text-cyan-300">{currentPhoto + 1}</span>
+          <span className="mx-1 opacity-60">/</span>
+          <span>{photos.length}</span>
+        </div>
+      </div>
+
+      {/* Bottom overlay with photo information */}
+      <div className="absolute bottom-0 left-0 right-0 z-40 p-4">
+        <div className="space-y-3">
           {photo.caption && (
-            <h3 className="text-base font-semibold line-clamp-2 leading-tight text-gray-800">
+            <h3 className="text-base font-semibold line-clamp-2 leading-tight text-white drop-shadow-lg">
               {photo.caption}
             </h3>
           )}
-          <div className="flex items-center justify-between text-sm font-medium bg-white/20 backdrop-blur-md rounded-lg px-3 py-2 border border-white/30">
+          <div className="flex items-center justify-between text-sm font-medium bg-black/40 backdrop-blur-md rounded-lg px-3 py-2 border border-white/20">
             <div className="flex items-center space-x-2 min-w-0">
-              <User className="w-4 h-4 text-cyan-600" />
-              <span className="truncate font-medium text-gray-800">{photo.author?.username || 'Anonymous'}</span>
+              <User className="w-4 h-4 text-cyan-300" />
+              <span className="truncate font-medium text-white">{photo.author?.username || 'Anonymous'}</span>
             </div>
-            <span className="flex-shrink-0 font-medium text-cyan-600 text-sm">
+            <span className="flex-shrink-0 font-medium text-cyan-300 text-sm">
               {formatTimeAgo(photo.uploaded_at || photo.createdAt || '')}
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-sm font-medium bg-white/20 backdrop-blur-md rounded-lg px-3 py-2 border border-white/30">
+          <div className="flex items-center justify-between text-sm font-medium bg-black/40 backdrop-blur-md rounded-lg px-3 py-2 border border-white/20">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Heart className="w-4 h-4 text-red-500" />
-                <span className="font-medium text-gray-800">{photo.likes || 0}</span>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <Heart className="w-4 h-4 text-red-400" />
+                <span className="font-medium text-white">{photo.likes || 0}</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <Eye className="w-4 h-4 text-blue-500" />
-                <span className="font-medium text-gray-800">{photo.views || 0}</span>
+              <div className="flex items-center space-x-2 cursor-pointer">
+                <Eye className="w-4 h-4 text-blue-400" />
+                <span className="font-medium text-white">{photo.views || 0}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center items-center space-x-2 select-none mt-auto pt-3 relative z-10">
+        <div className="flex justify-center items-center space-x-2 mt-3">
           {photos.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentPhoto(i)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 shadow-sm border hover:scale-110 ${
+              className={`w-3 h-3 rounded-full transition-all duration-300 shadow-sm border ${
                 i === currentPhoto 
-                  ? "bg-gradient-to-r from-cyan-400 to-blue-500 border-cyan-400/60 scale-110 shadow-cyan-400/30" 
-                  : "bg-gray-300/50 border-gray-400/40 hover:bg-gray-400/50 hover:border-gray-500/60"
+                  ? "bg-gradient-to-r from-cyan-400 to-blue-500 border-cyan-400/60 scale-125 shadow-cyan-400/50 animate-pulse" 
+                  : "bg-white/50 border-white/40 hover:bg-gradient-to-r hover:from-cyan-300/50 hover:to-blue-400/50 hover:border-cyan-400/60"
               }`}
               aria-label={`Go to photo ${i + 1}`}
             />
           ))}
         </div>
-      </CardContent>
+      </div>
 
       <LightboxModal />
     </Card>

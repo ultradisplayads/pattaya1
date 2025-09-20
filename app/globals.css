@@ -18,6 +18,20 @@
   animation: fade-in-up 0.6s ease-out forwards;
 }
 
+/* Photo Gallery Widget Animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 /* Dynamic Modular Homepage - Edit Mode Styles */
 @layer components {
   /* Hide resize handles when not in edit mode */

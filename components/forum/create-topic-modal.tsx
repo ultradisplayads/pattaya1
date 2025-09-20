@@ -164,20 +164,20 @@ export function CreateTopicModal({ isOpen, onClose, categories, onTopicCreated }
               <SelectContent>
                 {categories.length > 0 ? (
                   categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={category.id} value={category.name}>
                       {category.name}
                     </SelectItem>
                   ))
                 ) : (
                   <>
-                    <SelectItem value="general">General Discussion</SelectItem>
-                    <SelectItem value="visas">Visas & Immigration</SelectItem>
-                    <SelectItem value="nightlife">Nightlife & Entertainment</SelectItem>
-                    <SelectItem value="restaurants">Restaurants & Food</SelectItem>
-                    <SelectItem value="accommodation">Accommodation</SelectItem>
-                    <SelectItem value="transportation">Transportation</SelectItem>
-                    <SelectItem value="business">Business & Work</SelectItem>
-                    <SelectItem value="health">Health & Medical</SelectItem>
+                    <SelectItem value="General Discussion">General Discussion</SelectItem>
+                    <SelectItem value="Visas & Immigration">Visas & Immigration</SelectItem>
+                    <SelectItem value="Nightlife & Entertainment">Nightlife & Entertainment</SelectItem>
+                    <SelectItem value="Restaurants & Food">Restaurants & Food</SelectItem>
+                    <SelectItem value="Accommodation">Accommodation</SelectItem>
+                    <SelectItem value="Transportation">Transportation</SelectItem>
+                    <SelectItem value="Business & Work">Business & Work</SelectItem>
+                    <SelectItem value="Health & Medical">Health & Medical</SelectItem>
                   </>
                 )}
               </SelectContent>
