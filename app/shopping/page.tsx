@@ -1,7 +1,9 @@
-"use client"
-
-import { DirectoryPage } from "@/components/directory/directory-page"
+import { ShoppingDirectory } from "@/components/shopping/shopping-directory"
 
 export default function ShoppingPage() {
-  return <DirectoryPage category="shopping" />
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <ShoppingDirectory />
+    </main>
+  )
 }

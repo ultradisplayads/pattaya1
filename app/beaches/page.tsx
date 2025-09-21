@@ -1,7 +1,9 @@
-"use client"
-
-import { DirectoryPage } from "@/components/directory/directory-page"
+import { BeachDiscoveryInterface } from "@/components/beaches/beach-discovery-interface"
 
 export default function BeachesPage() {
-  return <DirectoryPage category="beaches" />
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-cyan-50 to-blue-50">
+      <BeachDiscoveryInterface />
+    </main>
+  )
 }

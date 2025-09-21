@@ -1,7 +1,9 @@
-"use client"
-
-import { DirectoryPage } from "@/components/directory/directory-page"
+import { UnifiedDiningDirectory } from "@/components/directory/unified-dining-directory"
 
 export default function DiningPage() {
-  return <DirectoryPage category="dining" />
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <UnifiedDiningDirectory />
+    </main>
+  )
 }

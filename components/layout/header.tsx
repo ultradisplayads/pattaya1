@@ -84,7 +84,7 @@ export function Header({ theme, onThemeChange }: HeaderProps) {
       id: "restaurants",
       title: "Dining",
       icon: <Utensils className="w-4 h-4" />,
-      href: "/restaurants",
+      href: "/dining",
       color: "bg-gradient-to-br from-orange-500 to-orange-600",
       count: 320,
     },
