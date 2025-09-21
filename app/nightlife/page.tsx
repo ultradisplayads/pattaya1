@@ -1,5 +1,9 @@
-import { NightlifePage } from "@/components/nightlife/nightlife-page"
+import { NightlifeDirectory } from "@/components/nightlife/nightlife-directory"
 
-export default function Nightlife() {
-  return <NightlifePage />
+export default function NightlifePage() {
+  return (
+    <main className="min-h-screen bg-gray-900">
+      <NightlifeDirectory />
+    </main>
+  )
 }

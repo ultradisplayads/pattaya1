@@ -1,5 +1,9 @@
-import { EventsPage } from "@/components/events/events-page"
+import { EventsDirectory } from "@/components/events/events-page"
 
-export default function Events() {
-  return <EventsPage />
+export default function EventsPage() {
+  return (
+    <main className="min-h-screen bg-gray-50">
+      <EventsDirectory />
+    </main>
+  )
 }
